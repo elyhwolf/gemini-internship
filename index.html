@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gemini Internship - WebMCP Workspace</title>
+  <meta name="description" content="A next-generation development playground for integrating WebMCP client-side tools and testing AI agent browser execution.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header>
+      <div class="logo-section">
+        <div class="logo-symbol">G</div>
+        <div>
+          <h1 class="logo-text">Gemini AI Workspace</h1>
+          <p style="font-size: 0.75rem; color: var(--text-dark); font-weight: 500;">WebMCP Interactive Host</p>
+        </div>
+      </div>
+      
+      <div id="connection-status" class="status-badge">
+        <span class="status-dot"></span>
+        WebMCP: Connected
+      </div>
+    </header>
+
+    <!-- Main Dashboard Grid -->
+    <main class="dashboard-grid">
+      
+      <!-- Left Column: Tool Registry & Active Directories -->
+      <section style="display: flex; flex-direction: column; gap: 1.5rem;">
+        
+        <!-- WebMCP Declarative Forms Card -->
+        <article class="card" id="declarative-tools-card">
+          <h2 class="card-title">
+            <span>📝</span> Declarative Tools (HTML Forms)
+          </h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+            Standard forms converted into AI-consumable tools via native HTML <code>toolname</code>, <code>tooldescription</code>, and <code>toolautosubmit</code> attributes.
+          </p>
+
+          <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            
+            <!-- Tool Form 1: Search Tasks -->
+            <form id="search-tasks-form" 
+                  toolname="search_tasks" 
+                  tooldescription="Searches internship tasks and code challenges by keyword or tags." 
+                  toolautosubmit
+                  style="background: rgba(0, 0, 0, 0.15); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--card-border);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--color-accent);">search_tasks</h3>
+                <span class="tool-badge badge-declarative">declarative</span>
+              </div>
+              
+              <div class="form-group">
+                <label for="search-keyword">Keyword or Tag</label>
+                <input type="text" id="search-keyword" name="keyword" placeholder="e.g. React, WebMCP, TASK-102" required>
+              </div>
+              
+              <button type="submit" id="search-tasks-submit" class="btn btn-secondary" style="width: 100%;">
+                🔍 Search Tasks
+              </button>
+            </form>
+
+            <!-- Tool Form 2: Adjust Hyperparameters -->
+            <form id="params-form" 
+                  toolname="adjust_hyperparameters" 
+                  tooldescription="Modifies model temperature, top-p, and max tokens for local inference." 
+                  toolautosubmit
+                  style="background: rgba(0, 0, 0, 0.15); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--card-border);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--color-accent);">adjust_hyperparameters</h3>
+                <span class="tool-badge badge-declarative">declarative</span>
+              </div>
+
+              <div class="form-group">
+                <label for="model-select">Target Model</label>
+                <select id="model-select" name="modelName">
+                  <option value="gemini-1.5-flash">Gemini 1.5 Flash (Default)</option>
+                  <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                  <option value="gemini-1.0-ultra">Gemini 1.0 Ultra</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="temp-slider">Temperature</label>
+                <div class="slider-container">
+                  <input type="range" id="temp-slider" name="temperature" min="0.0" max="1.0" step="0.05" value="0.7">
+                  <span id="temp-val" class="slider-val">0.7</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="topp-slider">Top-P</label>
+                <div class="slider-container">
+                  <input type="range" id="topp-slider" name="topP" min="0.0" max="1.0" step="0.05" value="0.9">
+                  <span id="topp-val" class="slider-val">0.9</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="max-tokens">Max Output Tokens</label>
+                <input type="number" id="max-tokens" name="maxTokens" min="256" max="8192" step="256" value="2048" required>
+              </div>
+
+              <button type="submit" id="params-submit" class="btn btn-secondary" style="width: 100%;">
+                ⚙️ Apply Parameters
+              </button>
+            </form>
+
+            <!-- Tool Form 3: Register Intern (Requires manual authorization) -->
+            <form id="intern-form" 
+                  toolname="register_intern" 
+                  tooldescription="Registers a new intern profile. Lacks toolautosubmit to enforce manual human review/approval."
+                  style="background: rgba(0, 0, 0, 0.15); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--card-border);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--color-accent);">register_intern</h3>
+                <span class="tool-badge badge-declarative" style="color: var(--color-purple); background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.3);">manual review</span>
+              </div>
+
+              <div class="form-group">
+                <label for="intern-name">Intern Full Name</label>
+                <input type="text" id="intern-name" name="name" placeholder="e.g. Alice Mercer" required>
+              </div>
+
+              <div class="form-group">
+                <label for="intern-role">Assigned Role</label>
+                <input type="text" id="intern-role" name="role" placeholder="e.g. NLP Research Assistant" required>
+              </div>
+
+              <button type="submit" id="intern-submit" class="btn btn-secondary" style="width: 100%;">
+                📋 Register Intern
+              </button>
+            </form>
+
+          </div>
+        </article>
+
+        <!-- WebMCP Imperative APIs Card -->
+        <article class="card" id="imperative-tools-card">
+          <h2 class="card-title">
+            <span>⚙️</span> Imperative JavaScript Tools
+          </h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+            Dynamic callbacks registered directly inside client-side JS using <code>document.modelContext.registerTool()</code>.
+          </p>
+
+          <div class="tool-list">
+            
+            <!-- Tool Item: get_system_status -->
+            <div class="tool-item">
+              <div class="tool-header">
+                <span class="tool-name">get_system_status</span>
+                <span class="tool-badge badge-imperative">imperative</span>
+              </div>
+              <p class="tool-desc">Returns CPU load, RAM allocation, and metadata about active tools.</p>
+              <details>
+                <summary style="font-size: 0.8rem; cursor: pointer; color: var(--color-accent); font-weight: 500;">View Schema</summary>
+                <pre class="schema-viewer" style="margin-top: 0.5rem;">{
+  "type": "object",
+  "properties": {}
+}</pre>
+              </details>
+            </div>
+
+            <!-- Tool Item: generate_report -->
+            <div class="tool-item">
+              <div class="tool-header">
+                <span class="tool-name">generate_report</span>
+                <span class="tool-badge badge-imperative">imperative</span>
+              </div>
+              <p class="tool-desc">Produces a markdown formatted document summarising workspace metrics.</p>
+              <details>
+                <summary style="font-size: 0.8rem; cursor: pointer; color: var(--color-accent); font-weight: 500;">View Schema</summary>
+                <pre class="schema-viewer" style="margin-top: 0.5rem;">{
+  "type": "object",
+  "properties": {
+    "format": {
+      "type": "string",
+      "description": "Output layout syntax (markdown or html)"
+    }
+  }
+}</pre>
+              </details>
+            </div>
+
+            <!-- Tool Item: clear_logs -->
+            <div class="tool-item">
+              <div class="tool-header">
+                <span class="tool-name">clear_logs</span>
+                <span class="tool-badge badge-imperative">imperative</span>
+              </div>
+              <p class="tool-desc">Wipes the output lines in the AI Agent Terminal panel.</p>
+              <details>
+                <summary style="font-size: 0.8rem; cursor: pointer; color: var(--color-accent); font-weight: 500;">View Schema</summary>
+                <pre class="schema-viewer" style="margin-top: 0.5rem;">{
+  "type": "object",
+  "properties": {}
+}</pre>
+              </details>
+            </div>
+
+          </div>
+        </article>
+
+        <!-- Interns Directory (State viewer) -->
+        <article class="card">
+          <h2 class="card-title">
+            <span>👥</span> Workspace Intern Directory
+          </h2>
+          <div id="interns-list">
+            <!-- Populated dynamically by JS -->
+          </div>
+        </article>
+
+      </section>
+
+      <!-- Right Column: Interactive Agent Console & Simulator -->
+      <section style="display: flex; flex-direction: column; gap: 1.5rem;">
+        
+        <!-- Live Agent Terminal Card -->
+        <article class="card" id="agent-console-card" style="height: 100%; display: flex; flex-direction: column;">
+          <h2 class="card-title">
+            <span>🤖</span> Interactive Agent Console
+          </h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+            Submit instructions to your simulated AI Agent. The agent will read prompt intents, inspect registered WebMCP tool schemas, highlight visual components, and return raw data.
+          </p>
+
+          <div class="simulator-layout" style="flex-grow: 1; display: flex; flex-direction: column; gap: 1.25rem;">
+            
+            <!-- Quick Presets -->
+            <div>
+              <label>Preset Agent Prompts</label>
+              <div class="prompt-presets">
+                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Get current system status')">⚙️ System Status</button>
+                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Find tasks related to React')">⚛️ Find React Tasks</button>
+                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Adjust temperature parameters to 0.45')">🌡️ Temp to 0.45</button>
+                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Register a new intern named Jane Doe')">📋 Add Jane Doe</button>
+                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Generate markdown progress report')">📊 Generate Report</button>
+                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Clear terminal console logs')">🗑️ Clear Logs</button>
+              </div>
+            </div>
+
+            <!-- Custom Input Box -->
+            <div class="form-group">
+              <label for="agent-prompt">Custom Agent Instruction</label>
+              <div class="prompt-input-container">
+                <input type="text" id="agent-prompt" placeholder="Ask the agent to execute any tool..." onkeydown="if(event.key === 'Enter') submitAgentPrompt()">
+                <button type="button" id="agent-prompt-submit" class="btn" onclick="submitAgentPrompt()">
+                  Run
+                </button>
+              </div>
+            </div>
+
+            <!-- Terminal Output -->
+            <div class="terminal-container" style="flex-grow: 1; display: flex; flex-direction: column;">
+              <div class="terminal-header">
+                <div class="terminal-dots">
+                  <span class="dot dot-red"></span>
+                  <span class="dot dot-yellow"></span>
+                  <span class="dot dot-green"></span>
+                </div>
+                <div class="terminal-title">agent-runner @ client-webmcp</div>
+              </div>
+              <div id="terminal-body" class="terminal-body">
+                <!-- Log entries added dynamically -->
+              </div>
+            </div>
+
+          </div>
+        </article>
+
+      </section>
+
+    </main>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
