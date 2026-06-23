@@ -1,32 +1,32 @@
-# 🚀 gemini_internship
+# 🚀 Gemini AI Internship - WebMCP Workspace
 
-> A Next.js and Node.js project dedicated to exploring, developing, and advancing the understanding of AI integration in modern coding workflows.
+A next-generation development workspace dedicated to exploring, developing, and advancing **WebMCP (Web Model Context Protocol)** client-side integration and browser-native AI agent workflows.
 
-[![Next.js](https://img.shields.io/badge/Next.js-14+-black?style=for-the-badge&logo=next.dotjs)](https://nextjs.org)
-[![Node.js](https://img.shields.io/badge/Node.js-20+-green?style=for-the-badge&logo=node.js)](https://nodejs.org)
-[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
+This workspace provides a premium, interactive glassmorphic dashboard showcasing both declarative (HTML-based) and imperative (JavaScript-based) WebMCP tools, complete with a live **AI Agent Execution Simulator**.
 
 ---
 
-## 🎯 Overview
+## 🎨 Key Features
 
-`gemini_internship` is a repository designed to bridge the gap between artificial intelligence concepts and practical software development. Built on top of a modern Node.js and Next.js foundation, it serves as a playground and production-ready workspace for:
-*   Integrating AI APIs (such as the Gemini API) into web applications.
-*   Understanding autonomous agent patterns and developer tools.
-*   Experimenting with state-of-the-art web architectures.
+1. **📝 Declarative WebMCP Forms**:
+   - Standard HTML `<form>` elements annotated with `toolname`, `tooldescription`, and `toolautosubmit` attributes.
+   - The browser automatically parses these forms into JSON schemas for consumption by browser-integrated AI agents.
+   - Includes forms for **Search Tasks**, **Adjust Hyperparameters**, and **Register Intern** (requires manual review simulation).
 
-## ✨ Key Features
+2. **⚙️ Imperative JavaScript Tools**:
+   - Programmatically registered callbacks using `document.modelContext.registerTool()`.
+   - Complete with input validation schemas and asynchronous response execution.
+   - Includes tools for **System Status**, **Markdown Report Generation**, and **Terminal Clearing**.
 
-*   **⚡ Next.js App Router**: Utilizing modern layout paradigms, server components, and optimized routing.
-*   **🤖 AI Integrations**: Built-in support for interacting with Gemini models and managing conversational contexts.
-*   **🛠️ Robust Developer Experience**: Configured with modern linting, formatting, and script commands.
+3. **🤖 Interactive Agent Console**:
+   - A visual developer terminal displaying simulated agent logic steps, tool matching, parameters staging, and raw execution logs.
+   - Triggers dynamic neon visual glow states (`:tool-form-active`) on target UI components when tools are actively running.
+   - Supports preset quick prompts and custom text instruction inputs.
 
-## 🛠️ Technology Stack
-
-*   **Framework**: [Next.js](https://nextjs.org/) (React)
-*   **Runtime**: [Node.js](https://nodejs.org/)
-*   **Styling**: Vanilla CSS / Custom Tailwind (configurable)
-*   **API / SDK**: Gemini/Vertex AI integrations
+4. **✨ Rich Aesthetics**:
+   - Premium space-black CSS design tokens.
+   - Frosted obsidian glass styling (`backdrop-filter: blur(16px)`).
+   - Pulse indicators, hover interactions, and typewriter log animations.
 
 ---
 
@@ -34,64 +34,48 @@
 
 ### Prerequisites
 
-Make sure you have the following installed on your machine:
-*   [Node.js](https://nodejs.org/) (v20 or higher recommended)
-*   [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/) / [pnpm](https://pnpm.io/)
+Ensure you have the following installed locally:
+- [Node.js](https://nodejs.org/) (v20 or higher recommended)
+- [npm](https://www.npmjs.com/) or another package manager (Yarn, pnpm)
 
-### Installation
+### Installation & Run
 
-1. Clone the repository:
+1. Clone the repository and navigate to the directory:
    ```bash
-   git clone https://github.com/your-username/gemini_internship.git
-   cd gemini_internship
+   git clone https://github.com/elyhwolf/gemini-internship.git
+   cd gemini-internship
    ```
 
-2. Install dependencies:
+2. Install dependencies (Vite server compiler):
    ```bash
    npm install
    ```
 
-3. Set up your environment variables:
-   Create a `.env.local` file in the root directory and add your keys:
-   ```env
-   GEMINI_API_KEY=your_api_key_here
+3. Spin up the development server:
+   ```bash
+   npm run dev
    ```
 
-### Running the Application
-
-To start the development server:
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Open the link printed in the terminal (usually **`http://localhost:5173/`**) to view and test the workspace.
 
 ---
 
-## 📁 Project Structure
+## 📁 Workspace Structure
 
 ```text
-gemini_internship/
-├── public/          # Static assets (images, icons, etc.)
-├── src/             # Source files
-│   ├── app/         # Next.js App Router pages and layouts
-│   ├── components/  # Reusable UI components
-│   └── lib/         # Utility functions and AI clients
-├── .env.local       # Local environment variables (git-ignored)
-├── package.json     # Project metadata and dependencies
-└── README.md        # Project documentation
+gemini-internship/
+├── dist/                # Production build output
+├── node_modules/        # Package dependencies (git-ignored)
+├── index.html           # Dashboard layout and declarative WebMCP forms
+├── style.css            # Custom CSS variables, glassmorphic layout, and glow animations
+├── app.js               # WebMCP registration scripts and Agent console logic
+├── package.json         # Development server config and scripts
+├── .gitignore           # Git ignore list
+├── journal.md           # Developer logs and environment details
+└── README.md            # Project overview and instruction documentation
 ```
 
+---
+
 ## 🤝 Contributing
-
-Contributions are welcome! If you'd like to improve the codebase or add features:
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature/amazing-feature`).
-3. Commit your changes (`git commit -m 'Add some amazing feature'`).
-4. Push to the branch (`git push origin feature/amazing-feature`).
-5. Open a Pull Request.
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Feel free to open issues or pull requests to expand the client-side tool registry or enhance the agent runner logic!
