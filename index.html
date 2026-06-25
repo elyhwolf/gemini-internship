@@ -77,11 +77,58 @@
 
               <div class="form-group">
                 <label for="side-dish">Select Side Dish</label>
-                <input type="text" id="side-dish" name="sides" placeholder="e.g. Waffle Fries, Coleslaw, Mac & Cheese" required>
+                <select id="side-dish" name="sides">
+                  <option value="French Fries">French Fries</option>
+                  <option value="Waffle Fries" selected>Waffle Fries</option>
+                  <option value="Coleslaw">Coleslaw</option>
+                  <option value="Mac and Cheese">Mac and Cheese</option>
+                  <option value="Collard Greens">Collard Greens</option>
+                  <option value="Onion Rings">Onion Rings</option>
+                  <option value="Caesar Salad">Caesar Salad</option>
+                </select>
               </div>
               
               <button type="submit" id="order-chicken-submit" class="btn btn-secondary" style="width: 100%;">
                 🍗 Place Bucket Order
+              </button>
+            </form>
+
+            <!-- Tool Form 4: Order Chicken Sandwich -->
+            <form id="order-sandwich-form" 
+                  toolname="order_chicken_sandwich" 
+                  tooldescription="Places an order for a hot chicken sandwich with custom spice style and sides." 
+                  toolautosubmit
+                  style="background: rgba(0, 0, 0, 0.2); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--card-border);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary);">order_chicken_sandwich</h3>
+                <span class="tool-badge badge-declarative">declarative</span>
+              </div>
+              
+              <div class="form-group">
+                <label for="sandwich-spice">Spice Style</label>
+                <select id="sandwich-spice" name="spiceLevel">
+                  <option value="Honey Glazed (Mild)">Honey Glazed (Mild)</option>
+                  <option value="Classic Golden" selected>Classic Golden</option>
+                  <option value="Spicy Nashville Blast">Spicy Nashville Blast</option>
+                  <option value="Ghost Pepper Flame">Ghost Pepper Flame 🌶️🌶️</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="sandwich-side">Select Side Dish</label>
+                <select id="sandwich-side" name="sides">
+                  <option value="French Fries">French Fries</option>
+                  <option value="Waffle Fries" selected>Waffle Fries</option>
+                  <option value="Coleslaw">Coleslaw</option>
+                  <option value="Mac and Cheese">Mac and Cheese</option>
+                  <option value="Collard Greens">Collard Greens</option>
+                  <option value="Onion Rings">Onion Rings</option>
+                  <option value="Caesar Salad">Caesar Salad</option>
+                </select>
+              </div>
+              
+              <button type="submit" id="order-sandwich-submit" class="btn btn-secondary" style="width: 100%;">
+                🥪 Place Sandwich Order ($10.99)
               </button>
             </form>
 
@@ -249,6 +296,7 @@
               <div class="prompt-presets">
                 <button type="button" class="preset-chip" onclick="simulateAgentExecution('Check kitchen status and queue')">⚙️ Kitchen Status</button>
                 <button type="button" class="preset-chip" onclick="simulateAgentExecution('Order a 20-Piece Spicy Feaster bucket with Waffle Fries')">🍗 Order Feaster</button>
+                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Order a Nashville Hot Chicken Sandwich with Coleslaw')">🥪 Order Sandwich</button>
                 <button type="button" class="preset-chip" onclick="simulateAgentExecution('Configure Chipotle BBQ and Sweet Hot Chili sauces')">🍯 Custom Sauces</button>
                 <button type="button" class="preset-chip" onclick="simulateAgentExecution('Register loyalty member Alice Mercer')">👥 Register Alice</button>
                 <button type="button" class="preset-chip" onclick="simulateAgentExecution('Generate receipt for my order')">📊 Print Receipt</button>

@@ -18,7 +18,8 @@ const STATE = {
   menu: [
     { id: '6-Piece Golden Tenders', price: 9.99 },
     { id: '10-Piece Crispy Bucket', price: 16.99 },
-    { id: '20-Piece Spicy Feaster', price: 29.99 }
+    { id: '20-Piece Spicy Feaster', price: 29.99 },
+    { id: 'Chicken Sandwich', price: 10.99 }
   ],
   ttt: {
     board: Array(9).fill(null),
@@ -65,6 +66,41 @@ const SIMULATED_TOOLS = {
         status: 'order_placed',
         orderSummary: STATE.order,
         estimatedPrepTimeMinutes: STATE.order.bucketSize.includes('20') ? 15 : 10
+      };
+    }
+  },
+  'order_chicken_sandwich': {
+    name: 'order_chicken_sandwich',
+    type: 'declarative',
+    description: 'Places an order for a hot chicken sandwich with custom spice style and sides.',
+    targetId: 'order-sandwich-form',
+    execute: (input) => {
+      STATE.order.bucketSize = 'Chicken Sandwich';
+      if (input.spiceLevel) STATE.order.spiceLevel = input.spiceLevel;
+      if (input.sides) STATE.order.sides = input.sides;
+      
+      const menuItem = STATE.menu.find(m => m.id === 'Chicken Sandwich');
+      STATE.order.totalPrice = menuItem ? menuItem.price : 10.99;
+      
+      updateOrderUI();
+      
+      // Live order tracker logging
+      const isAgentSim = window.isAgentSimulating === true;
+      const placedOrderRecord = {
+        id: `#ORD-${Math.floor(1000 + Math.random() * 9000)}`,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        details: `Chicken Sandwich (${STATE.order.spiceLevel}) - Sides: ${STATE.order.sides} - Dips: ${STATE.order.primarySauce}/${STATE.order.secondarySauce}`,
+        price: `$${(STATE.order.totalPrice * 1.08).toFixed(2)}`,
+        origin: isAgentSim ? '🤖 Drive-Thru AI' : '👤 Customer Click'
+      };
+      if (!STATE.placedOrders) STATE.placedOrders = [];
+      STATE.placedOrders.unshift(placedOrderRecord);
+      updateAdminOrdersUI();
+      
+      return {
+        status: 'order_placed',
+        orderSummary: STATE.order,
+        estimatedPrepTimeMinutes: 8
       };
     }
   },
@@ -253,6 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupForms() {
   const forms = [
     { id: 'order-chicken-form', toolName: 'order_chicken_bucket' },
+    { id: 'order-sandwich-form', toolName: 'order_chicken_sandwich' },
     { id: 'sauces-form', toolName: 'choose_sauces' },
     { id: 'loyalty-form', toolName: 'register_loyalty_member' }
   ];
@@ -289,10 +326,19 @@ function updateOrderUI() {
   const sidesEl = document.getElementById('side-dish');
   const primaryEl = document.getElementById('sauce-primary');
   const secondaryEl = document.getElementById('sauce-secondary');
+  
+  const sandwichSpiceEl = document.getElementById('sandwich-spice');
+  const sandwichSideEl = document.getElementById('sandwich-side');
 
-  if (sizeEl) sizeEl.value = STATE.order.bucketSize;
-  if (spiceEl) spiceEl.value = STATE.order.spiceLevel;
-  if (sidesEl) sidesEl.value = STATE.order.sides;
+  if (STATE.order.bucketSize === 'Chicken Sandwich') {
+    if (sandwichSpiceEl) sandwichSpiceEl.value = STATE.order.spiceLevel;
+    if (sandwichSideEl) sandwichSideEl.value = STATE.order.sides;
+  } else {
+    if (sizeEl) sizeEl.value = STATE.order.bucketSize;
+    if (spiceEl) spiceEl.value = STATE.order.spiceLevel;
+    if (sidesEl) sidesEl.value = STATE.order.sides;
+  }
+  
   if (primaryEl) primaryEl.value = STATE.order.primarySauce;
   if (secondaryEl) secondaryEl.value = STATE.order.secondarySauce;
 }
@@ -382,10 +428,27 @@ async function simulateAgentExecution(prompt) {
   } else if (lowerPrompt.includes('receipt') || lowerPrompt.includes('bill') || lowerPrompt.includes('subtotal') || lowerPrompt.includes('total')) {
     matchedTool = SIMULATED_TOOLS.generate_receipt;
     compiledParams = { format: lowerPrompt.includes('html') ? 'html' : 'markdown' };
+  } else if (lowerPrompt.includes('sandwich')) {
+    matchedTool = SIMULATED_TOOLS.order_chicken_sandwich;
+    
+    let spice = 'Classic Golden';
+    if (lowerPrompt.includes('mild') || lowerPrompt.includes('honey')) spice = 'Honey Glazed (Mild)';
+    else if (lowerPrompt.includes('nashville') || lowerPrompt.includes('blast') || lowerPrompt.includes('spicy')) spice = 'Spicy Nashville Blast';
+    else if (lowerPrompt.includes('ghost') || lowerPrompt.includes('pepper') || lowerPrompt.includes('nuclear')) spice = 'Ghost Pepper Flame';
+
+    let side = 'Waffle Fries';
+    if (lowerPrompt.includes('french') || (lowerPrompt.includes('fries') && !lowerPrompt.includes('waffle'))) side = 'French Fries';
+    else if (lowerPrompt.includes('waffle')) side = 'Waffle Fries';
+    else if (lowerPrompt.includes('coleslaw') || lowerPrompt.includes('slaw')) side = 'Coleslaw';
+    else if (lowerPrompt.includes('mac') || lowerPrompt.includes('cheese')) side = 'Mac and Cheese';
+    else if (lowerPrompt.includes('collard') || lowerPrompt.includes('greens')) side = 'Collard Greens';
+    else if (lowerPrompt.includes('onion') || lowerPrompt.includes('rings')) side = 'Onion Rings';
+    else if (lowerPrompt.includes('caesar') || lowerPrompt.includes('salad')) side = 'Caesar Salad';
+    
+    compiledParams = { spiceLevel: spice, sides: side };
   } else if (lowerPrompt.includes('order') || lowerPrompt.includes('bucket') || lowerPrompt.includes('tenders') || lowerPrompt.includes('chicken') || lowerPrompt.includes('piece')) {
     matchedTool = SIMULATED_TOOLS.order_chicken_bucket;
     
-    // Simple parameter compiler
     let size = '10-Piece Crispy Bucket';
     if (lowerPrompt.includes('6-piece') || lowerPrompt.includes('6 piece') || lowerPrompt.includes('tenders')) size = '6-Piece Golden Tenders';
     else if (lowerPrompt.includes('20-piece') || lowerPrompt.includes('20 piece') || lowerPrompt.includes('feaster')) size = '20-Piece Spicy Feaster';
@@ -396,8 +459,13 @@ async function simulateAgentExecution(prompt) {
     else if (lowerPrompt.includes('ghost') || lowerPrompt.includes('pepper') || lowerPrompt.includes('nuclear')) spice = 'Ghost Pepper Flame';
 
     let side = 'Waffle Fries';
-    if (lowerPrompt.includes('coleslaw') || lowerPrompt.includes('slaw')) side = 'Coleslaw';
-    else if (lowerPrompt.includes('mac') || lowerPrompt.includes('cheese')) side = 'Mac & Cheese';
+    if (lowerPrompt.includes('french') || (lowerPrompt.includes('fries') && !lowerPrompt.includes('waffle'))) side = 'French Fries';
+    else if (lowerPrompt.includes('waffle')) side = 'Waffle Fries';
+    else if (lowerPrompt.includes('coleslaw') || lowerPrompt.includes('slaw')) side = 'Coleslaw';
+    else if (lowerPrompt.includes('mac') || lowerPrompt.includes('cheese')) side = 'Mac and Cheese';
+    else if (lowerPrompt.includes('collard') || lowerPrompt.includes('greens')) side = 'Collard Greens';
+    else if (lowerPrompt.includes('onion') || lowerPrompt.includes('rings')) side = 'Onion Rings';
+    else if (lowerPrompt.includes('caesar') || lowerPrompt.includes('salad')) side = 'Caesar Salad';
     
     compiledParams = { bucketSize: size, spiceLevel: spice, sides: side };
   } else if (lowerPrompt.includes('sauce') || lowerPrompt.includes('dip') || lowerPrompt.includes('bbq') || lowerPrompt.includes('mustard') || lowerPrompt.includes('mayo') || lowerPrompt.includes('chili')) {
