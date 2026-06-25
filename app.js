@@ -25,7 +25,9 @@ const STATE = {
     active: true,
     turn: 'X',
     scores: { player: 0, bot: 0, draws: 0 }
-  }
+  },
+  adminUnlocked: false,
+  placedOrders: []
 };
 
 // Tool schemas and execution logic for the simulator registry
@@ -45,6 +47,19 @@ const SIMULATED_TOOLS = {
       STATE.order.totalPrice = menuItem ? menuItem.price : 16.99;
       
       updateOrderUI();
+      
+      // Live order tracker logging
+      const isAgentSim = window.isAgentSimulating === true;
+      const placedOrderRecord = {
+        id: `#ORD-${Math.floor(1000 + Math.random() * 9000)}`,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        details: `${STATE.order.bucketSize} (${STATE.order.spiceLevel}) - Sides: ${STATE.order.sides} - Dips: ${STATE.order.primarySauce}/${STATE.order.secondarySauce}`,
+        price: `$${(STATE.order.totalPrice * 1.08).toFixed(2)}`,
+        origin: isAgentSim ? '🤖 Drive-Thru AI' : '👤 Customer Click'
+      };
+      if (!STATE.placedOrders) STATE.placedOrders = [];
+      STATE.placedOrders.unshift(placedOrderRecord);
+      updateAdminOrdersUI();
       
       return {
         status: 'order_placed',
@@ -347,10 +362,11 @@ function showThinking(text) {
   return thinkingEl;
 }
 
-// Drive-Thru AI parser and routing
+// Main simulated Agent inference and tool-execution router
 async function simulateAgentExecution(prompt) {
   if (!prompt || prompt.trim() === '') return;
   
+  window.isAgentSimulating = true;
   logToTerminal('agent', `Customer request: "${prompt}"`);
   
   const thinking = showThinking('Parsing order intent and consulting active menu tools...');
@@ -505,10 +521,12 @@ async function simulateAgentExecution(prompt) {
     }
   }
 
+  // Cleanup highlights
   if (elementToHighlight) {
     await sleep(500);
     elementToHighlight.classList.remove('tool-form-active');
   }
+  window.isAgentSimulating = false;
 }
 
 // Drive-Thru helper
@@ -806,3 +824,99 @@ function makeTicTacToeMoveDirect(index) {
 
 window.makeTicTacToeMove = makeTicTacToeMove;
 window.resetTicTacToe = resetTicTacToe;
+
+// ==========================================
+// Cashier Admin Mode Authentication & Live Tracker
+// ==========================================
+
+function toggleAdminMode() {
+  const modal = document.getElementById('admin-login-modal');
+  if (!modal) return;
+  
+  if (STATE.adminUnlocked) {
+    lockAdminMode();
+  } else {
+    modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
+    const input = document.getElementById('admin-passcode-input');
+    if (input) {
+      input.value = '';
+      input.focus();
+    }
+    const errorEl = document.getElementById('admin-login-error');
+    if (errorEl) errorEl.style.display = 'none';
+  }
+}
+
+function closeAdminLogin() {
+  const modal = document.getElementById('admin-login-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+function submitAdminPasscode() {
+  const input = document.getElementById('admin-passcode-input');
+  const errorEl = document.getElementById('admin-login-error');
+  if (!input) return;
+  
+  if (input.value === '2806') {
+    STATE.adminUnlocked = true;
+    closeAdminLogin();
+    
+    const panel = document.getElementById('admin-panel');
+    if (panel) panel.style.display = 'block';
+    
+    const btn = document.getElementById('admin-mode-btn');
+    if (btn) btn.textContent = '🔓 Cashier Admin: Unlocked';
+    
+    updateAdminOrdersUI();
+    logToTerminal('system', 'Security access cleared. Cashier Admin Mode authenticated.');
+  } else {
+    if (errorEl) errorEl.style.display = 'block';
+    input.value = '';
+    input.focus();
+  }
+}
+
+function lockAdminMode() {
+  STATE.adminUnlocked = false;
+  
+  const panel = document.getElementById('admin-panel');
+  if (panel) panel.style.display = 'none';
+  
+  const btn = document.getElementById('admin-mode-btn');
+  if (btn) btn.textContent = '🔒 Cashier Admin Mode';
+  
+  closeAdminLogin();
+  logToTerminal('system', 'Cashier Admin Mode locked.');
+}
+
+function updateAdminOrdersUI() {
+  const feedEl = document.getElementById('admin-orders-feed');
+  if (!feedEl) return;
+  
+  if (!STATE.placedOrders || STATE.placedOrders.length === 0) {
+    feedEl.innerHTML = '<div style="font-size: 0.85rem; color: var(--text-dark); text-align: center; padding: 1rem;">No orders placed yet.</div>';
+    return;
+  }
+  
+  feedEl.innerHTML = STATE.placedOrders.map(ord => `
+    <div style="background: rgba(10, 4, 1, 0.5); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 8px; padding: 0.75rem 1rem; display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.85rem; margin-bottom: 0.5rem; animation: fade-in 0.2s ease-out forwards;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-weight: 700; color: var(--color-primary);">${ord.id}</span>
+        <span style="font-size: 0.75rem; color: var(--text-dark);">${ord.time}</span>
+      </div>
+      <div style="color: var(--text-main); font-weight: 500;">${escapeHTML(ord.details)}</div>
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed rgba(245,158,11,0.1); padding-top: 0.4rem; font-size: 0.75rem; margin-top: 0.2rem;">
+        <span style="color: var(--text-muted); font-size: 0.75rem;">Source: ${ord.origin}</span>
+        <span style="font-weight: 600; color: var(--color-accent); font-family: 'Fira Code', monospace; font-size: 0.85rem;">${ord.price}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+window.makeTicTacToeMove = makeTicTacToeMove;
+window.resetTicTacToe = resetTicTacToe;
+window.toggleAdminMode = toggleAdminMode;
+window.closeAdminLogin = closeAdminLogin;
+window.submitAdminPasscode = submitAdminPasscode;
+window.lockAdminMode = lockAdminMode;
+window.updateAdminOrdersUI = updateAdminOrdersUI;
