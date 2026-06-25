@@ -110,7 +110,7 @@ const SIMULATED_TOOLS = {
       const vatTemp2 = 350 + Math.floor(Math.random() * 10); // 350-360F
       
       return {
-        kitchenHost: 'Crispy Gemini AI Kitchen',
+        kitchenHost: "Ely's Hot Chicken",
         status: 'OPERATIONAL',
         activeVats: 2,
         queue: {
@@ -140,9 +140,9 @@ const SIMULATED_TOOLS = {
       const total = (STATE.order.totalPrice * 1.08).toFixed(2);
       
       if (format === 'html') {
-        return `<h3>Crispy Gemini Kitchen Receipt</h3><p>Bucket: ${STATE.order.bucketSize}</p><p>Sauces: ${STATE.order.primarySauce} & ${STATE.order.secondarySauce}</p><p>Total: $${total}</p>`;
+        return `<h3>Ely's Hot Chicken Receipt</h3><p>Bucket: ${STATE.order.bucketSize}</p><p>Sauces: ${STATE.order.primarySauce} & ${STATE.order.secondarySauce}</p><p>Total: $${total}</p>`;
       }
-      return `# CRISPY GEMINI KITCHEN RECEIPT\n\n- **Item**: ${STATE.order.bucketSize} (${STATE.order.spiceLevel})\n- **Side**: ${STATE.order.sides}\n- **Dips**: ${STATE.order.primarySauce} & ${STATE.order.secondarySauce}\n- **Subtotal**: $${STATE.order.totalPrice.toFixed(2)}\n- **Tax (8%)**: $${tax}\n- **Total Due**: $${total}\n\n*Thank you for ordering with the Gemini AI Drive-Thru!*`;
+      return `# ELY'S HOT CHICKEN RECEIPT\n\n- **Item**: ${STATE.order.bucketSize} (${STATE.order.spiceLevel})\n- **Side**: ${STATE.order.sides}\n- **Dips**: ${STATE.order.primarySauce} & ${STATE.order.secondarySauce}\n- **Subtotal**: $${STATE.order.totalPrice.toFixed(2)}\n- **Tax (8%)**: $${tax}\n- **Total Due**: $${total}\n\n*Thank you for ordering with Ely's Hot Chicken!*`;
     }
   },
   'clear_order_logs': {
@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateLoyaltyUI();
   updateConnectionStatus();
   
-  logToTerminal('system', 'Crispy Gemini AI Kitchen: Drive-thru system initialized.');
+  logToTerminal('system', "Ely's Hot Chicken: Drive-thru system initialized.");
   logToTerminal('system', `WebMCP Native support: ${isWebMCPSupported ? 'CONNECTED' : 'SIMULATED (Offline API Mode)'}`);
   logToTerminal('system', 'Say or click an instruction to order.');
 });
