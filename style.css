@@ -552,3 +552,71 @@ button:tool-submit-active, .tool-submit-active {
     transform: scale(1.03);
   }
 }
+
+/* Tic-Tac-Toe Game Layout */
+.tictactoe-board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  max-width: 280px;
+  margin: 1.25rem auto;
+  aspect-ratio: 1;
+}
+
+.tictactoe-cell {
+  background: rgba(2, 6, 4, 0.6);
+  border: 1px solid rgba(52, 211, 153, 0.15);
+  border-radius: 8px;
+  font-size: 1.85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+  color: var(--text-main);
+  aspect-ratio: 1;
+  user-select: none;
+}
+
+.tictactoe-cell:hover {
+  border-color: var(--color-accent);
+  background: rgba(16, 185, 129, 0.05);
+  box-shadow: 0 0 10px rgba(52, 211, 153, 0.15);
+}
+
+.tictactoe-cell.cell-x {
+  color: var(--color-accent);
+  text-shadow: 0 0 8px rgba(52, 211, 153, 0.5);
+}
+
+.tictactoe-cell.cell-o {
+  color: var(--color-purple);
+  text-shadow: 0 0 8px rgba(132, 204, 22, 0.5);
+}
+
+.tictactoe-cell.winning-cell {
+  background: rgba(16, 185, 129, 0.18) !important;
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.4) !important;
+}
+
+.ttt-stats {
+  display: flex;
+  justify-content: space-around;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(52, 211, 153, 0.1);
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.ttt-stat-val {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+

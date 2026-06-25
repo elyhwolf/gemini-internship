@@ -18,7 +18,13 @@ const STATE = {
     { id: 'TASK-102', title: 'Verify WebMCP testing flags in chromium builds', tags: ['WebMCP', 'Chrome', 'Testing'], status: 'Completed' },
     { id: 'TASK-201', title: 'Connect local agent tools to browser window context', tags: ['AI Agent', 'WebMCP', 'JS'], status: 'Open' },
     { id: 'TASK-202', title: 'Integrate Gemini API streaming parser', tags: ['Gemini', 'API', 'Node'], status: 'Open' }
-  ]
+  ],
+  ttt: {
+    board: Array(9).fill(null),
+    active: true,
+    turn: 'X',
+    scores: { player: 0, bot: 0, draws: 0 }
+  }
 };
 
 // Tool schemas and execution logic for the simulator registry
@@ -139,6 +145,30 @@ const SIMULATED_TOOLS = {
       if (terminal) terminal.innerHTML = '';
       return 'Console cleared successfully.';
     }
+  },
+  'play_tic_tac_toe_move': {
+    name: 'play_tic_tac_toe_move',
+    type: 'imperative',
+    description: 'Executes a player move (X) on the Tic-Tac-Toe board at a specified cell position.',
+    schema: {
+      type: 'object',
+      properties: {
+        cellIndex: { 
+          type: 'integer', 
+          minimum: 0, 
+          maximum: 8, 
+          description: 'The 0-indexed cell index on the grid (0-8, 0=top-left, 4=center, 8=bottom-right).' 
+        }
+      },
+      required: ['cellIndex']
+    },
+    execute: (input) => {
+      const cellIndex = parseInt(input.cellIndex);
+      if (isNaN(cellIndex) || cellIndex < 0 || cellIndex > 8) {
+        throw new Error('Invalid cellIndex. Must be between 0 and 8 inclusive.');
+      }
+      return makeTicTacToeMoveDirect(cellIndex);
+    }
   }
 };
 
@@ -169,6 +199,14 @@ if (isWebMCPSupported) {
       description: SIMULATED_TOOLS.clear_logs.description,
       inputSchema: SIMULATED_TOOLS.clear_logs.schema,
       execute: SIMULATED_TOOLS.clear_logs.execute
+    });
+
+    // 4. Register play_tic_tac_toe_move
+    modelContext.registerTool({
+      name: SIMULATED_TOOLS.play_tic_tac_toe_move.name,
+      description: SIMULATED_TOOLS.play_tic_tac_toe_move.description,
+      inputSchema: SIMULATED_TOOLS.play_tic_tac_toe_move.schema,
+      execute: SIMULATED_TOOLS.play_tic_tac_toe_move.execute
     });
     
     console.log('WebMCP Native: Programmatic tools registered successfully!');
@@ -378,6 +416,24 @@ async function simulateAgentExecution(prompt) {
     compiledParams = { name: name, role: 'Senior Research Assistant' };
   } else if (lowerPrompt.includes('clear')) {
     matchedTool = SIMULATED_TOOLS.clear_logs;
+  } else if (lowerPrompt.includes('tic') || lowerPrompt.includes('tictactoe') || lowerPrompt.includes('ttt') || lowerPrompt.includes('game') || lowerPrompt.includes('play')) {
+    matchedTool = SIMULATED_TOOLS.play_tic_tac_toe_move;
+    // Extract cellIndex
+    let cellIndex = 4; // default center
+    if (lowerPrompt.includes('top left') || lowerPrompt.includes('top-left') || lowerPrompt.includes('0')) cellIndex = 0;
+    else if (lowerPrompt.includes('top center') || lowerPrompt.includes('top middle') || lowerPrompt.includes('top-center') || lowerPrompt.includes('1')) cellIndex = 1;
+    else if (lowerPrompt.includes('top right') || lowerPrompt.includes('top-right') || lowerPrompt.includes('2')) cellIndex = 2;
+    else if (lowerPrompt.includes('middle left') || lowerPrompt.includes('left middle') || lowerPrompt.includes('middle-left') || lowerPrompt.includes('3')) cellIndex = 3;
+    else if (lowerPrompt.includes('middle right') || lowerPrompt.includes('right middle') || lowerPrompt.includes('middle-right') || lowerPrompt.includes('5')) cellIndex = 5;
+    else if (lowerPrompt.includes('bottom left') || lowerPrompt.includes('bottom-left') || lowerPrompt.includes('6')) cellIndex = 6;
+    else if (lowerPrompt.includes('bottom center') || lowerPrompt.includes('bottom-center') || lowerPrompt.includes('7')) cellIndex = 7;
+    else if (lowerPrompt.includes('bottom right') || lowerPrompt.includes('bottom-right') || lowerPrompt.includes('8')) cellIndex = 8;
+    else {
+      // Find first empty cell
+      const emptyIdx = STATE.ttt.board.findIndex(c => c === null);
+      if (emptyIdx !== -1) cellIndex = emptyIdx;
+    }
+    compiledParams = { cellIndex: cellIndex };
   }
 
   // Handle unmatched intents
@@ -505,3 +561,283 @@ function escapeHTML(str) {
     }[tag] || tag)
   );
 }
+
+// ==========================================
+// Tic-Tac-Toe AI Arena Core Mechanics
+// ==========================================
+
+// Check for game winner
+function checkWinner(board) {
+  const winLines = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+    [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+    [0, 4, 8], [2, 4, 6]             // Diagonals
+  ];
+
+  for (let line of winLines) {
+    const [a, b, c] = line;
+    if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+      return { winner: board[a], line: line };
+    }
+  }
+
+  return null;
+}
+
+// Reset Tic-Tac-Toe Board
+function resetTicTacToe() {
+  STATE.ttt.board.fill(null);
+  STATE.ttt.active = true;
+  STATE.ttt.turn = 'X';
+  
+  // Clean cells
+  const cells = document.querySelectorAll('.tictactoe-cell');
+  cells.forEach(cell => {
+    cell.textContent = '';
+    cell.className = 'tictactoe-cell';
+  });
+
+  updateTTTStatusUI('Your turn! Make a move.');
+}
+
+// Update UI Text & Visual classes
+function updateTTTBoardUI() {
+  const cells = document.querySelectorAll('.tictactoe-cell');
+  cells.forEach((cell, idx) => {
+    const val = STATE.ttt.board[idx];
+    cell.textContent = val || '';
+    cell.className = 'tictactoe-cell';
+    if (val === 'X') cell.classList.add('cell-x');
+    if (val === 'O') cell.classList.add('cell-o');
+  });
+
+  const winResult = checkWinner(STATE.ttt.board);
+  if (winResult) {
+    winResult.line.forEach(winIdx => {
+      const cell = document.querySelector(`.tictactoe-cell[data-index="${winIdx}"]`);
+      if (cell) cell.classList.add('winning-cell');
+    });
+  }
+}
+
+function updateTTTStatusUI(text, isError = false) {
+  const statusEl = document.getElementById('ttt-status');
+  if (statusEl) {
+    statusEl.textContent = text;
+    statusEl.style.color = isError ? 'var(--color-danger)' : 'var(--color-accent)';
+  }
+}
+
+function updateTTTScoresUI() {
+  const pEl = document.getElementById('ttt-score-player');
+  const dEl = document.getElementById('ttt-score-draws');
+  const bEl = document.getElementById('ttt-score-bot');
+
+  if (pEl) pEl.textContent = STATE.ttt.scores.player;
+  if (dEl) dEl.textContent = STATE.ttt.scores.draws;
+  if (bEl) bEl.textContent = STATE.ttt.scores.bot;
+}
+
+// Core Move Invocation Handler (Human clicks)
+function makeTicTacToeMove(index) {
+  if (!STATE.ttt.active || STATE.ttt.turn !== 'X') return;
+  
+  if (STATE.ttt.board[index] !== null) {
+    updateTTTStatusUI('Cell already occupied!', true);
+    return;
+  }
+
+  executePlayerMove(index);
+}
+
+// Execute player X move
+function executePlayerMove(index) {
+  STATE.ttt.board[index] = 'X';
+  updateTTTBoardUI();
+  
+  const winResult = checkWinner(STATE.ttt.board);
+  if (winResult) {
+    STATE.ttt.active = false;
+    STATE.ttt.scores.player++;
+    updateTTTScoresUI();
+    updateTTTStatusUI('🎉 You won! Pure brilliance.');
+    return;
+  }
+
+  if (STATE.ttt.board.every(cell => cell !== null)) {
+    STATE.ttt.active = false;
+    STATE.ttt.scores.draws++;
+    updateTTTScoresUI();
+    updateTTTStatusUI('🤝 It is a draw! Well played.');
+    return;
+  }
+
+  // Switch to Bot Turn
+  STATE.ttt.turn = 'O';
+  updateTTTStatusUI('Bot is calculating counter-move...');
+  
+  // Bot makes counter-move after a small calm delay
+  setTimeout(() => {
+    makeBotMove();
+  }, 600);
+}
+
+// Execute AI Bot Turn (O)
+function makeBotMove() {
+  if (!STATE.ttt.active) return;
+
+  const difficultySelect = document.getElementById('ttt-difficulty');
+  const difficulty = difficultySelect ? difficultySelect.value : 'medium';
+  
+  let bestIndex = -1;
+
+  if (difficulty === 'easy') {
+    // 1. Easy: Make purely random move
+    bestIndex = getRandomTTTMove();
+  } else if (difficulty === 'medium') {
+    // 2. Medium: Heuristic (check if can win -> check if can block -> else random)
+    bestIndex = getMediumTTTMove();
+  } else {
+    // 3. Hard: Minimax optimal play
+    bestIndex = getHardTTTMove();
+  }
+
+  if (bestIndex !== -1) {
+    STATE.ttt.board[bestIndex] = 'O';
+    updateTTTBoardUI();
+
+    const winResult = checkWinner(STATE.ttt.board);
+    if (winResult) {
+      STATE.ttt.active = false;
+      STATE.ttt.scores.bot++;
+      updateTTTScoresUI();
+      updateTTTStatusUI('🤖 Bot won! Practice makes perfect.');
+      return;
+    }
+
+    if (STATE.ttt.board.every(cell => cell !== null)) {
+      STATE.ttt.active = false;
+      STATE.ttt.scores.draws++;
+      updateTTTScoresUI();
+      updateTTTStatusUI('🤝 It is a draw!');
+      return;
+    }
+  }
+
+  STATE.ttt.turn = 'X';
+  updateTTTStatusUI('Your turn! Make a move.');
+}
+
+// Bot move calculation algorithms
+function getRandomTTTMove() {
+  const empties = STATE.ttt.board.map((val, idx) => val === null ? idx : null).filter(val => val !== null);
+  if (empties.length === 0) return -1;
+  return empties[Math.floor(Math.random() * empties.length)];
+}
+
+function getMediumTTTMove() {
+  // Check if Bot can win immediately
+  for (let i = 0; i < 9; i++) {
+    if (STATE.ttt.board[i] === null) {
+      STATE.ttt.board[i] = 'O';
+      const isWin = checkWinner(STATE.ttt.board);
+      STATE.ttt.board[i] = null;
+      if (isWin) return i;
+    }
+  }
+
+  // Check if Bot needs to block Player from winning immediately
+  for (let i = 0; i < 9; i++) {
+    if (STATE.ttt.board[i] === null) {
+      STATE.ttt.board[i] = 'X';
+      const isBlock = checkWinner(STATE.ttt.board);
+      STATE.ttt.board[i] = null;
+      if (isBlock) return i;
+    }
+  }
+
+  // Fallback to random move
+  return getRandomTTTMove();
+}
+
+function getHardTTTMove() {
+  let bestScore = -Infinity;
+  let bestMove = -1;
+
+  for (let i = 0; i < 9; i++) {
+    if (STATE.ttt.board[i] === null) {
+      STATE.ttt.board[i] = 'O';
+      let score = minimax(STATE.ttt.board, 0, false);
+      STATE.ttt.board[i] = null;
+      if (score > bestScore) {
+        bestScore = score;
+        bestMove = i;
+      }
+    }
+  }
+  return bestMove;
+}
+
+// Minimax algorithm for unbeatable play
+function minimax(board, depth, isMaximizing) {
+  const result = checkWinner(board);
+  if (result) {
+    return result.winner === 'O' ? 10 - depth : depth - 10;
+  }
+  if (board.every(cell => cell !== null)) {
+    return 0;
+  }
+
+  if (isMaximizing) {
+    let bestScore = -Infinity;
+    for (let i = 0; i < 9; i++) {
+      if (board[i] === null) {
+        board[i] = 'O';
+        let score = minimax(board, depth + 1, false);
+        board[i] = null;
+        bestScore = Math.max(score, bestScore);
+      }
+    }
+    return bestScore;
+  } else {
+    let bestScore = Infinity;
+    for (let i = 0; i < 9; i++) {
+      if (board[i] === null) {
+        board[i] = 'X';
+        let score = minimax(board, depth + 1, true);
+        board[i] = null;
+        bestScore = Math.min(score, bestScore);
+      }
+    }
+    return bestScore;
+  }
+}
+
+// Direct WebMCP execute helper to make a move (and return status results to agent)
+function makeTicTacToeMoveDirect(index) {
+  if (!STATE.ttt.active) {
+    return { status: 'game_over', message: 'Game has ended. Click reset to start a new game.' };
+  }
+  if (STATE.ttt.turn !== 'X') {
+    return { status: 'waiting_for_bot', message: 'Bot turn in progress. Await status update.' };
+  }
+  if (STATE.ttt.board[index] !== null) {
+    return { status: 'error', message: `Cell ${index} is already occupied. Board: ${JSON.stringify(STATE.ttt.board)}` };
+  }
+
+  // Trigger move
+  executePlayerMove(index);
+
+  return {
+    status: 'move_registered',
+    cellPlayed: index,
+    boardState: STATE.ttt.board,
+    active: STATE.ttt.active,
+    turn: STATE.ttt.turn,
+    winResult: checkWinner(STATE.ttt.board)
+  };
+}
+
+// Bind methods to window context for onclick attributes in HTML
+window.makeTicTacToeMove = makeTicTacToeMove;
+window.resetTicTacToe = resetTicTacToe;

@@ -223,7 +223,7 @@
       <section style="display: flex; flex-direction: column; gap: 1.5rem;">
         
         <!-- Live Agent Terminal Card -->
-        <article class="card" id="agent-console-card" style="height: 100%; display: flex; flex-direction: column;">
+        <article class="card" id="agent-console-card" style="display: flex; flex-direction: column;">
           <h2 class="card-title">
             <span>🤖</span> Interactive Agent Console
           </h2>
@@ -243,6 +243,7 @@
                 <button type="button" class="preset-chip" onclick="simulateAgentExecution('Register a new intern named Jane Doe')">📋 Add Jane Doe</button>
                 <button type="button" class="preset-chip" onclick="simulateAgentExecution('Generate markdown progress report')">📊 Generate Report</button>
                 <button type="button" class="preset-chip" onclick="simulateAgentExecution('Clear terminal console logs')">🗑️ Clear Logs</button>
+                <button type="button" class="preset-chip" style="border-color: var(--color-purple);" onclick="simulateAgentExecution('Play Tic Tac Toe move in center')">🎮 Play TTT Move</button>
               </div>
             </div>
 
@@ -272,6 +273,63 @@
               </div>
             </div>
 
+          </div>
+        </article>
+
+        <!-- Tic-Tac-Toe AI Arena Card -->
+        <article class="card" id="tictactoe-card">
+          <h2 class="card-title">
+            <span>🎮</span> Tic-Tac-Toe AI Arena
+          </h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Play against our Easy, Medium, or Hard AI bots! You play as <strong style="color: var(--color-accent);">X</strong>, Bot plays as <strong style="color: var(--color-purple);">O</strong>.
+          </p>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; gap: 0.5rem;">
+            <div class="form-group" style="margin-bottom: 0; flex-grow: 1;">
+              <label for="ttt-difficulty" style="margin-bottom: 0.25rem;">Bot Difficulty</label>
+              <select id="ttt-difficulty" style="padding: 0.5rem; background: rgba(0, 0, 0, 0.4);">
+                <option value="easy">Easy Bot (Random)</option>
+                <option value="medium" selected>Medium Bot (Defensive)</option>
+                <option value="hard">Hard Bot (Minimax)</option>
+              </select>
+            </div>
+            <button type="button" id="ttt-reset" class="btn" style="padding: 0.5rem 1rem; margin-top: 1.15rem;" onclick="resetTicTacToe()">
+              Reset
+            </button>
+          </div>
+
+          <div id="ttt-status" style="text-align: center; font-size: 0.9rem; font-weight: 600; min-height: 1.5rem; color: var(--color-accent); margin-bottom: 0.5rem;">
+            Your turn! Make a move.
+          </div>
+
+          <!-- 3x3 Grid Board -->
+          <div class="tictactoe-board">
+            <div class="tictactoe-cell" data-index="0" onclick="makeTicTacToeMove(0)"></div>
+            <div class="tictactoe-cell" data-index="1" onclick="makeTicTacToeMove(1)"></div>
+            <div class="tictactoe-cell" data-index="2" onclick="makeTicTacToeMove(2)"></div>
+            <div class="tictactoe-cell" data-index="3" onclick="makeTicTacToeMove(3)"></div>
+            <div class="tictactoe-cell" data-index="4" onclick="makeTicTacToeMove(4)"></div>
+            <div class="tictactoe-cell" data-index="5" onclick="makeTicTacToeMove(5)"></div>
+            <div class="tictactoe-cell" data-index="6" onclick="makeTicTacToeMove(6)"></div>
+            <div class="tictactoe-cell" data-index="7" onclick="makeTicTacToeMove(7)"></div>
+            <div class="tictactoe-cell" data-index="8" onclick="makeTicTacToeMove(8)"></div>
+          </div>
+
+          <!-- Scoreboard -->
+          <div class="ttt-stats">
+            <div>
+              <div style="color: var(--text-muted); font-size: 0.75rem;">Player (X)</div>
+              <div id="ttt-score-player" class="ttt-stat-val">0</div>
+            </div>
+            <div>
+              <div style="color: var(--text-muted); font-size: 0.75rem;">Draws</div>
+              <div id="ttt-score-draws" class="ttt-stat-val">0</div>
+            </div>
+            <div>
+              <div style="color: var(--text-muted); font-size: 0.75rem;">Bot (O)</div>
+              <div id="ttt-score-bot" class="ttt-stat-val">0</div>
+            </div>
           </div>
         </article>
 
