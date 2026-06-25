@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gemini Internship - WebMCP Workspace</title>
-  <meta name="description" content="A next-generation development playground for integrating WebMCP client-side tools and testing AI agent browser execution.">
+  <title>Crispy Gemini AI Kitchen - WebMCP Drive-Thru</title>
+  <meta name="description" content="An agentic fried chicken restaurant ordering dashboard featuring WebMCP client-side tools and live AI Drive-Thru simulator.">
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,16 +15,16 @@
     <!-- Header -->
     <header>
       <div class="logo-section">
-        <div class="logo-symbol">G</div>
+        <div class="logo-symbol">🍗</div>
         <div>
-          <h1 class="logo-text">Gemini AI Workspace</h1>
-          <p style="font-size: 0.75rem; color: var(--text-dark); font-weight: 500;">WebMCP Interactive Host</p>
+          <h1 class="logo-text">Crispy Gemini Kitchen</h1>
+          <p style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">WebMCP AI Drive-Thru Host</p>
         </div>
       </div>
       
       <div id="connection-status" class="status-badge">
         <span class="status-dot"></span>
-        WebMCP: Connected
+        Drive-Thru Host: Connected
       </div>
     </header>
 
@@ -37,129 +37,139 @@
         <!-- WebMCP Declarative Forms Card -->
         <article class="card" id="declarative-tools-card">
           <h2 class="card-title">
-            <span>📝</span> Declarative Tools (HTML Forms)
+            <span>📝</span> Declarative Ordering Tools (HTML Forms)
           </h2>
           <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-            Standard forms converted into AI-consumable tools via native HTML <code>toolname</code>, <code>tooldescription</code>, and <code>toolautosubmit</code> attributes.
+            Native forms converted into AI ordering actions via HTML <code>toolname</code>, <code>tooldescription</code>, and <code>toolautosubmit</code> attributes.
           </p>
 
           <div style="display: flex; flex-direction: column; gap: 1.5rem;">
             
-            <!-- Tool Form 1: Search Tasks -->
-            <form id="search-tasks-form" 
-                  toolname="search_tasks" 
-                  tooldescription="Searches internship tasks and code challenges by keyword or tags." 
+            <!-- Tool Form 1: Order Chicken Bucket -->
+            <form id="order-chicken-form" 
+                  toolname="order_chicken_bucket" 
+                  tooldescription="Places an order for a fried chicken bucket with custom size, spice, and sides." 
                   toolautosubmit
-                  style="background: rgba(0, 0, 0, 0.15); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--card-border);">
+                  style="background: rgba(0, 0, 0, 0.2); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--card-border);">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--color-accent);">search_tasks</h3>
+                <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary);">order_chicken_bucket</h3>
                 <span class="tool-badge badge-declarative">declarative</span>
               </div>
               
               <div class="form-group">
-                <label for="search-keyword">Keyword or Tag</label>
-                <input type="text" id="search-keyword" name="keyword" placeholder="e.g. React, WebMCP, TASK-102" required>
-              </div>
-              
-              <button type="submit" id="search-tasks-submit" class="btn btn-secondary" style="width: 100%;">
-                🔍 Search Tasks
-              </button>
-            </form>
-
-            <!-- Tool Form 2: Adjust Hyperparameters -->
-            <form id="params-form" 
-                  toolname="adjust_hyperparameters" 
-                  tooldescription="Modifies model temperature, top-p, and max tokens for local inference." 
-                  toolautosubmit
-                  style="background: rgba(0, 0, 0, 0.15); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--card-border);">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--color-accent);">adjust_hyperparameters</h3>
-                <span class="tool-badge badge-declarative">declarative</span>
-              </div>
-
-              <div class="form-group">
-                <label for="model-select">Target Model</label>
-                <select id="model-select" name="modelName">
-                  <option value="gemini-1.5-flash">Gemini 1.5 Flash (Default)</option>
-                  <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-                  <option value="gemini-1.0-ultra">Gemini 1.0 Ultra</option>
+                <label for="bucket-size">Bucket Size</label>
+                <select id="bucket-size" name="bucketSize">
+                  <option value="6-Piece Golden Tenders">6-Piece Golden Tenders ($9.99)</option>
+                  <option value="10-Piece Crispy Bucket" selected>10-Piece Crispy Bucket ($16.99)</option>
+                  <option value="20-Piece Spicy Feaster">20-Piece Spicy Feaster ($29.99)</option>
                 </select>
               </div>
 
               <div class="form-group">
-                <label for="temp-slider">Temperature</label>
-                <div class="slider-container">
-                  <input type="range" id="temp-slider" name="temperature" min="0.0" max="1.0" step="0.05" value="0.7">
-                  <span id="temp-val" class="slider-val">0.7</span>
-                </div>
+                <label for="spice-level">Spice Style</label>
+                <select id="spice-level" name="spiceLevel">
+                  <option value="Honey Glazed (Mild)">Honey Glazed (Mild)</option>
+                  <option value="Classic Golden">Classic Golden</option>
+                  <option value="Spicy Nashville Blast">Spicy Nashville Blast</option>
+                  <option value="Ghost Pepper Flame">Ghost Pepper Flame 🌶️🌶️</option>
+                </select>
               </div>
 
               <div class="form-group">
-                <label for="topp-slider">Top-P</label>
-                <div class="slider-container">
-                  <input type="range" id="topp-slider" name="topP" min="0.0" max="1.0" step="0.05" value="0.9">
-                  <span id="topp-val" class="slider-val">0.9</span>
-                </div>
+                <label for="side-dish">Select Side Dish</label>
+                <input type="text" id="side-dish" name="sides" placeholder="e.g. Waffle Fries, Coleslaw, Mac & Cheese" required>
               </div>
-
-              <div class="form-group">
-                <label for="max-tokens">Max Output Tokens</label>
-                <input type="number" id="max-tokens" name="maxTokens" min="256" max="8192" step="256" value="2048" required>
-              </div>
-
-              <button type="submit" id="params-submit" class="btn btn-secondary" style="width: 100%;">
-                ⚙️ Apply Parameters
+              
+              <button type="submit" id="order-chicken-submit" class="btn btn-secondary" style="width: 100%;">
+                🍗 Place Bucket Order
               </button>
             </form>
 
-            <!-- Tool Form 3: Register Intern (Requires manual authorization) -->
-            <form id="intern-form" 
-                  toolname="register_intern" 
-                  tooldescription="Registers a new intern profile. Lacks toolautosubmit to enforce manual human review/approval."
-                  style="background: rgba(0, 0, 0, 0.15); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--card-border);">
+            <!-- Tool Form 2: Choose Sauces -->
+            <form id="sauces-form" 
+                  toolname="choose_sauces" 
+                  tooldescription="Configures dip sauce combinations for the active order." 
+                  toolautosubmit
+                  style="background: rgba(0, 0, 0, 0.2); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--card-border);">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--color-accent);">register_intern</h3>
-                <span class="tool-badge badge-declarative" style="color: var(--color-purple); background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.3);">manual review</span>
+                <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary);">choose_sauces</h3>
+                <span class="tool-badge badge-declarative">declarative</span>
               </div>
 
               <div class="form-group">
-                <label for="intern-name">Intern Full Name</label>
-                <input type="text" id="intern-name" name="name" placeholder="e.g. Alice Mercer" required>
+                <label for="sauce-primary">Primary Sauce</label>
+                <select id="sauce-primary" name="primarySauce">
+                  <option value="Creamy Honey Mustard" selected>Creamy Honey Mustard</option>
+                  <option value="Smoky Chipotle BBQ">Smoky Chipotle BBQ</option>
+                  <option value="Spicy Garlic Mayo">Spicy Garlic Mayo</option>
+                  <option value="Sweet Hot Chili">Sweet Hot Chili</option>
+                </select>
               </div>
 
               <div class="form-group">
-                <label for="intern-role">Assigned Role</label>
-                <input type="text" id="intern-role" name="role" placeholder="e.g. NLP Research Assistant" required>
+                <label for="sauce-secondary">Secondary Sauce</label>
+                <select id="sauce-secondary" name="secondarySauce">
+                  <option value="None">None (Single Sauce)</option>
+                  <option value="Creamy Honey Mustard">Creamy Honey Mustard</option>
+                  <option value="Smoky Chipotle BBQ" selected>Smoky Chipotle BBQ</option>
+                  <option value="Spicy Garlic Mayo">Spicy Garlic Mayo</option>
+                  <option value="Sweet Hot Chili">Sweet Hot Chili</option>
+                </select>
               </div>
 
-              <button type="submit" id="intern-submit" class="btn btn-secondary" style="width: 100%;">
-                📋 Register Intern
+              <button type="submit" id="sauces-submit" class="btn btn-secondary" style="width: 100%;">
+                🍯 Configure Sauces
+              </button>
+            </form>
+
+            <!-- Tool Form 3: Register Loyalty (Requires review) -->
+            <form id="loyalty-form" 
+                  toolname="register_loyalty_member" 
+                  tooldescription="Creates a restaurant rewards loyalty profile. Requires manual manager review/approval."
+                  style="background: rgba(0, 0, 0, 0.2); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--card-border);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary);">register_loyalty_member</h3>
+                <span class="tool-badge badge-declarative" style="color: var(--color-purple); background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.25);">manager review</span>
+              </div>
+
+              <div class="form-group">
+                <label for="member-name">Loyalty Member Name</label>
+                <input type="text" id="member-name" name="name" placeholder="e.g. Alice Mercer" required>
+              </div>
+
+              <div class="form-group">
+                <label for="member-favorite">Favorite side</label>
+                <input type="text" id="member-favorite" name="favoriteSide" placeholder="e.g. Waffle Fries" required>
+              </div>
+
+              <button type="submit" id="loyalty-submit" class="btn btn-secondary" style="width: 100%;">
+                📋 Register Member
               </button>
             </form>
 
           </div>
         </article>
 
-        <!-- WebMCP Imperative APIs Card -->
+        <!-- WebMCP Imperative Kitchen APIs Card -->
         <article class="card" id="imperative-tools-card">
           <h2 class="card-title">
-            <span>⚙️</span> Imperative JavaScript Tools
+            <span>⚙️</span> Kitchen Controller Callback Tools
           </h2>
           <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-            Dynamic callbacks registered directly inside client-side JS using <code>document.modelContext.registerTool()</code>.
+            Imperative JavaScript endpoints registered via <code>document.modelContext.registerTool()</code>.
           </p>
 
           <div class="tool-list">
             
-            <!-- Tool Item: get_system_status -->
+            <!-- Tool Item: get_kitchen_status -->
             <div class="tool-item">
               <div class="tool-header">
-                <span class="tool-name">get_system_status</span>
+                <span class="tool-name">get_kitchen_status</span>
                 <span class="tool-badge badge-imperative">imperative</span>
               </div>
-              <p class="tool-desc">Returns CPU load, RAM allocation, and metadata about active tools.</p>
+              <p class="tool-desc">Returns kitchen queue size, waiting estimations, and active fryer temperatures.</p>
               <details>
-                <summary style="font-size: 0.8rem; cursor: pointer; color: var(--color-accent); font-weight: 500;">View Schema</summary>
+                <summary style="font-size: 0.8rem; cursor: pointer; color: var(--color-primary); font-weight: 500;">View Schema</summary>
                 <pre class="schema-viewer" style="margin-top: 0.5rem;">{
   "type": "object",
   "properties": {}
@@ -167,36 +177,36 @@
               </details>
             </div>
 
-            <!-- Tool Item: generate_report -->
+            <!-- Tool Item: generate_receipt -->
             <div class="tool-item">
               <div class="tool-header">
-                <span class="tool-name">generate_report</span>
+                <span class="tool-name">generate_receipt</span>
                 <span class="tool-badge badge-imperative">imperative</span>
               </div>
-              <p class="tool-desc">Produces a markdown formatted document summarising workspace metrics.</p>
+              <p class="tool-desc">Produces a Markdown receipt summarising ordered buckets and configurations.</p>
               <details>
-                <summary style="font-size: 0.8rem; cursor: pointer; color: var(--color-accent); font-weight: 500;">View Schema</summary>
+                <summary style="font-size: 0.8rem; cursor: pointer; color: var(--color-primary); font-weight: 500;">View Schema</summary>
                 <pre class="schema-viewer" style="margin-top: 0.5rem;">{
   "type": "object",
   "properties": {
     "format": {
       "type": "string",
-      "description": "Output layout syntax (markdown or html)"
+      "description": "Output formatting syntax (markdown or html)"
     }
   }
 }</pre>
               </details>
             </div>
 
-            <!-- Tool Item: clear_logs -->
+            <!-- Tool Item: clear_order_logs -->
             <div class="tool-item">
               <div class="tool-header">
-                <span class="tool-name">clear_logs</span>
+                <span class="tool-name">clear_order_logs</span>
                 <span class="tool-badge badge-imperative">imperative</span>
               </div>
-              <p class="tool-desc">Wipes the output lines in the AI Agent Terminal panel.</p>
+              <p class="tool-desc">Clears drive-thru terminal display output history.</p>
               <details>
-                <summary style="font-size: 0.8rem; cursor: pointer; color: var(--color-accent); font-weight: 500;">View Schema</summary>
+                <summary style="font-size: 0.8rem; cursor: pointer; color: var(--color-primary); font-weight: 500;">View Schema</summary>
                 <pre class="schema-viewer" style="margin-top: 0.5rem;">{
   "type": "object",
   "properties": {}
@@ -207,10 +217,10 @@
           </div>
         </article>
 
-        <!-- Interns Directory (State viewer) -->
+        <!-- Loyalty Directory (State viewer) -->
         <article class="card">
           <h2 class="card-title">
-            <span>👥</span> Workspace Intern Directory
+            <span>👥</span> Crispy Rewards Loyalty Members
           </h2>
           <div id="interns-list">
             <!-- Populated dynamically by JS -->
@@ -225,35 +235,35 @@
         <!-- Live Agent Terminal Card -->
         <article class="card" id="agent-console-card" style="display: flex; flex-direction: column;">
           <h2 class="card-title">
-            <span>🤖</span> Interactive Agent Console
+            <span>🗣️</span> AI Drive-Thru Voice Assistant
           </h2>
           <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-            Submit instructions to your simulated AI Agent. The agent will read prompt intents, inspect registered WebMCP tool schemas, highlight visual components, and return raw data.
+            Order with natural language. The simulated Drive-Thru AI will match your request to active WebMCP schemas, fill forms, glow panels, and verify menu parameters.
           </p>
 
           <div class="simulator-layout" style="flex-grow: 1; display: flex; flex-direction: column; gap: 1.25rem;">
             
             <!-- Quick Presets -->
             <div>
-              <label>Preset Agent Prompts</label>
+              <label>Preset Customer Orders</label>
               <div class="prompt-presets">
-                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Get current system status')">⚙️ System Status</button>
-                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Find tasks related to React')">⚛️ Find React Tasks</button>
-                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Adjust temperature parameters to 0.45')">🌡️ Temp to 0.45</button>
-                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Register a new intern named Jane Doe')">📋 Add Jane Doe</button>
-                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Generate markdown progress report')">📊 Generate Report</button>
-                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Clear terminal console logs')">🗑️ Clear Logs</button>
-                <button type="button" class="preset-chip" style="border-color: var(--color-purple);" onclick="simulateAgentExecution('Play Tic Tac Toe move in center')">🎮 Play TTT Move</button>
+                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Check kitchen status and queue')">⚙️ Kitchen Status</button>
+                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Order a 20-Piece Spicy Feaster bucket with Waffle Fries')">🍗 Order Feaster</button>
+                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Configure Chipotle BBQ and Sweet Hot Chili sauces')">🍯 Custom Sauces</button>
+                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Register loyalty member Alice Mercer')">👥 Register Alice</button>
+                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Generate receipt for my order')">📊 Print Receipt</button>
+                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Clear terminal console logs')">🗑️ Clear Console</button>
+                <button type="button" class="preset-chip" style="border-color: var(--color-purple);" onclick="simulateAgentExecution('Play Crispy Tac Toe move in center')">🎮 Play Crispy-Toe</button>
               </div>
             </div>
 
             <!-- Custom Input Box -->
             <div class="form-group">
-              <label for="agent-prompt">Custom Agent Instruction</label>
+              <label for="agent-prompt">Customer Prompt (e.g. "I want a 10-piece bucket with coleslaw")</label>
               <div class="prompt-input-container">
-                <input type="text" id="agent-prompt" placeholder="Ask the agent to execute any tool..." onkeydown="if(event.key === 'Enter') submitAgentPrompt()">
+                <input type="text" id="agent-prompt" placeholder="Say your order here..." onkeydown="if(event.key === 'Enter') submitAgentPrompt()">
                 <button type="button" id="agent-prompt-submit" class="btn" onclick="submitAgentPrompt()">
-                  Run
+                  Order
                 </button>
               </div>
             </div>
@@ -266,7 +276,7 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="terminal-title">agent-runner @ client-webmcp</div>
+                <div class="terminal-title">drive-thru-assistant @ client-webmcp</div>
               </div>
               <div id="terminal-body" class="terminal-body">
                 <!-- Log entries added dynamically -->
@@ -276,13 +286,13 @@
           </div>
         </article>
 
-        <!-- Tic-Tac-Toe AI Arena Card -->
+        <!-- Tic-Tac-Toe AI Arena Card (Crispy-Tac-Toe) -->
         <article class="card" id="tictactoe-card">
           <h2 class="card-title">
-            <span>🎮</span> Tic-Tac-Toe AI Arena
+            <span>🎮</span> Crispy-Tac-Toe AI Arena
           </h2>
           <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
-            Play against our Easy, Medium, or Hard AI bots! You play as <strong style="color: var(--color-accent);">X</strong>, Bot plays as <strong style="color: var(--color-purple);">O</strong>.
+            Play against the Chef bots! You place Drumsticks (<strong style="color: var(--color-primary);">🍗</strong>), Bots place Spicy Hot Chilis (<strong style="color: var(--color-purple);">🌶️</strong>).
           </p>
 
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; gap: 0.5rem;">
@@ -299,7 +309,7 @@
             </button>
           </div>
 
-          <div id="ttt-status" style="text-align: center; font-size: 0.9rem; font-weight: 600; min-height: 1.5rem; color: var(--color-accent); margin-bottom: 0.5rem;">
+          <div id="ttt-status" style="text-align: center; font-size: 0.9rem; font-weight: 600; min-height: 1.5rem; color: var(--color-primary); margin-bottom: 0.5rem;">
             Your turn! Make a move.
           </div>
 
@@ -319,7 +329,7 @@
           <!-- Scoreboard -->
           <div class="ttt-stats">
             <div>
-              <div style="color: var(--text-muted); font-size: 0.75rem;">Player (X)</div>
+              <div style="color: var(--text-muted); font-size: 0.75rem;">Player (🍗)</div>
               <div id="ttt-score-player" class="ttt-stat-val">0</div>
             </div>
             <div>
@@ -327,7 +337,7 @@
               <div id="ttt-score-draws" class="ttt-stat-val">0</div>
             </div>
             <div>
-              <div style="color: var(--text-muted); font-size: 0.75rem;">Bot (O)</div>
+              <div style="color: var(--text-muted); font-size: 0.75rem;">Bot (🌶️)</div>
               <div id="ttt-score-bot" class="ttt-stat-val">0</div>
             </div>
           </div>

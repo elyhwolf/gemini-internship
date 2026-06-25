@@ -2,22 +2,23 @@
 const modelContext = document.modelContext || navigator.modelContext;
 const isWebMCPSupported = !!(modelContext && typeof modelContext.registerTool === 'function');
 
-// Global mock state for demo purposes
+// Global mock state for the Fried Chicken Kitchen
 const STATE = {
-  modelParams: {
-    temperature: 0.7,
-    topP: 0.9,
-    maxTokens: 2048,
-    modelName: 'gemini-1.5-flash'
+  order: {
+    bucketSize: '10-Piece Crispy Bucket',
+    spiceLevel: 'Classic Golden',
+    sides: 'Waffle Fries',
+    primarySauce: 'Creamy Honey Mustard',
+    secondarySauce: 'Smoky Chipotle BBQ',
+    totalPrice: 16.99
   },
-  interns: [
-    { name: 'Ely Wolf', role: 'AI Engineering Intern', joined: '2026-06-22' }
+  loyaltyMembers: [
+    { name: 'Ely Wolf', favoriteSide: 'Spicy Waffle Fries', joined: '2026-06-22' }
   ],
-  tasks: [
-    { id: 'TASK-101', title: 'Implement glassmorphic styling for model settings', tags: ['React', 'CSS', 'UI'], status: 'In Progress' },
-    { id: 'TASK-102', title: 'Verify WebMCP testing flags in chromium builds', tags: ['WebMCP', 'Chrome', 'Testing'], status: 'Completed' },
-    { id: 'TASK-201', title: 'Connect local agent tools to browser window context', tags: ['AI Agent', 'WebMCP', 'JS'], status: 'Open' },
-    { id: 'TASK-202', title: 'Integrate Gemini API streaming parser', tags: ['Gemini', 'API', 'Node'], status: 'Open' }
+  menu: [
+    { id: '6-Piece Golden Tenders', price: 9.99 },
+    { id: '10-Piece Crispy Bucket', price: 16.99 },
+    { id: '20-Piece Spicy Feaster', price: 29.99 }
   ],
   ttt: {
     board: Array(9).fill(null),
@@ -30,112 +31,124 @@ const STATE = {
 // Tool schemas and execution logic for the simulator registry
 const SIMULATED_TOOLS = {
   // Declarative Tools (HTML Forms)
-  'search_tasks': {
-    name: 'search_tasks',
+  'order_chicken_bucket': {
+    name: 'order_chicken_bucket',
     type: 'declarative',
-    description: 'Searches internship tasks and code challenges by keyword or tags.',
-    targetId: 'search-tasks-form',
+    description: 'Places an order for a fried chicken bucket with custom size, spice, and sides.',
+    targetId: 'order-chicken-form',
     execute: (input) => {
-      const keyword = (input.keyword || '').toLowerCase();
-      const results = STATE.tasks.filter(t => 
-        t.title.toLowerCase().includes(keyword) || 
-        t.id.toLowerCase().includes(keyword) ||
-        t.tags.some(tag => tag.toLowerCase().includes(keyword))
-      );
+      if (input.bucketSize) STATE.order.bucketSize = input.bucketSize;
+      if (input.spiceLevel) STATE.order.spiceLevel = input.spiceLevel;
+      if (input.sides) STATE.order.sides = input.sides;
+      
+      const menuItem = STATE.menu.find(m => m.id === STATE.order.bucketSize);
+      STATE.order.totalPrice = menuItem ? menuItem.price : 16.99;
+      
+      updateOrderUI();
+      
       return {
-        count: results.length,
-        results: results
+        status: 'order_placed',
+        orderSummary: STATE.order,
+        estimatedPrepTimeMinutes: STATE.order.bucketSize.includes('20') ? 15 : 10
       };
     }
   },
-  'adjust_hyperparameters': {
-    name: 'adjust_hyperparameters',
+  'choose_sauces': {
+    name: 'choose_sauces',
     type: 'declarative',
-    description: 'Modifies model temperature, top-p, and max tokens.',
-    targetId: 'params-form',
+    description: 'Configures dip sauce combinations for the active order.',
+    targetId: 'sauces-form',
     execute: (input) => {
-      STATE.modelParams.temperature = parseFloat(input.temperature || STATE.modelParams.temperature);
-      STATE.modelParams.topP = parseFloat(input.topP || STATE.modelParams.topP);
-      STATE.modelParams.maxTokens = parseInt(input.maxTokens || STATE.modelParams.maxTokens);
-      if (input.modelName) STATE.modelParams.modelName = input.modelName;
+      if (input.primarySauce) STATE.order.primarySauce = input.primarySauce;
+      if (input.secondarySauce) STATE.order.secondarySauce = input.secondarySauce;
       
-      // Update UI sliders/values if necessary
-      updateParamsUI();
+      updateOrderUI();
       
       return {
-        status: 'success',
-        updatedParameters: STATE.modelParams
+        status: 'sauces_updated',
+        sauces: {
+          primary: STATE.order.primarySauce,
+          secondary: STATE.order.secondarySauce
+        }
       };
     }
   },
-  'register_intern': {
-    name: 'register_intern',
+  'register_loyalty_member': {
+    name: 'register_loyalty_member',
     type: 'declarative',
-    description: 'Registers a new intern profile (Requires manual review/approval).',
-    targetId: 'intern-form',
+    description: 'Registers a new rewards loyalty profile (Requires manager approval).',
+    targetId: 'loyalty-form',
     execute: (input) => {
-      const newIntern = {
-        name: input.name || 'Anonymous Intern',
-        role: input.role || 'General Intern',
+      const newMember = {
+        name: input.name || 'Anonymous Guest',
+        favoriteSide: input.favoriteSide || 'Waffle Fries',
         joined: new Date().toISOString().split('T')[0]
       };
-      STATE.interns.push(newIntern);
-      updateInternsUI();
+      STATE.loyaltyMembers.push(newMember);
+      updateLoyaltyUI();
       return {
-        status: 'registered',
-        intern: newIntern,
-        totalInterns: STATE.interns.length
+        status: 'member_registered',
+        member: newMember,
+        totalMembers: STATE.loyaltyMembers.length
       };
     }
   },
   
   // Imperative Tools
-  'get_system_status': {
-    name: 'get_system_status',
+  'get_kitchen_status': {
+    name: 'get_kitchen_status',
     type: 'imperative',
-    description: 'Returns simulated system utilization, memory metrics, and active tools.',
+    description: 'Returns kitchen queue size, wait times, and active frying vat temperatures.',
     schema: {
       type: 'object',
       properties: {}
     },
     execute: () => {
-      const cpu = Math.floor(Math.random() * 25) + 10; // 10-35%
-      const memory = (3.2 + Math.random() * 0.4).toFixed(2); // 3.2 - 3.6 GB
+      const queueSize = Math.floor(Math.random() * 4) + 1; // 1-5 orders
+      const waitTime = queueSize * 6; // 6 mins per order
+      const vatTemp1 = 345 + Math.floor(Math.random() * 15); // 345-360F
+      const vatTemp2 = 350 + Math.floor(Math.random() * 10); // 350-360F
+      
       return {
-        agentHost: 'Antigravity IDE Agent Host',
-        status: 'Online',
-        webmcpNative: isWebMCPSupported,
-        activeToolsCount: Object.keys(SIMULATED_TOOLS).length,
-        metrics: {
-          cpuLoad: `${cpu}%`,
-          memoryAllocated: `${memory} GB / 8.00 GB`,
-          heartbeat: 'healthy'
+        kitchenHost: 'Crispy Gemini AI Kitchen',
+        status: 'OPERATIONAL',
+        activeVats: 2,
+        queue: {
+          pendingOrders: queueSize,
+          estimatedWaitTime: `${waitTime} minutes`
+        },
+        telemetry: {
+          fryerVat1: `${vatTemp1}°F (Ready)`,
+          fryerVat2: `${vatTemp2}°F (Frying)`
         }
       };
     }
   },
-  'generate_report': {
-    name: 'generate_report',
+  'generate_receipt': {
+    name: 'generate_receipt',
     type: 'imperative',
-    description: 'Produces a mock Markdown formatted internship progress report.',
+    description: 'Produces a markdown formatted food receipt for the customer.',
     schema: {
       type: 'object',
       properties: {
-        format: { type: 'string', description: 'File format (e.g. markdown, html)' }
+        format: { type: 'string', description: 'Receipt print format (markdown, html)' }
       }
     },
     execute: (input) => {
       const format = input.format || 'markdown';
+      const tax = (STATE.order.totalPrice * 0.08).toFixed(2);
+      const total = (STATE.order.totalPrice * 1.08).toFixed(2);
+      
       if (format === 'html') {
-        return `<h3>Internship Summary Report</h3><p>Intern count: ${STATE.interns.length}</p><p>Completed tasks: ${STATE.tasks.filter(t => t.status === 'Completed').length}</p>`;
+        return `<h3>Crispy Gemini Kitchen Receipt</h3><p>Bucket: ${STATE.order.bucketSize}</p><p>Sauces: ${STATE.order.primarySauce} & ${STATE.order.secondarySauce}</p><p>Total: $${total}</p>`;
       }
-      return `# Internship Summary Report\n\n- **Active Interns**: ${STATE.interns.map(i => i.name).join(', ')}\n- **Task Completion Status**: ${STATE.tasks.filter(t => t.status === 'Completed').length} / ${STATE.tasks.length} tasks completed.\n- **Current AI Model**: \`${STATE.modelParams.modelName}\` (Temp: ${STATE.modelParams.temperature})`;
+      return `# CRISPY GEMINI KITCHEN RECEIPT\n\n- **Item**: ${STATE.order.bucketSize} (${STATE.order.spiceLevel})\n- **Side**: ${STATE.order.sides}\n- **Dips**: ${STATE.order.primarySauce} & ${STATE.order.secondarySauce}\n- **Subtotal**: $${STATE.order.totalPrice.toFixed(2)}\n- **Tax (8%)**: $${tax}\n- **Total Due**: $${total}\n\n*Thank you for ordering with the Gemini AI Drive-Thru!*`;
     }
   },
-  'clear_logs': {
-    name: 'clear_logs',
+  'clear_order_logs': {
+    name: 'clear_order_logs',
     type: 'imperative',
-    description: 'Clears the simulated agent terminal console logs.',
+    description: 'Clears the drive-thru terminal display logs.',
     schema: {
       type: 'object',
       properties: {}
@@ -143,13 +156,13 @@ const SIMULATED_TOOLS = {
     execute: () => {
       const terminal = document.getElementById('terminal-body');
       if (terminal) terminal.innerHTML = '';
-      return 'Console cleared successfully.';
+      return 'Drive-thru console logs wiped clean.';
     }
   },
   'play_tic_tac_toe_move': {
     name: 'play_tic_tac_toe_move',
     type: 'imperative',
-    description: 'Executes a player move (X) on the Tic-Tac-Toe board at a specified cell position.',
+    description: 'Executes a player move (🍗) on the Crispy-Tac-Toe board at a specified cell position.',
     schema: {
       type: 'object',
       properties: {
@@ -175,33 +188,27 @@ const SIMULATED_TOOLS = {
 // Native WebMCP registration (runs if supported by the browser)
 if (isWebMCPSupported) {
   try {
-    // 1. Register get_system_status
     modelContext.registerTool({
-      name: SIMULATED_TOOLS.get_system_status.name,
-      description: SIMULATED_TOOLS.get_system_status.description,
-      inputSchema: SIMULATED_TOOLS.get_system_status.schema,
-      execute: SIMULATED_TOOLS.get_system_status.execute,
-      annotations: { readOnlyHint: true }
+      name: SIMULATED_TOOLS.get_kitchen_status.name,
+      description: SIMULATED_TOOLS.get_kitchen_status.description,
+      inputSchema: SIMULATED_TOOLS.get_kitchen_status.schema,
+      execute: SIMULATED_TOOLS.get_kitchen_status.execute
     });
 
-    // 2. Register generate_report
     modelContext.registerTool({
-      name: SIMULATED_TOOLS.generate_report.name,
-      description: SIMULATED_TOOLS.generate_report.description,
-      inputSchema: SIMULATED_TOOLS.generate_report.schema,
-      execute: SIMULATED_TOOLS.generate_report.execute,
-      annotations: { readOnlyHint: true }
+      name: SIMULATED_TOOLS.generate_receipt.name,
+      description: SIMULATED_TOOLS.generate_receipt.description,
+      inputSchema: SIMULATED_TOOLS.generate_receipt.schema,
+      execute: SIMULATED_TOOLS.generate_receipt.execute
     });
 
-    // 3. Register clear_logs
     modelContext.registerTool({
-      name: SIMULATED_TOOLS.clear_logs.name,
-      description: SIMULATED_TOOLS.clear_logs.description,
-      inputSchema: SIMULATED_TOOLS.clear_logs.schema,
-      execute: SIMULATED_TOOLS.clear_logs.execute
+      name: SIMULATED_TOOLS.clear_order_logs.name,
+      description: SIMULATED_TOOLS.clear_order_logs.description,
+      inputSchema: SIMULATED_TOOLS.clear_order_logs.schema,
+      execute: SIMULATED_TOOLS.clear_order_logs.execute
     });
 
-    // 4. Register play_tic_tac_toe_move
     modelContext.registerTool({
       name: SIMULATED_TOOLS.play_tic_tac_toe_move.name,
       description: SIMULATED_TOOLS.play_tic_tac_toe_move.description,
@@ -209,34 +216,30 @@ if (isWebMCPSupported) {
       execute: SIMULATED_TOOLS.play_tic_tac_toe_move.execute
     });
     
-    console.log('WebMCP Native: Programmatic tools registered successfully!');
+    console.log('WebMCP Native: Chicken kitchen tools registered successfully!');
   } catch (err) {
     console.error('WebMCP Native registration failed:', err);
   }
-} else {
-  console.log('WebMCP Native: Not supported. Running in Client-Side Simulated Mode.');
 }
 
-// Intercept HTML forms for Declarative WebMCP functionality
+// Startup hooks
 document.addEventListener('DOMContentLoaded', () => {
   setupForms();
-  setupSliders();
-  updateParamsUI();
-  updateInternsUI();
+  updateOrderUI();
+  updateLoyaltyUI();
   updateConnectionStatus();
   
-  // Log startup message
-  logToTerminal('system', 'System initialization complete.');
-  logToTerminal('system', `WebMCP Native support: ${isWebMCPSupported ? 'CONNECTED' : 'SIMULATED (Browser lacks Native WebMCP)'}`);
-  logToTerminal('system', 'Ready to receive agent instructions.');
+  logToTerminal('system', 'Crispy Gemini AI Kitchen: Drive-thru system initialized.');
+  logToTerminal('system', `WebMCP Native support: ${isWebMCPSupported ? 'CONNECTED' : 'SIMULATED (Offline API Mode)'}`);
+  logToTerminal('system', 'Say or click an instruction to order.');
 });
 
-// Setup Form submit events (standard & declarative WebMCP API)
+// Intercept form submissions
 function setupForms() {
   const forms = [
-    { id: 'search-tasks-form', toolName: 'search_tasks' },
-    { id: 'params-form', toolName: 'adjust_hyperparameters' },
-    { id: 'intern-form', toolName: 'register_intern' }
+    { id: 'order-chicken-form', toolName: 'order_chicken_bucket' },
+    { id: 'sauces-form', toolName: 'choose_sauces' },
+    { id: 'loyalty-form', toolName: 'register_loyalty_member' }
   ];
 
   forms.forEach(({ id, toolName }) => {
@@ -249,74 +252,47 @@ function setupForms() {
       const formData = new FormData(event.target);
       const data = Object.fromEntries(formData.entries());
       
-      // Perform local execution
       const tool = SIMULATED_TOOLS[toolName];
-      const result = tool ? tool.execute(data) : { error: 'Tool not found' };
+      const result = tool ? tool.execute(data) : { error: 'Tool execution failed' };
       
-      // Visual notification of manual submission
       if (!event.agentInvoked) {
-        logToTerminal('system', `Manual submit triggered on form [${toolName}]`);
-        logToTerminal('tool', `Result: ${JSON.stringify(result, null, 2)}`);
+        logToTerminal('system', `Manual order submission captured for [${toolName}]`);
+        logToTerminal('tool', `Receipt details: ${JSON.stringify(result, null, 2)}`);
       }
 
-      // Handle agent declarative WebMCP submission
       if (event.agentInvoked && typeof event.respondWith === 'function') {
-        const responsePromise = Promise.resolve(JSON.stringify(result));
-        event.respondWith(responsePromise);
+        event.respondWith(Promise.resolve(JSON.stringify(result)));
       }
     });
   });
 }
 
-// Setup Sliders & UI components
-function setupSliders() {
-  const tempSlider = document.getElementById('temp-slider');
-  const tempVal = document.getElementById('temp-val');
-  if (tempSlider && tempVal) {
-    tempSlider.addEventListener('input', (e) => {
-      tempVal.textContent = e.target.value;
-      STATE.modelParams.temperature = parseFloat(e.target.value);
-    });
-  }
+// Sync UI inputs to matches
+function updateOrderUI() {
+  const sizeEl = document.getElementById('bucket-size');
+  const spiceEl = document.getElementById('spice-level');
+  const sidesEl = document.getElementById('side-dish');
+  const primaryEl = document.getElementById('sauce-primary');
+  const secondaryEl = document.getElementById('sauce-secondary');
 
-  const toppSlider = document.getElementById('topp-slider');
-  const toppVal = document.getElementById('topp-val');
-  if (toppSlider && toppVal) {
-    toppSlider.addEventListener('input', (e) => {
-      toppVal.textContent = e.target.value;
-      STATE.modelParams.topP = parseFloat(e.target.value);
-    });
-  }
+  if (sizeEl) sizeEl.value = STATE.order.bucketSize;
+  if (spiceEl) spiceEl.value = STATE.order.spiceLevel;
+  if (sidesEl) sidesEl.value = STATE.order.sides;
+  if (primaryEl) primaryEl.value = STATE.order.primarySauce;
+  if (secondaryEl) secondaryEl.value = STATE.order.secondarySauce;
 }
 
-// Update UI methods
-function updateParamsUI() {
-  const tempSlider = document.getElementById('temp-slider');
-  const tempVal = document.getElementById('temp-val');
-  const toppSlider = document.getElementById('topp-slider');
-  const toppVal = document.getElementById('topp-val');
-  const modelSelect = document.getElementById('model-select');
-  const tokensInput = document.getElementById('max-tokens');
-
-  if (tempSlider) tempSlider.value = STATE.modelParams.temperature;
-  if (tempVal) tempVal.textContent = STATE.modelParams.temperature;
-  if (toppSlider) toppSlider.value = STATE.modelParams.topP;
-  if (toppVal) toppVal.textContent = STATE.modelParams.topP;
-  if (modelSelect) modelSelect.value = STATE.modelParams.modelName;
-  if (tokensInput) tokensInput.value = STATE.modelParams.maxTokens;
-}
-
-function updateInternsUI() {
+function updateLoyaltyUI() {
   const listEl = document.getElementById('interns-list');
   if (!listEl) return;
 
-  listEl.innerHTML = STATE.interns.map(i => `
-    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 6px; padding: 0.5rem 0.75rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-top: 0.5rem;">
+  listEl.innerHTML = STATE.loyaltyMembers.map(m => `
+    <div style="background: rgba(245, 158, 11, 0.03); border: 1px solid rgba(245, 158, 11, 0.08); border-radius: 6px; padding: 0.5rem 0.75rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-top: 0.5rem;">
       <div>
-        <div style="font-weight: 600;">${escapeHTML(i.name)}</div>
-        <div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHTML(i.role)}</div>
+        <div style="font-weight: 600; color: var(--color-primary);">${escapeHTML(m.name)}</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">Likes: ${escapeHTML(m.favoriteSide)}</div>
       </div>
-      <div style="font-size: 0.75rem; color: var(--text-dark);">${escapeHTML(i.joined)}</div>
+      <div style="font-size: 0.75rem; color: var(--text-dark);">${escapeHTML(m.joined)}</div>
     </div>
   `).join('');
 }
@@ -325,12 +301,12 @@ function updateConnectionStatus() {
   const statusBadge = document.getElementById('connection-status');
   if (statusBadge) {
     statusBadge.innerHTML = isWebMCPSupported 
-      ? '<span class="status-dot"></span>WebMCP: Active'
-      : '<span class="status-dot" style="background-color: var(--color-warning); box-shadow: 0 0 8px var(--color-warning);"></span>WebMCP: Simulated';
+      ? '<span class="status-dot"></span>Drive-Thru: Active'
+      : '<span class="status-dot" style="background-color: var(--color-warning); box-shadow: 0 0 8px var(--color-warning);"></span>Drive-Thru: Simulated';
   }
 }
 
-// Logger helper for simulated agent terminal
+// Drive-Thru Assistant Console logger
 function logToTerminal(type, text) {
   const terminal = document.getElementById('terminal-body');
   if (!terminal) return;
@@ -343,15 +319,15 @@ function logToTerminal(type, text) {
 
   let content = '';
   if (type === 'agent') {
-    content = `${timeSpan} <span class="log-agent">🤖 Agent:</span> ${escapeHTML(text)}`;
+    content = `${timeSpan} <span class="log-agent">🗣️ Assistant:</span> ${escapeHTML(text)}`;
   } else if (type === 'system') {
-    content = `${timeSpan} <span class="log-system">⚙️ Sys:</span> ${escapeHTML(text)}`;
+    content = `${timeSpan} <span class="log-system">🍽️ Kitchen:</span> ${escapeHTML(text)}`;
   } else if (type === 'tool') {
-    content = `${timeSpan} <span class="log-tool">🛠️ Tool:</span> <pre style="background: rgba(0,0,0,0.5); padding: 0.5rem; margin-top: 0.25rem; border-radius: 4px; overflow-x: auto; color: var(--color-accent); font-size: 0.8rem;">${escapeHTML(text)}</pre>`;
+    content = `${timeSpan} <span class="log-tool">🍟 OrderData:</span> <pre style="background: rgba(0,0,0,0.6); padding: 0.5rem; margin-top: 0.25rem; border-radius: 4px; overflow-x: auto; color: var(--color-primary); font-size: 0.8rem;">${escapeHTML(text)}</pre>`;
   } else if (type === 'error') {
-    content = `${timeSpan} <span class="log-error">❌ Error:</span> <span style="color: var(--color-danger);">${escapeHTML(text)}</span>`;
+    content = `${timeSpan} <span class="log-error">❌ OrderError:</span> <span style="color: var(--color-danger);">${escapeHTML(text)}</span>`;
   } else if (type === 'success') {
-    content = `${timeSpan} <span class="log-success">✅ Success:</span> <span style="color: var(--color-success);">${escapeHTML(text)}</span>`;
+    content = `${timeSpan} <span class="log-success">🍳 Success:</span> <span style="color: var(--color-warning);">${escapeHTML(text)}</span>`;
   }
 
   entry.innerHTML = content;
@@ -359,7 +335,6 @@ function logToTerminal(type, text) {
   terminal.scrollTop = terminal.scrollHeight;
 }
 
-// Visual indicator spinner generator
 function showThinking(text) {
   const terminal = document.getElementById('terminal-body');
   if (!terminal) return null;
@@ -372,53 +347,69 @@ function showThinking(text) {
   return thinkingEl;
 }
 
-// Main simulated Agent inference and tool-execution router
+// Drive-Thru AI parser and routing
 async function simulateAgentExecution(prompt) {
   if (!prompt || prompt.trim() === '') return;
   
-  logToTerminal('agent', `User prompt received: "${prompt}"`);
+  logToTerminal('agent', `Customer request: "${prompt}"`);
   
-  const thinking = showThinking('Parsing intent and matching active WebMCP schemas...');
+  const thinking = showThinking('Parsing order intent and consulting active menu tools...');
   await sleep(1200);
   if (thinking) thinking.remove();
 
-  // Keyword analysis to match tool
   const lowerPrompt = prompt.toLowerCase();
   let matchedTool = null;
   let compiledParams = {};
 
-  if (lowerPrompt.includes('status') || lowerPrompt.includes('system') || lowerPrompt.includes('cpu') || lowerPrompt.includes('memory')) {
-    matchedTool = SIMULATED_TOOLS.get_system_status;
-  } else if (lowerPrompt.includes('report') || lowerPrompt.includes('summary') || lowerPrompt.includes('generate')) {
-    matchedTool = SIMULATED_TOOLS.generate_report;
+  if (lowerPrompt.includes('kitchen') || lowerPrompt.includes('fryer') || lowerPrompt.includes('queue') || lowerPrompt.includes('status')) {
+    matchedTool = SIMULATED_TOOLS.get_kitchen_status;
+  } else if (lowerPrompt.includes('receipt') || lowerPrompt.includes('bill') || lowerPrompt.includes('subtotal') || lowerPrompt.includes('total')) {
+    matchedTool = SIMULATED_TOOLS.generate_receipt;
     compiledParams = { format: lowerPrompt.includes('html') ? 'html' : 'markdown' };
-  } else if (lowerPrompt.includes('search') || lowerPrompt.includes('task') || lowerPrompt.includes('find')) {
-    matchedTool = SIMULATED_TOOLS.search_tasks;
-    // Extract search query
-    let keyword = '';
-    if (lowerPrompt.includes('react')) keyword = 'React';
-    else if (lowerPrompt.includes('webmcp')) keyword = 'WebMCP';
-    else if (lowerPrompt.includes('gemini')) keyword = 'Gemini';
-    else if (lowerPrompt.includes('task-102')) keyword = 'TASK-102';
-    else keyword = prompt.split(' ').pop().replace(/[?.!]/g, ''); // last word as fallback
-    compiledParams = { keyword: keyword };
-  } else if (lowerPrompt.includes('temperature') || lowerPrompt.includes('temp') || lowerPrompt.includes('adjust') || lowerPrompt.includes('parameter') || lowerPrompt.includes('model')) {
-    matchedTool = SIMULATED_TOOLS.adjust_hyperparameters;
-    // Extract numbers
-    const tempMatch = lowerPrompt.match(/temp(erature)?\s+(of\s+)?(0\.[0-9]+|[0-1](\.[0-9]+)?)/);
-    const temp = tempMatch ? parseFloat(tempMatch[3]) : 0.85;
-    compiledParams = { temperature: temp, modelName: lowerPrompt.includes('pro') ? 'gemini-1.5-pro' : 'gemini-1.5-flash' };
-  } else if (lowerPrompt.includes('register') || lowerPrompt.includes('intern') || lowerPrompt.includes('add')) {
-    matchedTool = SIMULATED_TOOLS.register_intern;
-    // Try to extract name
+  } else if (lowerPrompt.includes('order') || lowerPrompt.includes('bucket') || lowerPrompt.includes('tenders') || lowerPrompt.includes('chicken') || lowerPrompt.includes('piece')) {
+    matchedTool = SIMULATED_TOOLS.order_chicken_bucket;
+    
+    // Simple parameter compiler
+    let size = '10-Piece Crispy Bucket';
+    if (lowerPrompt.includes('6-piece') || lowerPrompt.includes('6 piece') || lowerPrompt.includes('tenders')) size = '6-Piece Golden Tenders';
+    else if (lowerPrompt.includes('20-piece') || lowerPrompt.includes('20 piece') || lowerPrompt.includes('feaster')) size = '20-Piece Spicy Feaster';
+    
+    let spice = 'Classic Golden';
+    if (lowerPrompt.includes('mild') || lowerPrompt.includes('honey')) spice = 'Honey Glazed (Mild)';
+    else if (lowerPrompt.includes('nashville') || lowerPrompt.includes('blast') || lowerPrompt.includes('spicy')) spice = 'Spicy Nashville Blast';
+    else if (lowerPrompt.includes('ghost') || lowerPrompt.includes('pepper') || lowerPrompt.includes('nuclear')) spice = 'Ghost Pepper Flame';
+
+    let side = 'Waffle Fries';
+    if (lowerPrompt.includes('coleslaw') || lowerPrompt.includes('slaw')) side = 'Coleslaw';
+    else if (lowerPrompt.includes('mac') || lowerPrompt.includes('cheese')) side = 'Mac & Cheese';
+    
+    compiledParams = { bucketSize: size, spiceLevel: spice, sides: side };
+  } else if (lowerPrompt.includes('sauce') || lowerPrompt.includes('dip') || lowerPrompt.includes('bbq') || lowerPrompt.includes('mustard') || lowerPrompt.includes('mayo') || lowerPrompt.includes('chili')) {
+    matchedTool = SIMULATED_TOOLS.choose_sauces;
+    
+    let primary = 'Creamy Honey Mustard';
+    if (lowerPrompt.includes('bbq') || lowerPrompt.includes('chipotle')) primary = 'Smoky Chipotle BBQ';
+    else if (lowerPrompt.includes('garlic') || lowerPrompt.includes('mayo')) primary = 'Spicy Garlic Mayo';
+    else if (lowerPrompt.includes('chili') || lowerPrompt.includes('sweet')) primary = 'Sweet Hot Chili';
+
+    let secondary = 'Smoky Chipotle BBQ';
+    if (lowerPrompt.includes('mustard') && primary !== 'Creamy Honey Mustard') secondary = 'Creamy Honey Mustard';
+    else if (lowerPrompt.includes('mayo') && primary !== 'Spicy Garlic Mayo') secondary = 'Spicy Garlic Mayo';
+    else if (lowerPrompt.includes('chili') && primary !== 'Sweet Hot Chili') secondary = 'Sweet Hot Chili';
+    
+    compiledParams = { primarySauce: primary, secondarySauce: secondary };
+  } else if (lowerPrompt.includes('loyalty') || lowerPrompt.includes('rewards') || lowerPrompt.includes('register') || lowerPrompt.includes('member')) {
+    matchedTool = SIMULATED_TOOLS.register_loyalty_member;
+    
     let name = 'Alice Mercer';
     if (lowerPrompt.includes('jane')) name = 'Jane Doe';
-    compiledParams = { name: name, role: 'Senior Research Assistant' };
-  } else if (lowerPrompt.includes('clear')) {
-    matchedTool = SIMULATED_TOOLS.clear_logs;
+    else if (lowerPrompt.includes('ely')) name = 'Ely Wolf';
+    compiledParams = { name: name, favoriteSide: 'Spicy Waffle Fries' };
+  } else if (lowerPrompt.includes('clear') || lowerPrompt.includes('wipe')) {
+    matchedTool = SIMULATED_TOOLS.clear_order_logs;
   } else if (lowerPrompt.includes('tic') || lowerPrompt.includes('tictactoe') || lowerPrompt.includes('ttt') || lowerPrompt.includes('game') || lowerPrompt.includes('play')) {
     matchedTool = SIMULATED_TOOLS.play_tic_tac_toe_move;
-    // Extract cellIndex
+    
     let cellIndex = 4; // default center
     if (lowerPrompt.includes('top left') || lowerPrompt.includes('top-left') || lowerPrompt.includes('0')) cellIndex = 0;
     else if (lowerPrompt.includes('top center') || lowerPrompt.includes('top middle') || lowerPrompt.includes('top-center') || lowerPrompt.includes('1')) cellIndex = 1;
@@ -429,27 +420,24 @@ async function simulateAgentExecution(prompt) {
     else if (lowerPrompt.includes('bottom center') || lowerPrompt.includes('bottom-center') || lowerPrompt.includes('7')) cellIndex = 7;
     else if (lowerPrompt.includes('bottom right') || lowerPrompt.includes('bottom-right') || lowerPrompt.includes('8')) cellIndex = 8;
     else {
-      // Find first empty cell
       const emptyIdx = STATE.ttt.board.findIndex(c => c === null);
       if (emptyIdx !== -1) cellIndex = emptyIdx;
     }
     compiledParams = { cellIndex: cellIndex };
   }
 
-  // Handle unmatched intents
   if (!matchedTool) {
-    logToTerminal('error', 'Unable to resolve any matching tool registration. Reason: Prompt contains no keyword mappings for active WebMCP schemas.');
+    logToTerminal('error', 'Assistant could not understand order request. Please order standard bucket combos or check wait times.');
     return;
   }
 
-  logToTerminal('agent', `Resolved Tool Schema: "${matchedTool.name}"`);
+  logToTerminal('agent', `Resolved Menu Action: "${matchedTool.name}"`);
   
-  // Highlight UI element of the matched tool to show active interaction
+  // Visual glow highlighting
   let elementToHighlight = null;
   if (matchedTool.type === 'declarative' && matchedTool.targetId) {
     elementToHighlight = document.getElementById(matchedTool.targetId);
   } else {
-    // Imperative tool highlights the list item in tool card
     const toolHeaderEl = Array.from(document.querySelectorAll('.tool-name')).find(el => el.textContent.trim() === matchedTool.name);
     if (toolHeaderEl) {
       elementToHighlight = toolHeaderEl.closest('.tool-item');
@@ -460,27 +448,25 @@ async function simulateAgentExecution(prompt) {
     elementToHighlight.classList.add('tool-form-active');
   }
 
-  const paramsThinking = showThinking(`Staging parameters for execution on [${matchedTool.name}]...`);
+  const paramsThinking = showThinking(`Staging ingredients/parameters for [${matchedTool.name}]...`);
   await sleep(1000);
   if (paramsThinking) paramsThinking.remove();
   
-  logToTerminal('agent', `Parameters submitted to tool: ${JSON.stringify(compiledParams)}`);
+  logToTerminal('agent', `Parameters registered: ${JSON.stringify(compiledParams)}`);
 
-  // Handle flow control / auto-submit states
+  // Handle flow state
   if (matchedTool.type === 'declarative') {
-    // If declarative, check manual user review / toolautosubmit simulation
     const formEl = document.getElementById(matchedTool.targetId);
     
-    // Check if the form requires manual submission confirmation (simulate register_intern)
-    if (matchedTool.name === 'register_intern') {
-      logToTerminal('system', 'Form missing [toolautosubmit] attribute. Browser pauses execution waiting for reviewer approval.');
+    // Loyalty profile review simulation
+    if (matchedTool.name === 'register_loyalty_member') {
+      logToTerminal('system', 'Form missing [toolautosubmit]. Manager approval required.');
       
       const submitBtn = formEl ? formEl.querySelector('button[type="submit"]') : null;
       if (submitBtn) submitBtn.classList.add('tool-submit-active');
       
-      const approvalThinking = showThinking('Awaiting simulated administrator review... (Click "Register" on the form to approve)');
+      const approvalThinking = showThinking('Awaiting manager cashier checkout... (Submit form manually to override)');
       
-      // Hook one-off submission to proceed
       await new Promise((resolve) => {
         const handler = () => {
           if (submitBtn) submitBtn.classList.remove('tool-submit-active');
@@ -490,48 +476,42 @@ async function simulateAgentExecution(prompt) {
         };
         formEl.addEventListener('submit', handler);
         
-        // Timeout auto-resolve for smooth flow if user doesn't click
         setTimeout(() => {
-          logToTerminal('system', 'Simulating automated admin authorization bypass.');
+          logToTerminal('system', 'Rewards Club Manager override code entered.');
           handler();
         }, 4000);
       });
     } else {
-      // Simulate toolautosubmit: submit form programmatically
-      logToTerminal('system', 'Form possesses [toolautosubmit] attribute. Auto-submitting to endpoint.');
+      logToTerminal('system', 'Form features [toolautosubmit]. Auto-sending parameters.');
       await sleep(600);
     }
 
-    // Execute form action
     const result = matchedTool.execute(compiledParams);
-    
-    // Simulate event.respondWith() logic
-    logToTerminal('success', `Form returned: respondWith(Promise.resolve(data))`);
+    logToTerminal('success', `Cashier response: respondWith(Promise.resolve(data))`);
     logToTerminal('tool', JSON.stringify(result, null, 2));
 
   } else {
     // Imperative tool direct execution
-    const runThinking = showThinking(`Executing JavaScript tool handler for [${matchedTool.name}]...`);
+    const runThinking = showThinking(`Triggering kitchen callback for [${matchedTool.name}]...`);
     await sleep(800);
     if (runThinking) runThinking.remove();
 
     try {
       const result = matchedTool.execute(compiledParams);
-      logToTerminal('success', 'JavaScript callback returned successfully.');
+      logToTerminal('success', 'Kitchen callback returned successfully.');
       logToTerminal('tool', typeof result === 'object' ? JSON.stringify(result, null, 2) : result);
     } catch (e) {
-      logToTerminal('error', `Execution failed: ${e.message}`);
+      logToTerminal('error', `Kitchen vat error: ${e.message}`);
     }
   }
 
-  // Cleanup highlights
   if (elementToHighlight) {
     await sleep(500);
     elementToHighlight.classList.remove('tool-form-active');
   }
 }
 
-// Form submit helper (handles custom button triggers)
+// Drive-Thru helper
 function submitAgentPrompt() {
   const promptInput = document.getElementById('agent-prompt');
   if (!promptInput) return;
@@ -540,11 +520,9 @@ function submitAgentPrompt() {
   promptInput.value = '';
 }
 
-// Event Bindings
 window.submitAgentPrompt = submitAgentPrompt;
 window.simulateAgentExecution = simulateAgentExecution;
 
-// Utility functions
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -563,15 +541,14 @@ function escapeHTML(str) {
 }
 
 // ==========================================
-// Tic-Tac-Toe AI Arena Core Mechanics
+// Crispy-Tac-Toe AI Arena Core Mechanics
 // ==========================================
 
-// Check for game winner
 function checkWinner(board) {
   const winLines = [
-    [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
-    [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
-    [0, 4, 8], [2, 4, 6]             // Diagonals
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+    [0, 4, 8], [2, 4, 6]
   ];
 
   for (let line of winLines) {
@@ -580,35 +557,39 @@ function checkWinner(board) {
       return { winner: board[a], line: line };
     }
   }
-
   return null;
 }
 
-// Reset Tic-Tac-Toe Board
 function resetTicTacToe() {
   STATE.ttt.board.fill(null);
   STATE.ttt.active = true;
   STATE.ttt.turn = 'X';
   
-  // Clean cells
   const cells = document.querySelectorAll('.tictactoe-cell');
   cells.forEach(cell => {
     cell.textContent = '';
     cell.className = 'tictactoe-cell';
   });
 
-  updateTTTStatusUI('Your turn! Make a move.');
+  updateTTTStatusUI('Your turn! Place a drumstick.');
 }
 
-// Update UI Text & Visual classes
+// Emojis mapping: X = 🍗 (Player), O = 🌶️ (Bot)
 function updateTTTBoardUI() {
   const cells = document.querySelectorAll('.tictactoe-cell');
   cells.forEach((cell, idx) => {
     const val = STATE.ttt.board[idx];
-    cell.textContent = val || '';
     cell.className = 'tictactoe-cell';
-    if (val === 'X') cell.classList.add('cell-x');
-    if (val === 'O') cell.classList.add('cell-o');
+    
+    if (val === 'X') {
+      cell.textContent = '🍗';
+      cell.classList.add('cell-x');
+    } else if (val === 'O') {
+      cell.textContent = '🌶️';
+      cell.classList.add('cell-o');
+    } else {
+      cell.textContent = '';
+    }
   });
 
   const winResult = checkWinner(STATE.ttt.board);
@@ -624,7 +605,7 @@ function updateTTTStatusUI(text, isError = false) {
   const statusEl = document.getElementById('ttt-status');
   if (statusEl) {
     statusEl.textContent = text;
-    statusEl.style.color = isError ? 'var(--color-danger)' : 'var(--color-accent)';
+    statusEl.style.color = isError ? 'var(--color-danger)' : 'var(--color-primary)';
   }
 }
 
@@ -638,19 +619,17 @@ function updateTTTScoresUI() {
   if (bEl) bEl.textContent = STATE.ttt.scores.bot;
 }
 
-// Core Move Invocation Handler (Human clicks)
 function makeTicTacToeMove(index) {
   if (!STATE.ttt.active || STATE.ttt.turn !== 'X') return;
   
   if (STATE.ttt.board[index] !== null) {
-    updateTTTStatusUI('Cell already occupied!', true);
+    updateTTTStatusUI('Cell already filled!', true);
     return;
   }
 
   executePlayerMove(index);
 }
 
-// Execute player X move
 function executePlayerMove(index) {
   STATE.ttt.board[index] = 'X';
   updateTTTBoardUI();
@@ -660,7 +639,7 @@ function executePlayerMove(index) {
     STATE.ttt.active = false;
     STATE.ttt.scores.player++;
     updateTTTScoresUI();
-    updateTTTStatusUI('🎉 You won! Pure brilliance.');
+    updateTTTStatusUI('🎉 You won! Tasty victory.');
     return;
   }
 
@@ -668,21 +647,18 @@ function executePlayerMove(index) {
     STATE.ttt.active = false;
     STATE.ttt.scores.draws++;
     updateTTTScoresUI();
-    updateTTTStatusUI('🤝 It is a draw! Well played.');
+    updateTTTStatusUI('🤝 It is a draw! Bucket is empty.');
     return;
   }
 
-  // Switch to Bot Turn
   STATE.ttt.turn = 'O';
-  updateTTTStatusUI('Bot is calculating counter-move...');
+  updateTTTStatusUI('Chef bot is calculating counter-move...');
   
-  // Bot makes counter-move after a small calm delay
   setTimeout(() => {
     makeBotMove();
   }, 600);
 }
 
-// Execute AI Bot Turn (O)
 function makeBotMove() {
   if (!STATE.ttt.active) return;
 
@@ -692,13 +668,10 @@ function makeBotMove() {
   let bestIndex = -1;
 
   if (difficulty === 'easy') {
-    // 1. Easy: Make purely random move
     bestIndex = getRandomTTTMove();
   } else if (difficulty === 'medium') {
-    // 2. Medium: Heuristic (check if can win -> check if can block -> else random)
     bestIndex = getMediumTTTMove();
   } else {
-    // 3. Hard: Minimax optimal play
     bestIndex = getHardTTTMove();
   }
 
@@ -711,7 +684,7 @@ function makeBotMove() {
       STATE.ttt.active = false;
       STATE.ttt.scores.bot++;
       updateTTTScoresUI();
-      updateTTTStatusUI('🤖 Bot won! Practice makes perfect.');
+      updateTTTStatusUI('🌶️ Bot won! Too spicy for you.');
       return;
     }
 
@@ -725,10 +698,9 @@ function makeBotMove() {
   }
 
   STATE.ttt.turn = 'X';
-  updateTTTStatusUI('Your turn! Make a move.');
+  updateTTTStatusUI('Your turn! Place a drumstick.');
 }
 
-// Bot move calculation algorithms
 function getRandomTTTMove() {
   const empties = STATE.ttt.board.map((val, idx) => val === null ? idx : null).filter(val => val !== null);
   if (empties.length === 0) return -1;
@@ -736,7 +708,6 @@ function getRandomTTTMove() {
 }
 
 function getMediumTTTMove() {
-  // Check if Bot can win immediately
   for (let i = 0; i < 9; i++) {
     if (STATE.ttt.board[i] === null) {
       STATE.ttt.board[i] = 'O';
@@ -746,7 +717,6 @@ function getMediumTTTMove() {
     }
   }
 
-  // Check if Bot needs to block Player from winning immediately
   for (let i = 0; i < 9; i++) {
     if (STATE.ttt.board[i] === null) {
       STATE.ttt.board[i] = 'X';
@@ -756,7 +726,6 @@ function getMediumTTTMove() {
     }
   }
 
-  // Fallback to random move
   return getRandomTTTMove();
 }
 
@@ -778,7 +747,6 @@ function getHardTTTMove() {
   return bestMove;
 }
 
-// Minimax algorithm for unbeatable play
 function minimax(board, depth, isMaximizing) {
   const result = checkWinner(board);
   if (result) {
@@ -813,19 +781,17 @@ function minimax(board, depth, isMaximizing) {
   }
 }
 
-// Direct WebMCP execute helper to make a move (and return status results to agent)
 function makeTicTacToeMoveDirect(index) {
   if (!STATE.ttt.active) {
     return { status: 'game_over', message: 'Game has ended. Click reset to start a new game.' };
   }
   if (STATE.ttt.turn !== 'X') {
-    return { status: 'waiting_for_bot', message: 'Bot turn in progress. Await status update.' };
+    return { status: 'waiting_for_bot', message: 'Chef bot turn in progress.' };
   }
   if (STATE.ttt.board[index] !== null) {
-    return { status: 'error', message: `Cell ${index} is already occupied. Board: ${JSON.stringify(STATE.ttt.board)}` };
+    return { status: 'error', message: `Cell ${index} is already filled.` };
   }
 
-  // Trigger move
   executePlayerMove(index);
 
   return {
@@ -838,6 +804,5 @@ function makeTicTacToeMoveDirect(index) {
   };
 }
 
-// Bind methods to window context for onclick attributes in HTML
 window.makeTicTacToeMove = makeTicTacToeMove;
 window.resetTicTacToe = resetTicTacToe;
