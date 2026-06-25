@@ -169,31 +169,6 @@
               </button>
             </form>
 
-            <!-- Tool Form 3: Register Loyalty (Requires review) -->
-            <form id="loyalty-form" 
-                  toolname="register_loyalty_member" 
-                  tooldescription="Creates a restaurant rewards loyalty profile. Requires manual manager review/approval."
-                  style="background: rgba(0, 0, 0, 0.2); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--card-border);">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary);">register_loyalty_member</h3>
-                <span class="tool-badge badge-declarative" style="color: var(--color-purple); background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.25);">manager review</span>
-              </div>
-
-              <div class="form-group">
-                <label for="member-name">Loyalty Member Name</label>
-                <input type="text" id="member-name" name="name" placeholder="e.g. Alice Mercer" required>
-              </div>
-
-              <div class="form-group">
-                <label for="member-favorite">Favorite side</label>
-                <input type="text" id="member-favorite" name="favoriteSide" placeholder="e.g. Waffle Fries" required>
-              </div>
-
-              <button type="submit" id="loyalty-submit" class="btn btn-secondary" style="width: 100%;">
-                📋 Register Member
-              </button>
-            </form>
-
           </div>
         </article>
 
@@ -358,6 +333,41 @@
         <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Showing live order placements submitted via UI or AI Drive-Thru tool execution.</p>
         <div id="admin-orders-feed" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
           <div style="font-size: 0.85rem; color: var(--text-dark); text-align: center; padding: 1rem;">No orders placed yet.</div>
+        </div>
+
+        <!-- Manager Rewards Loyalty Form -->
+        <div style="border-top: 1px dashed rgba(245, 158, 11, 0.2); padding-top: 1.5rem; margin-top: 1rem;">
+          <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>👥</span> Register Rewards Member
+          </h4>
+          <p style="font-size: 0.8rem; color: var(--text-dark); margin-bottom: 1rem;">
+            Creates a restaurant rewards loyalty profile. Requires manual manager review/approval.
+          </p>
+
+          <form id="loyalty-form" 
+                toolname="register_loyalty_member" 
+                tooldescription="Creates a restaurant rewards loyalty profile. Requires manual manager review/approval."
+                style="background: rgba(0, 0, 0, 0.2); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--card-border);">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary);">register_loyalty_member</h3>
+              <span class="tool-badge badge-declarative" style="color: var(--color-purple); background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.25);">manager review</span>
+            </div>
+
+            <div class="form-group">
+              <label for="member-name">Loyalty Member Name</label>
+              <input type="text" id="member-name" name="name" placeholder="e.g. Alice Mercer" required>
+            </div>
+
+            <div class="form-group">
+              <label for="member-favorite">Favorite side</label>
+              <input type="text" id="member-favorite" name="favoriteSide" placeholder="e.g. Waffle Fries" required>
+            </div>
+
+            <button type="submit" id="loyalty-submit" class="btn btn-secondary" style="width: 100%;">
+              📋 Register Member
+            </button>
+          </form>
         </div>
 
         <!-- WebMCP Imperative Kitchen APIs -->
