@@ -197,72 +197,7 @@
           </div>
         </article>
 
-        <!-- WebMCP Imperative Kitchen APIs Card -->
-        <article class="card" id="imperative-tools-card">
-          <h2 class="card-title">
-            <span>⚙️</span> Kitchen Controller Callback Tools
-          </h2>
-          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-            Imperative JavaScript endpoints registered via <code>document.modelContext.registerTool()</code>.
-          </p>
 
-          <div class="tool-list">
-            
-            <!-- Tool Item: get_kitchen_status -->
-            <div class="tool-item">
-              <div class="tool-header">
-                <span class="tool-name">get_kitchen_status</span>
-                <span class="tool-badge badge-imperative">imperative</span>
-              </div>
-              <p class="tool-desc">Returns kitchen queue size, waiting estimations, and active fryer temperatures.</p>
-              <details>
-                <summary style="font-size: 0.8rem; cursor: pointer; color: var(--color-primary); font-weight: 500;">View Schema</summary>
-                <pre class="schema-viewer" style="margin-top: 0.5rem;">{
-  "type": "object",
-  "properties": {}
-}</pre>
-              </details>
-            </div>
-
-            <!-- Tool Item: generate_receipt -->
-            <div class="tool-item">
-              <div class="tool-header">
-                <span class="tool-name">generate_receipt</span>
-                <span class="tool-badge badge-imperative">imperative</span>
-              </div>
-              <p class="tool-desc">Produces a Markdown receipt summarising ordered buckets and configurations.</p>
-              <details>
-                <summary style="font-size: 0.8rem; cursor: pointer; color: var(--color-primary); font-weight: 500;">View Schema</summary>
-                <pre class="schema-viewer" style="margin-top: 0.5rem;">{
-  "type": "object",
-  "properties": {
-    "format": {
-      "type": "string",
-      "description": "Output formatting syntax (markdown or html)"
-    }
-  }
-}</pre>
-              </details>
-            </div>
-
-            <!-- Tool Item: clear_order_logs -->
-            <div class="tool-item">
-              <div class="tool-header">
-                <span class="tool-name">clear_order_logs</span>
-                <span class="tool-badge badge-imperative">imperative</span>
-              </div>
-              <p class="tool-desc">Clears drive-thru terminal display output history.</p>
-              <details>
-                <summary style="font-size: 0.8rem; cursor: pointer; color: var(--color-primary); font-weight: 500;">View Schema</summary>
-                <pre class="schema-viewer" style="margin-top: 0.5rem;">{
-  "type": "object",
-  "properties": {}
-}</pre>
-              </details>
-            </div>
-
-          </div>
-        </article>
 
         <!-- Loyalty Directory (State viewer) -->
         <article class="card">
@@ -421,8 +356,73 @@
           <button type="button" class="btn btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;" onclick="lockAdminMode()">Lock</button>
         </div>
         <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Showing live order placements submitted via UI or AI Drive-Thru tool execution.</p>
-        <div id="admin-orders-feed" style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <div id="admin-orders-feed" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
           <div style="font-size: 0.85rem; color: var(--text-dark); text-align: center; padding: 1rem;">No orders placed yet.</div>
+        </div>
+
+        <!-- WebMCP Imperative Kitchen APIs -->
+        <div style="border-top: 1px dashed rgba(245, 158, 11, 0.2); padding-top: 1.5rem; margin-top: 1rem;">
+          <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>⚙️</span> Kitchen Controller Callback Tools
+          </h4>
+          <p style="font-size: 0.8rem; color: var(--text-dark); margin-bottom: 1rem;">
+            Imperative JavaScript endpoints registered via <code>document.modelContext.registerTool()</code>.
+          </p>
+
+          <div class="tool-list">
+            <!-- Tool Item: get_kitchen_status -->
+            <div class="tool-item">
+              <div class="tool-header">
+                <span class="tool-name">get_kitchen_status</span>
+                <span class="tool-badge badge-imperative">imperative</span>
+              </div>
+              <p class="tool-desc">Returns kitchen queue size, waiting estimations, and active fryer temperatures.</p>
+              <details>
+                <summary style="font-size: 0.8rem; cursor: pointer; color: var(--color-primary); font-weight: 500;">View Schema</summary>
+                <pre class="schema-viewer" style="margin-top: 0.5rem;">{
+  "type": "object",
+  "properties": {}
+}</pre>
+              </details>
+            </div>
+
+            <!-- Tool Item: generate_receipt -->
+            <div class="tool-item">
+              <div class="tool-header">
+                <span class="tool-name">generate_receipt</span>
+                <span class="tool-badge badge-imperative">imperative</span>
+              </div>
+              <p class="tool-desc">Produces a Markdown receipt summarising ordered buckets and configurations.</p>
+              <details>
+                <summary style="font-size: 0.8rem; cursor: pointer; color: var(--color-primary); font-weight: 500;">View Schema</summary>
+                <pre class="schema-viewer" style="margin-top: 0.5rem;">{
+  "type": "object",
+  "properties": {
+    "format": {
+      "type": "string",
+      "description": "Output formatting syntax (markdown or html)"
+    }
+  }
+}</pre>
+              </details>
+            </div>
+
+            <!-- Tool Item: clear_order_logs -->
+            <div class="tool-item">
+              <div class="tool-header">
+                <span class="tool-name">clear_order_logs</span>
+                <span class="tool-badge badge-imperative">imperative</span>
+              </div>
+              <p class="tool-desc">Clears drive-thru terminal display output history.</p>
+              <details>
+                <summary style="font-size: 0.8rem; cursor: pointer; color: var(--color-primary); font-weight: 500;">View Schema</summary>
+                <pre class="schema-viewer" style="margin-top: 0.5rem;">{
+  "type": "object",
+  "properties": {}
+}</pre>
+              </details>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
