@@ -190,6 +190,27 @@
               </button>
             </form>
 
+            <!-- Tool Form 6: Submit Suggestion -->
+            <form id="suggestion-form" 
+                  toolname="submit_menu_suggestion" 
+                  tooldescription="Submits a menu suggestion or flavor request to the restaurant kitchen managers." 
+                  toolautosubmit
+                  style="background: rgba(0, 0, 0, 0.2); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--card-border);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary);">submit_menu_suggestion</h3>
+                <span class="tool-badge badge-declarative">declarative</span>
+              </div>
+              
+              <div class="form-group">
+                <label for="suggestion-input">New Menu Item or Flavor Suggestion</label>
+                <textarea id="suggestion-input" name="suggestionText" rows="2" placeholder="e.g. Garlic Parmesan, Mango Habanero, or Sweet Potato Fries..." required></textarea>
+              </div>
+
+              <button type="submit" id="suggestion-submit" class="btn btn-secondary" style="width: 100%;">
+                💡 Submit Suggestion
+              </button>
+            </form>
+
           </div>
         </article>
 
@@ -229,6 +250,7 @@
                 <button type="button" class="preset-chip" onclick="simulateAgentExecution('Order a 20-Piece Spicy Feaster bucket with Waffle Fries')">🍗 Order Feaster</button>
                 <button type="button" class="preset-chip" onclick="simulateAgentExecution('Order a Nashville Hot Chicken Sandwich with Coleslaw')">🥪 Order Sandwich</button>
                 <button type="button" class="preset-chip" onclick="simulateAgentExecution('My name is Ely Wolf')">👤 Set Name</button>
+                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Suggest adding Mango Habanero flavor')">💡 Suggest Flavor</button>
                 <button type="button" class="preset-chip" onclick="simulateAgentExecution('Configure Chipotle BBQ and Sweet Hot Chili sauces')">🍯 Custom Sauces</button>
                 <button type="button" class="preset-chip" onclick="simulateAgentExecution('Register loyalty member Alice Mercer')">👥 Register Alice</button>
                 <button type="button" class="preset-chip" onclick="simulateAgentExecution('Generate receipt for my order')">📊 Print Receipt</button>
@@ -486,6 +508,19 @@
 }</pre>
               </details>
             </div>
+          </div>
+        </div>
+
+        <!-- Customer Suggestions Feed Panel -->
+        <div style="border-top: 1px dashed rgba(245, 158, 11, 0.2); padding-top: 1.5rem; margin-top: 1rem;">
+          <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>💡</span> Customer Menu Suggestions
+          </h4>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Feedback submitted by guests proposing new menu flavors or items.
+          </p>
+          <div id="admin-suggestions-feed" style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <div style="font-size: 0.85rem; color: var(--text-dark); text-align: center; padding: 1rem;">No suggestions submitted yet.</div>
           </div>
         </div>
       </div>

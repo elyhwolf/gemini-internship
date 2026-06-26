@@ -16,6 +16,7 @@ const STATE = {
   loyaltyMembers: [
     { name: 'Ely Wolf', favoriteSide: 'Spicy Waffle Fries', joined: '2026-06-22' }
   ],
+  suggestions: [],
   menu: [
     { id: '6-Piece Golden Tenders', price: 9.99 },
     { id: '10-Piece Crispy Bucket', price: 16.99 },
@@ -138,6 +139,29 @@ const SIMULATED_TOOLS = {
           primary: STATE.order.primarySauce,
           secondary: STATE.order.secondarySauce
         }
+      };
+    }
+  },
+  'submit_menu_suggestion': {
+    name: 'submit_menu_suggestion',
+    type: 'declarative',
+    description: 'Submits a menu suggestion or flavor request to the restaurant kitchen managers.',
+    targetId: 'suggestion-form',
+    execute: (input) => {
+      const text = input.suggestionText || '';
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      
+      if (!STATE.suggestions) STATE.suggestions = [];
+      STATE.suggestions.unshift({ text, time });
+      
+      updateSuggestionsUI();
+      
+      const inputEl = document.getElementById('suggestion-input');
+      if (inputEl) inputEl.value = '';
+      
+      return {
+        status: 'suggestion_submitted',
+        suggestionText: text
       };
     }
   },
@@ -314,6 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupForms();
   updateOrderUI();
   updateLoyaltyUI();
+  updateSuggestionsUI();
   updateConnectionStatus();
   
   logToTerminal('system', "Ely's Hot Chicken: Drive-thru system initialized.");
@@ -329,7 +354,8 @@ function setupForms() {
     { id: 'customer-name-form', toolName: 'set_customer_name' },
     { id: 'sauces-form', toolName: 'choose_sauces' },
     { id: 'loyalty-form', toolName: 'register_loyalty_member' },
-    { id: 'remove-loyalty-form', toolName: 'remove_loyalty_member' }
+    { id: 'remove-loyalty-form', toolName: 'remove_loyalty_member' },
+    { id: 'suggestion-form', toolName: 'submit_menu_suggestion' }
   ];
 
   forms.forEach(({ id, toolName }) => {
@@ -411,6 +437,26 @@ function updateLoyaltyUI() {
   }
 }
 
+function updateSuggestionsUI() {
+  const feedEl = document.getElementById('admin-suggestions-feed');
+  if (!feedEl) return;
+  
+  if (!STATE.suggestions || STATE.suggestions.length === 0) {
+    feedEl.innerHTML = '<div style="font-size: 0.85rem; color: var(--text-dark); text-align: center; padding: 1rem;">No suggestions submitted yet.</div>';
+    return;
+  }
+  
+  feedEl.innerHTML = STATE.suggestions.map(sug => `
+    <div style="background: rgba(10, 4, 1, 0.3); border: 1px solid rgba(245, 158, 11, 0.12); border-radius: 6px; padding: 0.6rem 0.8rem; display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; margin-bottom: 0.5rem;">
+      <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-dark);">
+        <span>Feedback Received</span>
+        <span>${escapeHTML(sug.time)}</span>
+      </div>
+      <div style="color: var(--text-main); font-weight: 500;">"${escapeHTML(sug.text)}"</div>
+    </div>
+  `).join('');
+}
+
 function updateConnectionStatus() {
   const statusBadge = document.getElementById('connection-status');
   if (statusBadge) {
@@ -481,6 +527,24 @@ async function simulateAgentExecution(prompt) {
   } else if (lowerPrompt.includes('receipt') || lowerPrompt.includes('bill') || lowerPrompt.includes('subtotal') || lowerPrompt.includes('total')) {
     matchedTool = SIMULATED_TOOLS.generate_receipt;
     compiledParams = { format: lowerPrompt.includes('html') ? 'html' : 'markdown' };
+  } else if (lowerPrompt.includes('suggest') || lowerPrompt.includes('suggestion') || lowerPrompt.includes('recommend adding') || lowerPrompt.includes('feedback')) {
+    matchedTool = SIMULATED_TOOLS.submit_menu_suggestion;
+    
+    let text = 'Mango Habanero seasoning';
+    const suggestIdx = lowerPrompt.indexOf('suggest');
+    const addIdx = lowerPrompt.indexOf('recommend adding');
+    
+    if (suggestIdx !== -1) {
+      text = prompt.substring(suggestIdx + 7).trim();
+    } else if (addIdx !== -1) {
+      text = prompt.substring(addIdx + 16).trim();
+    }
+    
+    if (text.toLowerCase().startsWith('adding')) {
+      text = text.substring(6).trim();
+    }
+    text = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "").trim();
+    compiledParams = { suggestionText: text };
   } else if (lowerPrompt.includes('name is') || lowerPrompt.includes('called') || (lowerPrompt.includes('set') && lowerPrompt.includes('name'))) {
     matchedTool = SIMULATED_TOOLS.set_customer_name;
     
