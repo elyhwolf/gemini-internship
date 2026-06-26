@@ -392,6 +392,38 @@
           </form>
         </div>
 
+        <!-- Manager Remove Rewards Loyalty Member Form -->
+        <div style="border-top: 1px dashed rgba(245, 158, 11, 0.2); padding-top: 1.5rem; margin-top: 1rem;">
+          <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>🗑️</span> Remove Rewards Member
+          </h4>
+          <p style="font-size: 0.8rem; color: var(--text-dark); margin-bottom: 1rem;">
+            Revokes and deletes an active rewards loyalty profile.
+          </p>
+
+          <form id="remove-loyalty-form" 
+                toolname="remove_loyalty_member" 
+                tooldescription="Removes a restaurant rewards loyalty profile."
+                style="background: rgba(0, 0, 0, 0.2); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--card-border);">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary);">remove_loyalty_member</h3>
+              <span class="tool-badge badge-declarative" style="color: var(--color-purple); background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.25);">manager review</span>
+            </div>
+
+            <div class="form-group">
+              <label for="remove-member-name">Select Rewards Member to Remove</label>
+              <select id="remove-member-name" name="name">
+                <!-- Populated dynamically by JS -->
+              </select>
+            </div>
+
+            <button type="submit" id="remove-loyalty-submit" class="btn btn-secondary" style="width: 100%;">
+              🗑️ Remove Member
+            </button>
+          </form>
+        </div>
+
         <!-- WebMCP Imperative Kitchen APIs -->
         <div style="border-top: 1px dashed rgba(245, 158, 11, 0.2); padding-top: 1.5rem; margin-top: 1rem;">
           <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">

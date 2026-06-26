@@ -161,6 +161,25 @@ const SIMULATED_TOOLS = {
       };
     }
   },
+  'remove_loyalty_member': {
+    name: 'remove_loyalty_member',
+    type: 'declarative',
+    description: 'Removes a restaurant rewards loyalty profile.',
+    targetId: 'remove-loyalty-form',
+    execute: (input) => {
+      const index = STATE.loyaltyMembers.findIndex(m => m.name === input.name);
+      if (index !== -1) {
+        const removed = STATE.loyaltyMembers.splice(index, 1)[0];
+        updateLoyaltyUI();
+        return {
+          status: 'member_removed',
+          member: removed,
+          totalMembers: STATE.loyaltyMembers.length
+        };
+      }
+      return { error: 'Member not found' };
+    }
+  },
   
   // Imperative Tools
   'get_kitchen_status': {
@@ -309,7 +328,8 @@ function setupForms() {
     { id: 'order-sandwich-form', toolName: 'order_chicken_sandwich' },
     { id: 'customer-name-form', toolName: 'set_customer_name' },
     { id: 'sauces-form', toolName: 'choose_sauces' },
-    { id: 'loyalty-form', toolName: 'register_loyalty_member' }
+    { id: 'loyalty-form', toolName: 'register_loyalty_member' },
+    { id: 'remove-loyalty-form', toolName: 'remove_loyalty_member' }
   ];
 
   forms.forEach(({ id, toolName }) => {
@@ -378,6 +398,17 @@ function updateLoyaltyUI() {
       <div style="font-size: 0.75rem; color: var(--text-dark);">${escapeHTML(m.joined)}</div>
     </div>
   `).join('');
+
+  const removeSelect = document.getElementById('remove-member-name');
+  if (removeSelect) {
+    if (STATE.loyaltyMembers.length === 0) {
+      removeSelect.innerHTML = '<option value="">No members registered</option>';
+    } else {
+      removeSelect.innerHTML = STATE.loyaltyMembers.map(m => `
+        <option value="${escapeHTML(m.name)}">${escapeHTML(m.name)}</option>
+      `).join('');
+    }
+  }
 }
 
 function updateConnectionStatus() {
@@ -522,6 +553,13 @@ async function simulateAgentExecution(prompt) {
     else if (lowerPrompt.includes('chili') && primary !== 'Sweet Hot Chili') secondary = 'Sweet Hot Chili';
     
     compiledParams = { primarySauce: primary, secondarySauce: secondary };
+  } else if ((lowerPrompt.includes('remove') || lowerPrompt.includes('delete') || lowerPrompt.includes('revoke')) && (lowerPrompt.includes('loyalty') || lowerPrompt.includes('rewards') || lowerPrompt.includes('member'))) {
+    matchedTool = SIMULATED_TOOLS.remove_loyalty_member;
+    
+    let name = 'Alice Mercer';
+    if (lowerPrompt.includes('jane')) name = 'Jane Doe';
+    else if (lowerPrompt.includes('ely')) name = 'Ely Wolf';
+    compiledParams = { name: name };
   } else if (lowerPrompt.includes('loyalty') || lowerPrompt.includes('rewards') || lowerPrompt.includes('register') || lowerPrompt.includes('member')) {
     matchedTool = SIMULATED_TOOLS.register_loyalty_member;
     
