@@ -5,6 +5,7 @@ const isWebMCPSupported = !!(modelContext && typeof modelContext.registerTool ==
 // Global mock state for the Fried Chicken Kitchen
 const STATE = {
   order: {
+    customerName: 'Guest',
     bucketSize: '10-Piece Crispy Bucket',
     spiceLevel: 'Classic Golden',
     sides: 'Waffle Fries',
@@ -54,7 +55,7 @@ const SIMULATED_TOOLS = {
       const placedOrderRecord = {
         id: `#ORD-${Math.floor(1000 + Math.random() * 9000)}`,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        details: `${STATE.order.bucketSize} (${STATE.order.spiceLevel}) - Sides: ${STATE.order.sides} - Dips: ${STATE.order.primarySauce}/${STATE.order.secondarySauce}`,
+        details: `[${STATE.order.customerName || 'Guest'}] ${STATE.order.bucketSize} (${STATE.order.spiceLevel}) - Sides: ${STATE.order.sides} - Dips: ${STATE.order.primarySauce}/${STATE.order.secondarySauce}`,
         price: `$${(STATE.order.totalPrice * 1.08).toFixed(2)}`,
         origin: isAgentSim ? '🤖 Drive-Thru AI' : '👤 Customer Click'
       };
@@ -89,7 +90,7 @@ const SIMULATED_TOOLS = {
       const placedOrderRecord = {
         id: `#ORD-${Math.floor(1000 + Math.random() * 9000)}`,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        details: `Chicken Sandwich (${STATE.order.spiceLevel}) - Sides: ${STATE.order.sides} - Dips: ${STATE.order.primarySauce}/${STATE.order.secondarySauce}`,
+        details: `[${STATE.order.customerName || 'Guest'}] Chicken Sandwich (${STATE.order.spiceLevel}) - Sides: ${STATE.order.sides} - Dips: ${STATE.order.primarySauce}/${STATE.order.secondarySauce}`,
         price: `$${(STATE.order.totalPrice * 1.08).toFixed(2)}`,
         origin: isAgentSim ? '🤖 Drive-Thru AI' : '👤 Customer Click'
       };
@@ -101,6 +102,22 @@ const SIMULATED_TOOLS = {
         status: 'order_placed',
         orderSummary: STATE.order,
         estimatedPrepTimeMinutes: 8
+      };
+    }
+  },
+  'set_customer_name': {
+    name: 'set_customer_name',
+    type: 'declarative',
+    description: "Configures the customer's name for the active order.",
+    targetId: 'customer-name-form',
+    execute: (input) => {
+      if (input.customerName) STATE.order.customerName = input.customerName;
+      
+      updateOrderUI();
+      
+      return {
+        status: 'name_updated',
+        customerName: STATE.order.customerName
       };
     }
   },
@@ -191,9 +208,9 @@ const SIMULATED_TOOLS = {
       const total = (STATE.order.totalPrice * 1.08).toFixed(2);
       
       if (format === 'html') {
-        return `<h3>Ely's Hot Chicken Receipt</h3><p>Bucket: ${STATE.order.bucketSize}</p><p>Sauces: ${STATE.order.primarySauce} & ${STATE.order.secondarySauce}</p><p>Total: $${total}</p>`;
+        return `<h3>Ely's Hot Chicken Receipt</h3><p>Customer: ${STATE.order.customerName || 'Guest'}</p><p>Item: ${STATE.order.bucketSize}</p><p>Sauces: ${STATE.order.primarySauce} & ${STATE.order.secondarySauce}</p><p>Total: $${total}</p>`;
       }
-      return `# ELY'S HOT CHICKEN RECEIPT\n\n- **Item**: ${STATE.order.bucketSize} (${STATE.order.spiceLevel})\n- **Side**: ${STATE.order.sides}\n- **Dips**: ${STATE.order.primarySauce} & ${STATE.order.secondarySauce}\n- **Subtotal**: $${STATE.order.totalPrice.toFixed(2)}\n- **Tax (8%)**: $${tax}\n- **Total Due**: $${total}\n\n*Thank you for ordering with Ely's Hot Chicken!*`;
+      return `# ELY'S HOT CHICKEN RECEIPT\n\n- **Customer**: ${STATE.order.customerName || 'Guest'}\n- **Item**: ${STATE.order.bucketSize} (${STATE.order.spiceLevel})\n- **Side**: ${STATE.order.sides}\n- **Dips**: ${STATE.order.primarySauce} & ${STATE.order.secondarySauce}\n- **Subtotal**: $${STATE.order.totalPrice.toFixed(2)}\n- **Tax (8%)**: $${tax}\n- **Total Due**: $${total}\n\n*Thank you for ordering with Ely's Hot Chicken!*`;
     }
   },
   'clear_order_logs': {
@@ -290,6 +307,7 @@ function setupForms() {
   const forms = [
     { id: 'order-chicken-form', toolName: 'order_chicken_bucket' },
     { id: 'order-sandwich-form', toolName: 'order_chicken_sandwich' },
+    { id: 'customer-name-form', toolName: 'set_customer_name' },
     { id: 'sauces-form', toolName: 'choose_sauces' },
     { id: 'loyalty-form', toolName: 'register_loyalty_member' }
   ];
@@ -329,6 +347,10 @@ function updateOrderUI() {
   
   const sandwichSpiceEl = document.getElementById('sandwich-spice');
   const sandwichSideEl = document.getElementById('sandwich-side');
+  
+  const customerNameEl = document.getElementById('order-customer-name');
+
+  if (customerNameEl) customerNameEl.value = STATE.order.customerName || '';
 
   if (STATE.order.bucketSize === 'Chicken Sandwich') {
     if (sandwichSpiceEl) sandwichSpiceEl.value = STATE.order.spiceLevel;
@@ -428,6 +450,24 @@ async function simulateAgentExecution(prompt) {
   } else if (lowerPrompt.includes('receipt') || lowerPrompt.includes('bill') || lowerPrompt.includes('subtotal') || lowerPrompt.includes('total')) {
     matchedTool = SIMULATED_TOOLS.generate_receipt;
     compiledParams = { format: lowerPrompt.includes('html') ? 'html' : 'markdown' };
+  } else if (lowerPrompt.includes('name is') || lowerPrompt.includes('called') || (lowerPrompt.includes('set') && lowerPrompt.includes('name'))) {
+    matchedTool = SIMULATED_TOOLS.set_customer_name;
+    
+    let name = 'Guest';
+    const nameIsIdx = lowerPrompt.indexOf('name is');
+    const calledIdx = lowerPrompt.indexOf('called');
+    const setToIdx = lowerPrompt.indexOf('name to');
+    
+    if (nameIsIdx !== -1) {
+      name = prompt.substring(nameIsIdx + 7).trim();
+    } else if (calledIdx !== -1) {
+      name = prompt.substring(calledIdx + 6).trim();
+    } else if (setToIdx !== -1) {
+      name = prompt.substring(setToIdx + 7).trim();
+    }
+    
+    name = name.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "").trim();
+    compiledParams = { customerName: name };
   } else if (lowerPrompt.includes('sandwich')) {
     matchedTool = SIMULATED_TOOLS.order_chicken_sandwich;
     
