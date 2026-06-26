@@ -2,8 +2,149 @@
 const modelContext = document.modelContext || navigator.modelContext;
 const isWebMCPSupported = !!(modelContext && typeof modelContext.registerTool === 'function');
 
+// Translation Dictionary
+const TRANSLATIONS = {
+  en: {
+    langBtn: "🇪🇸 Switch to Español",
+    connectionSimulated: "Drive-Thru: Simulated",
+    connectionActive: "Drive-Thru: Active",
+    connectionConnected: "Drive-Thru Host: Connected",
+    tagline: "Based in Jersey City, ESTD 2026",
+    declarativeTitle: "📝 Declarative Ordering Tools (HTML Forms)",
+    declarativeDesc: "Native forms converted into AI ordering actions via HTML <code>toolname</code>, <code>tooldescription</code>, and <code>toolautosubmit</code> attributes.",
+    bucketSizeLabel: "Bucket Size",
+    spiceStyleLabel: "Spice Style",
+    sideDishLabel: "Select Side Dish",
+    btnPlaceBucket: "🍗 Place Bucket Order",
+    btnPlaceSandwich: "🥪 Place Sandwich Order ($10.99)",
+    customerNameLabel: "Customer Name",
+    btnSetOrderName: "👤 Set Order Name",
+    primarySauceLabel: "Primary Sauce",
+    secondarySauceLabel: "Secondary Sauce",
+    btnConfigureSauces: "🍯 Configure Sauces",
+    newSuggestionLabel: "New Menu Item or Flavor Suggestion",
+    btnSubmitSuggestion: "💡 Submit Suggestion",
+    loyaltyTitle: "👥 Crispy Rewards Loyalty Members",
+    voiceAssistantTitle: "🗣️ AI Drive-Thru Voice Assistant",
+    voiceAssistantDesc: "Order with natural language. The simulated Drive-Thru AI will match your request to active WebMCP schemas, fill forms, glow panels, and verify menu parameters.",
+    presetLabel: "Preset Customer Orders",
+    promptLabel: "Customer Prompt (e.g. \"I want a 10-piece bucket with coleslaw\")",
+    btnOrder: "Order",
+    terminalTitle: "drive-thru-assistant @ client-webmcp",
+    tttTitle: "🎮 Crispy-Tac-Toe AI Arena",
+    tttDesc: "Play against the Chef bots! You place Drumsticks (<strong style=\"color: var(--color-primary);\">🍗</strong>), Bots place Spicy Hot Chilis (<strong style=\"color: var(--color-purple);\">🌶️</strong>).",
+    tttDifficultyLabel: "Bot Difficulty",
+    tttResetBtn: "Reset",
+    tttStatus: "Your turn! Make a move.",
+    tttScorePlayer: "Player (🍗)",
+    tttScoreDraws: "Draws",
+    tttScoreBot: "Bot (🌶️)",
+    adminModeBtnLocked: "🔒 Cashier Admin Mode",
+    adminModeBtnUnlocked: "🔓 Cashier Admin: Unlocked",
+    adminPasscodeTitle: "Enter Admin Passcode",
+    adminSubmitBtn: "Submit",
+    adminCancelBtn: "Cancel",
+    adminDashboardTitle: "🔑 Cashier Control Dashboard (Active)",
+    adminLockBtn: "Lock",
+    adminLiveOrdersTitle: "Live Orders Feed",
+    adminLiveOrdersDesc: "Showing live order placements submitted via UI or AI Drive-Thru tool execution.",
+    adminRemoveRewardsTitle: "🗑️ Remove Rewards Member",
+    adminRemoveRewardsDesc: "Revokes and deletes an active rewards loyalty profile.",
+    adminRemoveSelectLabel: "Select Rewards Member to Remove",
+    adminRemoveBtn: "🗑️ Remove Member",
+    adminKitchenToolsTitle: "⚙️ Kitchen Controller Callback Tools",
+    adminKitchenToolsDesc: "Imperative JavaScript endpoints registered via <code>document.modelContext.registerTool()</code>.",
+    adminSuggestionsTitle: "💡 Customer Menu Suggestions",
+    adminSuggestionsDesc: "Feedback submitted by guests proposing new menu flavors or items.",
+    loyaltyMemberNameLabel: "Loyalty Member Name",
+    loyaltyFavoriteSideLabel: "Favorite side",
+    customerNamePlaceholder: "e.g. Ely Wolf",
+    suggestionPlaceholder: "Enter your suggestion here...",
+    loyaltyNamePlaceholder: "e.g. Alice Mercer",
+    loyaltyFavoritePlaceholder: "e.g. Waffle Fries",
+    agentPromptPlaceholder: "Say your order here...",
+    btnRegisterMember: "📋 Register Member",
+    btnRemoveMember: "🗑️ Remove Member",
+    tttYourTurn: "Your turn! Place a drumstick.",
+    tttCellFilled: "Cell already filled!",
+    tttChefCalculating: "Chef bot is calculating counter-move...",
+    tttYouWon: "🎉 You won! Tasty victory.",
+    tttDraw: "🤝 It is a draw! Bucket is empty.",
+    tttBotWon: "🌶️ Bot won! Too spicy for you."
+  },
+  es: {
+    langBtn: "🇺🇸 Cambiar a Inglés",
+    connectionSimulated: "Autoconsulta: Simulado",
+    connectionActive: "Autoconsulta: Activo",
+    connectionConnected: "Host de Autoconsulta: Conectado",
+    tagline: "Basado en Jersey City, ESTD 2026",
+    declarativeTitle: "📝 Herramientas de Pedido Declarativas (Formularios HTML)",
+    declarativeDesc: "Formularios nativos convertidos en acciones de pedido de IA mediante los atributos HTML <code>toolname</code>, <code>tooldescription</code> y <code>toolautosubmit</code>.",
+    bucketSizeLabel: "Tamaño del Balde",
+    spiceStyleLabel: "Estilo de Picante",
+    sideDishLabel: "Seleccionar Acompañamiento",
+    btnPlaceBucket: "🍗 Realizar Pedido de Balde",
+    btnPlaceSandwich: "🥪 Realizar Pedido de Sándwich ($10.99)",
+    customerNameLabel: "Nombre del Cliente",
+    btnSetOrderName: "👤 Establecer Nombre de Pedido",
+    primarySauceLabel: "Salsa Primaria",
+    secondarySauceLabel: "Salsa Secundaria",
+    btnConfigureSauces: "🍯 Configurar Salsas",
+    newSuggestionLabel: "Sugerencia de Nuevo Artículo o Sabor de Menú",
+    btnSubmitSuggestion: "💡 Enviar Sugerencia",
+    loyaltyTitle: "👥 Miembros del Programa Crispy Rewards",
+    voiceAssistantTitle: "🗣️ Asistente de Voz de Autoconsulta de IA",
+    voiceAssistantDesc: "Ordene con lenguaje natural. La IA de autoconsulta simulada coincidirá con su solicitud con esquemas WebMCP activos, completará formularios, iluminará paneles y verificará los parámetros del menú.",
+    presetLabel: "Pedidos Predeterminados de Clientes",
+    promptLabel: "Instrucción del Cliente (ej. \"Quiero un balde de 10 piezas con ensalada de col\")",
+    btnOrder: "Pedir",
+    terminalTitle: "asistente-autoconsulta @ client-webmcp",
+    tttTitle: "🎮 Arena de IA de Crispy-Tac-Toe",
+    tttDesc: "¡Juega contra los bots Chef! Tú colocas Muslos (<strong style=\"color: var(--color-primary);\">🍗</strong>), los Bots colocan Chiles Picantes (<strong style=\"color: var(--color-purple);\">🌶️</strong>).",
+    tttDifficultyLabel: "Dificultad del Bot",
+    tttResetBtn: "Reiniciar",
+    tttStatus: "¡Tu turno! Haz un movimiento.",
+    tttScorePlayer: "Jugador (🍗)",
+    tttScoreDraws: "Empates",
+    tttScoreBot: "Bot (🌶️)",
+    adminModeBtnLocked: "🔒 Modo Administrador del Cajero",
+    adminModeBtnUnlocked: "🔓 Admin del Cajero: Desbloqueado",
+    adminPasscodeTitle: "Ingresar Código de Administrador",
+    adminSubmitBtn: "Enviar",
+    adminCancelBtn: "Cancelar",
+    adminDashboardTitle: "🔑 Panel de Control del Cajero (Activo)",
+    adminLockBtn: "Bloquear",
+    adminLiveOrdersTitle: "Historial de Pedidos en Vivo",
+    adminLiveOrdersDesc: "Mostrando pedidos en vivo enviados a través de la interfaz de usuario o la ejecución de herramientas de IA.",
+    adminRemoveRewardsTitle: "🗑️ Eliminar Miembro de Recompensas",
+    adminRemoveRewardsDesc: "Revoca y elimina un perfil activo de fidelidad de recompensas.",
+    adminRemoveSelectLabel: "Seleccionar Miembro de Recompensa a Eliminar",
+    adminRemoveBtn: "🗑️ Eliminar Miembro",
+    adminKitchenToolsTitle: "⚙️ Herramientas de Retorno del Controlador de Cocina",
+    adminKitchenToolsDesc: "Puntos finales imperativos de JavaScript registrados a través de <code>document.modelContext.registerTool()</code>.",
+    adminSuggestionsTitle: "💡 Sugerencias de Menú de Clientes",
+    adminSuggestionsDesc: "Comentarios enviados por los clientes proponiendo nuevos sabores o artículos de menú.",
+    loyaltyMemberNameLabel: "Nombre del Miembro de Fidelidad",
+    loyaltyFavoriteSideLabel: "Acompañamiento favorito",
+    customerNamePlaceholder: "ej. Ely Wolf",
+    suggestionPlaceholder: "Ingrese su sugerencia aquí...",
+    loyaltyNamePlaceholder: "ej. Alice Mercer",
+    loyaltyFavoritePlaceholder: "ej. Papas Waffle",
+    agentPromptPlaceholder: "Diga su pedido aquí...",
+    btnRegisterMember: "📋 Registrar Miembro",
+    btnRemoveMember: "🗑️ Eliminar Miembro",
+    tttYourTurn: "¡Tu turno! Coloca un muslo.",
+    tttCellFilled: "¡La casilla ya está ocupada!",
+    tttChefCalculating: "El bot Chef está calculando su contraataque...",
+    tttYouWon: "🎉 ¡Ganaste! Sabrosa victoria.",
+    tttDraw: "🤝 ¡Es un empate! El balde está vacío.",
+    tttBotWon: "🌶️ ¡El bot ganó! Demasiado picante para ti."
+  }
+};
+
 // Global mock state for the Fried Chicken Kitchen
 const STATE = {
+  language: localStorage.getItem('ely_hot_chicken_language') || 'en',
   order: {
     customerName: 'Guest',
     bucketSize: '10-Piece Crispy Bucket',
@@ -53,12 +194,18 @@ const SIMULATED_TOOLS = {
       
       // Live order tracker logging
       const isAgentSim = window.isAgentSimulating === true;
+      const customerLabel = STATE.order.customerName || (STATE.language === 'es' ? 'Invitado' : 'Guest');
+      const sidesLabel = STATE.language === 'es' ? 'Acompañamientos' : 'Sides';
+      const dipsLabel = STATE.language === 'es' ? 'Salsas' : 'Dips';
+      const originLabel = isAgentSim 
+        ? (STATE.language === 'es' ? '🤖 Autoconsulta de IA' : '🤖 Drive-Thru AI')
+        : (STATE.language === 'es' ? '👤 Clic de Cliente' : '👤 Customer Click');
       const placedOrderRecord = {
         id: `#ORD-${Math.floor(1000 + Math.random() * 9000)}`,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        details: `[${STATE.order.customerName || 'Guest'}] ${STATE.order.bucketSize} (${STATE.order.spiceLevel}) - Sides: ${STATE.order.sides} - Dips: ${STATE.order.primarySauce}/${STATE.order.secondarySauce}`,
+        details: `[${customerLabel}] ${STATE.order.bucketSize} (${STATE.order.spiceLevel}) - ${sidesLabel}: ${STATE.order.sides} - ${dipsLabel}: ${STATE.order.primarySauce}/${STATE.order.secondarySauce}`,
         price: `$${(STATE.order.totalPrice * 1.08).toFixed(2)}`,
-        origin: isAgentSim ? '🤖 Drive-Thru AI' : '👤 Customer Click'
+        origin: originLabel
       };
       if (!STATE.placedOrders) STATE.placedOrders = [];
       STATE.placedOrders.unshift(placedOrderRecord);
@@ -88,12 +235,18 @@ const SIMULATED_TOOLS = {
       
       // Live order tracker logging
       const isAgentSim = window.isAgentSimulating === true;
+      const customerLabel = STATE.order.customerName || (STATE.language === 'es' ? 'Invitado' : 'Guest');
+      const sidesLabel = STATE.language === 'es' ? 'Acompañamientos' : 'Sides';
+      const dipsLabel = STATE.language === 'es' ? 'Salsas' : 'Dips';
+      const originLabel = isAgentSim 
+        ? (STATE.language === 'es' ? '🤖 Autoconsulta de IA' : '🤖 Drive-Thru AI')
+        : (STATE.language === 'es' ? '👤 Clic de Cliente' : '👤 Customer Click');
       const placedOrderRecord = {
         id: `#ORD-${Math.floor(1000 + Math.random() * 9000)}`,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        details: `[${STATE.order.customerName || 'Guest'}] Chicken Sandwich (${STATE.order.spiceLevel}) - Sides: ${STATE.order.sides} - Dips: ${STATE.order.primarySauce}/${STATE.order.secondarySauce}`,
+        details: `[${customerLabel}] Chicken Sandwich (${STATE.order.spiceLevel}) - ${sidesLabel}: ${STATE.order.sides} - ${dipsLabel}: ${STATE.order.primarySauce}/${STATE.order.secondarySauce}`,
         price: `$${(STATE.order.totalPrice * 1.08).toFixed(2)}`,
-        origin: isAgentSim ? '🤖 Drive-Thru AI' : '👤 Customer Click'
+        origin: originLabel
       };
       if (!STATE.placedOrders) STATE.placedOrders = [];
       STATE.placedOrders.unshift(placedOrderRecord);
@@ -340,6 +493,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateLoyaltyUI();
   updateSuggestionsUI();
   updateConnectionStatus();
+  applyLanguage();
   
   logToTerminal('system', "Ely's Hot Chicken: Drive-thru system initialized.");
   logToTerminal('system', `WebMCP Native support: ${isWebMCPSupported ? 'CONNECTED' : 'SIMULATED (Offline API Mode)'}`);
@@ -415,11 +569,12 @@ function updateLoyaltyUI() {
   const listEl = document.getElementById('interns-list');
   if (!listEl) return;
 
+  const likesLabel = STATE.language === 'es' ? 'Le gusta' : 'Likes';
   listEl.innerHTML = STATE.loyaltyMembers.map(m => `
     <div style="background: rgba(245, 158, 11, 0.03); border: 1px solid rgba(245, 158, 11, 0.08); border-radius: 6px; padding: 0.5rem 0.75rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-top: 0.5rem;">
       <div>
         <div style="font-weight: 600; color: var(--color-primary);">${escapeHTML(m.name)}</div>
-        <div style="font-size: 0.75rem; color: var(--text-muted);">Likes: ${escapeHTML(m.favoriteSide)}</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">${likesLabel}: ${escapeHTML(m.favoriteSide)}</div>
       </div>
       <div style="font-size: 0.75rem; color: var(--text-dark);">${escapeHTML(m.joined)}</div>
     </div>
@@ -428,7 +583,8 @@ function updateLoyaltyUI() {
   const removeSelect = document.getElementById('remove-member-name');
   if (removeSelect) {
     if (STATE.loyaltyMembers.length === 0) {
-      removeSelect.innerHTML = '<option value="">No members registered</option>';
+      const emptyMsg = STATE.language === 'es' ? 'No hay miembros registrados' : 'No members registered';
+      removeSelect.innerHTML = `<option value="">${emptyMsg}</option>`;
     } else {
       removeSelect.innerHTML = STATE.loyaltyMembers.map(m => `
         <option value="${escapeHTML(m.name)}">${escapeHTML(m.name)}</option>
@@ -442,14 +598,17 @@ function updateSuggestionsUI() {
   if (!feedEl) return;
   
   if (!STATE.suggestions || STATE.suggestions.length === 0) {
-    feedEl.innerHTML = '<div style="font-size: 0.85rem; color: var(--text-dark); text-align: center; padding: 1rem;">No suggestions submitted yet.</div>';
+    const emptyMsg = STATE.language === 'es' ? 'No hay sugerencias enviadas aún.' : 'No suggestions submitted yet.';
+    feedEl.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-dark); text-align: center; padding: 1rem;">${emptyMsg}</div>`;
     return;
   }
+  
+  const feedbackLabel = STATE.language === 'es' ? 'Comentario Recibido' : 'Feedback Received';
   
   feedEl.innerHTML = STATE.suggestions.map(sug => `
     <div style="background: rgba(10, 4, 1, 0.3); border: 1px solid rgba(245, 158, 11, 0.12); border-radius: 6px; padding: 0.6rem 0.8rem; display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; margin-bottom: 0.5rem;">
       <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-dark);">
-        <span>Feedback Received</span>
+        <span>${feedbackLabel}</span>
         <span>${escapeHTML(sug.time)}</span>
       </div>
       <div style="color: var(--text-main); font-weight: 500;">"${escapeHTML(sug.text)}"</div>
@@ -460,11 +619,193 @@ function updateSuggestionsUI() {
 function updateConnectionStatus() {
   const statusBadge = document.getElementById('connection-status');
   if (statusBadge) {
+    const lang = STATE.language || 'en';
+    const t = TRANSLATIONS[lang];
     statusBadge.innerHTML = isWebMCPSupported 
-      ? '<span class="status-dot"></span>Drive-Thru: Active'
-      : '<span class="status-dot" style="background-color: var(--color-warning); box-shadow: 0 0 8px var(--color-warning);"></span>Drive-Thru: Simulated';
+      ? `<span class="status-dot"></span>${t.connectionActive}`
+      : `<span class="status-dot" style="background-color: var(--color-warning); box-shadow: 0 0 8px var(--color-warning);"></span>${t.connectionSimulated}`;
   }
 }
+
+// Language translation updater
+function applyLanguage() {
+  const lang = STATE.language || 'en';
+  localStorage.setItem('ely_hot_chicken_language', lang);
+
+  const t = TRANSLATIONS[lang];
+  if (!t) return;
+
+  const langBtn = document.getElementById('lang-btn');
+  if (langBtn) langBtn.textContent = t.langBtn;
+
+  const tagline = document.getElementById('app-tagline');
+  if (tagline) tagline.textContent = t.tagline;
+
+  updateConnectionStatus();
+
+  const decTitle = document.getElementById('declarative-title');
+  if (decTitle) decTitle.innerHTML = t.declarativeTitle;
+
+  const decDesc = document.getElementById('declarative-desc');
+  if (decDesc) decDesc.innerHTML = t.declarativeDesc;
+
+  const labels = {
+    'label[for="bucket-size"]': t.bucketSizeLabel,
+    'label[for="spice-level"]': t.spiceStyleLabel,
+    'label[for="side-dish"]': t.sideDishLabel,
+    'label[for="sandwich-spice"]': t.spiceStyleLabel,
+    'label[for="sandwich-side"]': t.sideDishLabel,
+    'label[for="order-customer-name"]': t.customerNameLabel,
+    'label[for="sauce-primary"]': t.primarySauceLabel,
+    'label[for="sauce-secondary"]': t.secondarySauceLabel,
+    'label[for="suggestion-input"]': t.newSuggestionLabel,
+    'label[for="member-name"]': t.loyaltyMemberNameLabel,
+    'label[for="member-favorite"]': t.loyaltyFavoriteSideLabel,
+    'label[for="remove-member-name"]': t.adminRemoveSelectLabel
+  };
+
+  for (const [selector, text] of Object.entries(labels)) {
+    const el = document.querySelector(selector);
+    if (el) el.textContent = text;
+  }
+
+  const submitBtns = {
+    'order-chicken-submit': t.btnPlaceBucket,
+    'order-sandwich-submit': t.btnPlaceSandwich,
+    'customer-name-submit': t.btnSetOrderName,
+    'sauces-submit': t.btnConfigureSauces,
+    'suggestion-submit': t.btnSubmitSuggestion,
+    'loyalty-submit': t.btnRegisterMember,
+    'remove-loyalty-submit': t.btnRemoveMember
+  };
+
+  for (const [id, text] of Object.entries(submitBtns)) {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = text;
+  }
+
+  const placeholders = {
+    'order-customer-name': t.customerNamePlaceholder,
+    'suggestion-input': t.suggestionPlaceholder,
+    'member-name': t.loyaltyNamePlaceholder,
+    'member-favorite': t.loyaltyFavoritePlaceholder,
+    'agent-prompt': t.agentPromptPlaceholder
+  };
+
+  for (const [id, text] of Object.entries(placeholders)) {
+    const el = document.getElementById(id);
+    if (el) el.placeholder = text;
+  }
+
+  const loyaltyTitle = document.getElementById('loyalty-title');
+  if (loyaltyTitle) loyaltyTitle.innerHTML = t.loyaltyTitle;
+
+  const voiceTitle = document.getElementById('voice-title');
+  if (voiceTitle) voiceTitle.innerHTML = t.voiceAssistantTitle;
+
+  const voiceDesc = document.getElementById('voice-desc');
+  if (voiceDesc) voiceDesc.textContent = t.voiceAssistantDesc;
+
+  const presetLabel = document.getElementById('preset-label');
+  if (presetLabel) presetLabel.textContent = t.presetLabel;
+
+  const promptLabel = document.getElementById('prompt-label');
+  if (promptLabel) promptLabel.textContent = t.promptLabel;
+
+  const promptSubmit = document.getElementById('agent-prompt-submit');
+  if (promptSubmit) promptSubmit.textContent = t.btnOrder;
+
+  const termTitle = document.getElementById('terminal-title');
+  if (termTitle) termTitle.textContent = t.terminalTitle;
+
+  const tttTitle = document.getElementById('ttt-title');
+  if (tttTitle) tttTitle.innerHTML = t.tttTitle;
+
+  const tttDesc = document.getElementById('ttt-desc');
+  if (tttDesc) tttDesc.innerHTML = t.tttDesc;
+
+  const tttDiffLabel = document.getElementById('ttt-diff-label');
+  if (tttDiffLabel) tttDiffLabel.textContent = t.tttDifficultyLabel;
+
+  const tttReset = document.getElementById('ttt-reset');
+  if (tttReset) tttReset.textContent = t.tttResetBtn;
+
+  const statusEl = document.getElementById('ttt-status');
+  if (statusEl) {
+    const currentText = statusEl.textContent.trim();
+    const oldLang = lang === 'en' ? 'es' : 'en';
+    const oldT = TRANSLATIONS[oldLang];
+    const newT = TRANSLATIONS[lang];
+    const matchedKey = Object.keys(oldT).find(key => oldT[key] === currentText);
+    if (matchedKey && newT[matchedKey]) {
+      statusEl.textContent = newT[matchedKey];
+    } else if (currentText === 'Your turn! Make a move.' || currentText === '¡Tu turno! Haz un movimiento.') {
+      statusEl.textContent = newT.tttStatus;
+    }
+  }
+
+  const tttPlayerLabel = document.getElementById('ttt-stat-player-label');
+  if (tttPlayerLabel) tttPlayerLabel.textContent = t.tttScorePlayer;
+
+  const tttDrawsLabel = document.getElementById('ttt-stat-draws-label');
+  if (tttDrawsLabel) tttDrawsLabel.textContent = t.tttScoreDraws;
+
+  const tttBotLabel = document.getElementById('ttt-stat-bot-label');
+  if (tttBotLabel) tttBotLabel.textContent = t.tttScoreBot;
+
+  const adminBtn = document.getElementById('admin-mode-btn');
+  if (adminBtn) {
+    adminBtn.textContent = STATE.adminUnlocked ? t.adminModeBtnUnlocked : t.adminModeBtnLocked;
+  }
+
+  const loginTitle = document.getElementById('admin-login-title');
+  if (loginTitle) loginTitle.textContent = t.adminPasscodeTitle;
+
+  const loginSubmit = document.getElementById('admin-login-submit');
+  if (loginSubmit) loginSubmit.textContent = t.adminSubmitBtn;
+
+  const loginCancel = document.getElementById('admin-login-cancel');
+  if (loginCancel) loginCancel.textContent = t.adminCancelBtn;
+
+  const dashboardTitle = document.getElementById('admin-dashboard-title');
+  if (dashboardTitle) dashboardTitle.innerHTML = t.adminDashboardTitle;
+
+  const dashboardLock = document.getElementById('admin-dashboard-lock');
+  if (dashboardLock) dashboardLock.textContent = t.adminLockBtn;
+
+  const liveOrdersDesc = document.getElementById('admin-live-orders-desc');
+  if (liveOrdersDesc) liveOrdersDesc.textContent = t.adminLiveOrdersDesc;
+
+  const regRewardsTitle = document.getElementById('admin-register-rewards-title');
+  if (regRewardsTitle) regRewardsTitle.innerHTML = t.adminRegisterRewardsTitle;
+
+  const regRewardsDesc = document.getElementById('admin-register-rewards-desc');
+  if (regRewardsDesc) regRewardsDesc.textContent = t.adminRegisterRewardsDesc;
+
+  const removeTitle = document.getElementById('admin-remove-rewards-title');
+  if (removeTitle) removeTitle.innerHTML = t.adminRemoveRewardsTitle;
+
+  const removeDesc = document.getElementById('admin-remove-rewards-desc');
+  if (removeDesc) removeDesc.textContent = t.adminRemoveRewardsDesc;
+
+  const kitchenTitle = document.getElementById('admin-kitchen-tools-title');
+  if (kitchenTitle) kitchenTitle.innerHTML = t.adminKitchenToolsTitle;
+
+  const kitchenDesc = document.getElementById('admin-kitchen-tools-desc');
+  if (kitchenDesc) kitchenDesc.textContent = t.adminKitchenToolsDesc;
+
+  const sugTitle = document.getElementById('admin-suggestions-title');
+  if (sugTitle) sugTitle.innerHTML = t.adminSuggestionsTitle;
+
+  const sugDesc = document.getElementById('admin-suggestions-desc');
+  if (sugDesc) sugDesc.textContent = t.adminSuggestionsDesc;
+}
+
+function toggleLanguage() {
+  STATE.language = STATE.language === 'en' ? 'es' : 'en';
+  applyLanguage();
+}
+window.toggleLanguage = toggleLanguage;
 
 // Drive-Thru Assistant Console logger
 function logToTerminal(type, text) {
@@ -799,7 +1140,7 @@ function resetTicTacToe() {
     cell.className = 'tictactoe-cell';
   });
 
-  updateTTTStatusUI('Your turn! Place a drumstick.');
+  updateTTTStatusUI(TRANSLATIONS[STATE.language].tttYourTurn);
 }
 
 // Emojis mapping: X = 🍗 (Player), O = 🌶️ (Bot)
@@ -851,7 +1192,7 @@ function makeTicTacToeMove(index) {
   if (!STATE.ttt.active || STATE.ttt.turn !== 'X') return;
   
   if (STATE.ttt.board[index] !== null) {
-    updateTTTStatusUI('Cell already filled!', true);
+    updateTTTStatusUI(TRANSLATIONS[STATE.language].tttCellFilled, true);
     return;
   }
 
@@ -867,7 +1208,7 @@ function executePlayerMove(index) {
     STATE.ttt.active = false;
     STATE.ttt.scores.player++;
     updateTTTScoresUI();
-    updateTTTStatusUI('🎉 You won! Tasty victory.');
+    updateTTTStatusUI(TRANSLATIONS[STATE.language].tttYouWon);
     return;
   }
 
@@ -875,12 +1216,12 @@ function executePlayerMove(index) {
     STATE.ttt.active = false;
     STATE.ttt.scores.draws++;
     updateTTTScoresUI();
-    updateTTTStatusUI('🤝 It is a draw! Bucket is empty.');
+    updateTTTStatusUI(TRANSLATIONS[STATE.language].tttDraw);
     return;
   }
 
   STATE.ttt.turn = 'O';
-  updateTTTStatusUI('Chef bot is calculating counter-move...');
+  updateTTTStatusUI(TRANSLATIONS[STATE.language].tttChefCalculating);
   
   setTimeout(() => {
     makeBotMove();
@@ -912,7 +1253,7 @@ function makeBotMove() {
       STATE.ttt.active = false;
       STATE.ttt.scores.bot++;
       updateTTTScoresUI();
-      updateTTTStatusUI('🌶️ Bot won! Too spicy for you.');
+      updateTTTStatusUI(TRANSLATIONS[STATE.language].tttBotWon);
       return;
     }
 
@@ -920,13 +1261,13 @@ function makeBotMove() {
       STATE.ttt.active = false;
       STATE.ttt.scores.draws++;
       updateTTTScoresUI();
-      updateTTTStatusUI('🤝 It is a draw!');
+      updateTTTStatusUI(TRANSLATIONS[STATE.language].tttDraw);
       return;
     }
   }
 
   STATE.ttt.turn = 'X';
-  updateTTTStatusUI('Your turn! Place a drumstick.');
+  updateTTTStatusUI(TRANSLATIONS[STATE.language].tttYourTurn);
 }
 
 function getRandomTTTMove() {
@@ -1075,10 +1416,10 @@ function submitAdminPasscode() {
     if (panel) panel.style.display = 'block';
     
     const btn = document.getElementById('admin-mode-btn');
-    if (btn) btn.textContent = '🔓 Cashier Admin: Unlocked';
+    if (btn) btn.textContent = TRANSLATIONS[STATE.language].adminModeBtnUnlocked;
     
     updateAdminOrdersUI();
-    logToTerminal('system', 'Security access cleared. Cashier Admin Mode authenticated.');
+    logToTerminal('system', STATE.language === 'es' ? 'Acceso de seguridad autorizado. Modo Administrador de Cajero autenticado.' : 'Security access cleared. Cashier Admin Mode authenticated.');
   } else {
     if (errorEl) errorEl.style.display = 'block';
     input.value = '';
@@ -1093,10 +1434,10 @@ function lockAdminMode() {
   if (panel) panel.style.display = 'none';
   
   const btn = document.getElementById('admin-mode-btn');
-  if (btn) btn.textContent = '🔒 Cashier Admin Mode';
+  if (btn) btn.textContent = TRANSLATIONS[STATE.language].adminModeBtnLocked;
   
   closeAdminLogin();
-  logToTerminal('system', 'Cashier Admin Mode locked.');
+  logToTerminal('system', STATE.language === 'es' ? 'Modo Administrador de Cajero bloqueado.' : 'Cashier Admin Mode locked.');
 }
 
 function updateAdminOrdersUI() {
@@ -1104,7 +1445,8 @@ function updateAdminOrdersUI() {
   if (!feedEl) return;
   
   if (!STATE.placedOrders || STATE.placedOrders.length === 0) {
-    feedEl.innerHTML = '<div style="font-size: 0.85rem; color: var(--text-dark); text-align: center; padding: 1rem;">No orders placed yet.</div>';
+    const emptyMsg = STATE.language === 'es' ? 'No hay pedidos realizados aún.' : 'No orders placed yet.';
+    feedEl.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-dark); text-align: center; padding: 1rem;">${emptyMsg}</div>`;
     return;
   }
   
@@ -1116,7 +1458,7 @@ function updateAdminOrdersUI() {
       </div>
       <div style="color: var(--text-main); font-weight: 500;">${escapeHTML(ord.details)}</div>
       <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed rgba(245,158,11,0.1); padding-top: 0.4rem; font-size: 0.75rem; margin-top: 0.2rem;">
-        <span style="color: var(--text-muted); font-size: 0.75rem;">Source: ${ord.origin}</span>
+        <span style="color: var(--text-muted); font-size: 0.75rem;">${STATE.language === 'es' ? 'Origen:' : 'Source:'} ${ord.origin}</span>
         <span style="font-weight: 600; color: var(--color-accent); font-family: 'Fira Code', monospace; font-size: 0.85rem;">${ord.price}</span>
       </div>
     </div>
