@@ -210,6 +210,75 @@ const TRANSLATIONS = {
     tttDraw: "🤝 תיקו! הדלי ריק.",
     tttBotWon: "🌶️ הבוט ניצח! חריף מדי בשבילך.",
     adminLoginError: "קוד PIN לא חוקי! נסה שוב."
+  },
+  xh: {
+    langBtn: "🇿🇦 isiXhosa",
+    connectionSimulated: "Drive-Thru: Ilinganisiwe",
+    connectionActive: "Drive-Thru: Iyasebenza",
+    connectionConnected: "Uku-odola: Kuqhagamshelwe",
+    tagline: "Izinze eJersey City, Esekwe ngo-2026",
+    declarativeTitle: "📝 Izixhobo zoku-odola ezichazayo (IiFomu zeHTML)",
+    declarativeDesc: "IiFomu zomthonyama eziguqulelwe kwizenzo zoku-odola ze-AI ngesikhundla se-HTML <code>toolname</code>, <code>tooldescription</code>, kunye ne-<code>toolautosubmit</code>.",
+    bucketSizeLabel: "Ubungakanani beBhalkethi",
+    spiceStyleLabel: "Uhlobo lweSpayisi",
+    sideDishLabel: "Khetha iSide",
+    btnPlaceBucket: "🍗 Faka i-Odolo yeBhalkethi",
+    btnPlaceSandwich: "🥪 Faka i-Odolo yeSandwich ($10.99)",
+    customerNameLabel: "Igama loMthengi",
+    btnSetOrderName: "👤 Seta Igama le-Odolo",
+    primarySauceLabel: "I-Sosi ePhambili",
+    secondarySauceLabel: "I-Sosi yeSibini",
+    btnConfigureSauces: "🍯 Lungiselela iiSosi",
+    newSuggestionLabel: "Ingcebiso yeNto eNtsha yeMenyu okanye yeFlavour",
+    btnSubmitSuggestion: "💡 Ngenisa iNgcebiso",
+    loyaltyTitle: "👥 Amalungu weLoyalty yeCrispy Rewards",
+    voiceAssistantTitle: "🗣️ Umncedisi weLizwi we-AI Drive-Thru",
+    voiceAssistantDesc: "Oda ngolwimi lwemveli. I-AI elinganisiweyo ye-Drive-Thru iza kutshatisa isicelo sakho kwi-WebMCP esebenzayo, izalise iifomu, ikhanyise iiphaneli, kwaye iqinisekise iiparamitha zemenyu.",
+    presetLabel: "Ii-Odolo zabaThengi ezilungiselelwe kwangaphambili",
+    promptLabel: "Isikhuthazo soMthengi (umz. \"Ndifuna ibhalkethi yamaqhekeza ali-10 ane-coleslaw\")",
+    btnOrder: "Oda",
+    terminalTitle: "umncedisi-drive-thru @ client-webmcp",
+    tttTitle: "🎮 I-Arena ye-AI ye-Crispy-Tac-Toe",
+    tttDesc: "Dlalani ngokuchasene neebhothi zikaChef! Ubeka izinti zenkukhu (<strong style=\"color: var(--color-primary);\">🍗</strong>), iiBhothi zibeka iitshili ezishushu (<strong style=\"color: var(--color-purple);\">🌶️</strong>).",
+    tttDifficultyLabel: "Ubunzima beBhothi",
+    tttResetBtn: "Seta kabusha",
+    tttStatus: "Lithuba lakho! Yenza inyathelo.",
+    tttScorePlayer: "Umdlali (🍗)",
+    tttScoreDraws: "Ukulingana",
+    tttScoreBot: "IBhothi (🌶️)",
+    adminModeBtnLocked: "🔒 Imo yoMlawuli weKhanti",
+    adminModeBtnUnlocked: "🔓 Mlawuli weKhanti: Ivuliwe",
+    adminPasscodeTitle: "Faka iPhasiwedi yoMlawuli",
+    adminSubmitBtn: "Ngenisa",
+    adminCancelBtn: "Rhoxisa",
+    adminDashboardTitle: "🔑 Ibhodi yoLawulo yoMlawuli (Esebenzayo)",
+    adminLockBtn: "Tshixa",
+    adminLiveOrdersTitle: "Ukutya okuPhila kwee-Odolo",
+    adminLiveOrdersDesc: "Ibonisa upapasho oluphila lwee-odolo ezingeniswe nge-UI okanye ngokusetyenziswa kwesixhobo se-AI Drive-Thru.",
+    adminRemoveRewardsTitle: "🗑️ Susa iLungu leMivuzo",
+    adminRemoveRewardsDesc: "Ibhangisa kwaye icime iprofayili ye-loyalty yemivuzo esebenzayo.",
+    adminRemoveSelectLabel: "Khetha iLungu leMivuzo oza kuLisusa",
+    adminRemoveBtn: "🗑️ Susa iLungu",
+    adminKitchenToolsTitle: "⚙️ Izixhobo zokuBhala zeKhikhini yoMlawuli",
+    adminKitchenToolsDesc: "Iziphelo zeJavaScript eziyimfuneko ezibhaliswe ngo-<code>document.modelContext.registerTool()</code>.",
+    adminSuggestionsTitle: "💡 Iingcebiso zemenyu yabaThengi",
+    adminSuggestionsDesc: "Ingxelo engeniswe ziindwendwe eziphakamisa iincasa ezintsha okanye izinto zemenyu.",
+    loyaltyMemberNameLabel: "Igama leLungu leLoyalty",
+    loyaltyFavoriteSideLabel: "Icalamacala elithandwayo",
+    customerNamePlaceholder: "umz. Ely Wolf",
+    suggestionPlaceholder: "Faka ingcebiso yakho apha...",
+    loyaltyNamePlaceholder: "umz. Alice Mercer",
+    loyaltyFavoritePlaceholder: "umz. Waffle Fries",
+    agentPromptPlaceholder: "Thetha i-odolo yakho apha...",
+    btnRegisterMember: "📋 Bhalisa iLungu",
+    btnRemoveMember: "🗑️ Susa iLungu",
+    tttYourTurn: "Lithuba lakho! Beka isinti.",
+    tttCellFilled: "Iseli sele izaliswe!",
+    tttChefCalculating: "Ibhothi yompheki ibala inyathelo lokuchasa...",
+    tttYouWon: "🎉 Uwinile! Uloyiso olumnandi.",
+    tttDraw: "🤝 Kukulingana! Ibhalkethi ayinanto.",
+    tttBotWon: "🌶️ IBhothi iwinile! Kushushu kakhulu kuwe.",
+    adminLoginError: "IPIN engasebenziyo! Zama kwakhona."
   }
 };
 
@@ -265,12 +334,12 @@ const SIMULATED_TOOLS = {
       
       // Live order tracker logging
       const isAgentSim = window.isAgentSimulating === true;
-      const customerLabel = STATE.order.customerName || (STATE.language === 'es' ? 'Invitado' : (STATE.language === 'he' ? 'אורח' : 'Guest'));
-      const sidesLabel = STATE.language === 'es' ? 'Acompañamientos' : (STATE.language === 'he' ? 'תוספות' : 'Sides');
-      const dipsLabel = STATE.language === 'es' ? 'Salsas' : (STATE.language === 'he' ? 'רטבים' : 'Dips');
+      const customerLabel = STATE.order.customerName || (STATE.language === 'es' ? 'Invitado' : (STATE.language === 'he' ? 'אורח' : (STATE.language === 'xh' ? 'Undwendwe' : 'Guest')));
+      const sidesLabel = STATE.language === 'es' ? 'Acompañamientos' : (STATE.language === 'he' ? 'תוספות' : (STATE.language === 'xh' ? 'Amacala' : 'Sides'));
+      const dipsLabel = STATE.language === 'es' ? 'Salsas' : (STATE.language === 'he' ? 'רטבים' : (STATE.language === 'xh' ? 'IiSosi' : 'Dips'));
       const originLabel = isAgentSim 
-        ? (STATE.language === 'es' ? '🤖 Autoconsulta de IA' : (STATE.language === 'he' ? '🤖 בינה מלאכותית של נסיעת שירות' : '🤖 Drive-Thru AI'))
-        : (STATE.language === 'es' ? '👤 Clic de Cliente' : (STATE.language === 'he' ? '👤 לחיצת לקוח' : '👤 Customer Click'));
+        ? (STATE.language === 'es' ? '🤖 Autoconsulta de IA' : (STATE.language === 'he' ? '🤖 בינה מלאכותית של נסיעת שירות' : (STATE.language === 'xh' ? '🤖 I-AI ye-Drive-Thru' : '🤖 Drive-Thru AI')))
+        : (STATE.language === 'es' ? '👤 Clic de Cliente' : (STATE.language === 'he' ? '👤 לחיצת לקוח' : (STATE.language === 'xh' ? '👤 Ukunqakraza koMthengi' : '👤 Customer Click')));
       const placedOrderRecord = {
         id: `#ORD-${Math.floor(1000 + Math.random() * 9000)}`,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
@@ -306,12 +375,12 @@ const SIMULATED_TOOLS = {
       
       // Live order tracker logging
       const isAgentSim = window.isAgentSimulating === true;
-      const customerLabel = STATE.order.customerName || (STATE.language === 'es' ? 'Invitado' : (STATE.language === 'he' ? 'אורח' : 'Guest'));
-      const sidesLabel = STATE.language === 'es' ? 'Acompañamientos' : (STATE.language === 'he' ? 'תוספות' : 'Sides');
-      const dipsLabel = STATE.language === 'es' ? 'Salsas' : (STATE.language === 'he' ? 'רטבים' : 'Dips');
+      const customerLabel = STATE.order.customerName || (STATE.language === 'es' ? 'Invitado' : (STATE.language === 'he' ? 'אורח' : (STATE.language === 'xh' ? 'Undwendwe' : 'Guest')));
+      const sidesLabel = STATE.language === 'es' ? 'Acompañamientos' : (STATE.language === 'he' ? 'תוספות' : (STATE.language === 'xh' ? 'Amacala' : 'Sides'));
+      const dipsLabel = STATE.language === 'es' ? 'Salsas' : (STATE.language === 'he' ? 'רטבים' : (STATE.language === 'xh' ? 'IiSosi' : 'Dips'));
       const originLabel = isAgentSim 
-        ? (STATE.language === 'es' ? '🤖 Autoconsulta de IA' : (STATE.language === 'he' ? '🤖 בינה מלאכותית של נסיעת שירות' : '🤖 Drive-Thru AI'))
-        : (STATE.language === 'es' ? '👤 Clic de Cliente' : (STATE.language === 'he' ? '👤 לחיצת לקוח' : '👤 Customer Click'));
+        ? (STATE.language === 'es' ? '🤖 Autoconsulta de IA' : (STATE.language === 'he' ? '🤖 בינה מלאכותית של נסיעת שירות' : (STATE.language === 'xh' ? '🤖 I-AI ye-Drive-Thru' : '🤖 Drive-Thru AI')))
+        : (STATE.language === 'es' ? '👤 Clic de Cliente' : (STATE.language === 'he' ? '👤 לחיצת לקוח' : (STATE.language === 'xh' ? '👤 Ukunqakraza koMthengi' : '👤 Customer Click')));
       const placedOrderRecord = {
         id: `#ORD-${Math.floor(1000 + Math.random() * 9000)}`,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
@@ -640,7 +709,7 @@ function updateLoyaltyUI() {
   const listEl = document.getElementById('interns-list');
   if (!listEl) return;
 
-  const likesLabel = STATE.language === 'es' ? 'Le gusta' : (STATE.language === 'he' ? 'אוהב/ת' : 'Likes');
+  const likesLabel = STATE.language === 'es' ? 'Le gusta' : (STATE.language === 'he' ? 'אוהב/ת' : (STATE.language === 'xh' ? 'Uthanda' : 'Likes'));
   listEl.innerHTML = STATE.loyaltyMembers.map(m => `
     <div style="background: rgba(245, 158, 11, 0.03); border: 1px solid rgba(245, 158, 11, 0.08); border-radius: 6px; padding: 0.5rem 0.75rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-top: 0.5rem;">
       <div>
@@ -654,7 +723,7 @@ function updateLoyaltyUI() {
   const removeSelect = document.getElementById('remove-member-name');
   if (removeSelect) {
     if (STATE.loyaltyMembers.length === 0) {
-      const emptyMsg = STATE.language === 'es' ? 'No hay miembros registrados' : (STATE.language === 'he' ? 'אין חברים רשומים' : 'No members registered');
+      const emptyMsg = STATE.language === 'es' ? 'No hay miembros registrados' : (STATE.language === 'he' ? 'אין חברים רשומים' : (STATE.language === 'xh' ? 'Akukho malungu abhalisiweyo' : 'No members registered'));
       removeSelect.innerHTML = `<option value="">${emptyMsg}</option>`;
     } else {
       removeSelect.innerHTML = STATE.loyaltyMembers.map(m => `
@@ -669,12 +738,12 @@ function updateSuggestionsUI() {
   if (!feedEl) return;
   
   if (!STATE.suggestions || STATE.suggestions.length === 0) {
-    const emptyMsg = STATE.language === 'es' ? 'No hay sugerencias enviadas aún.' : (STATE.language === 'he' ? 'אין הצעות שנשלחו עדיין.' : 'No suggestions submitted yet.');
+    const emptyMsg = STATE.language === 'es' ? 'No hay sugerencias enviadas aún.' : (STATE.language === 'he' ? 'אין הצעות שנשלחו עדיין.' : (STATE.language === 'xh' ? 'Akukho ngcebiso zingenisiweyo okwangoku' : 'No suggestions submitted yet.'));
     feedEl.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-dark); text-align: center; padding: 1rem;">${emptyMsg}</div>`;
     return;
   }
   
-  const feedbackLabel = STATE.language === 'es' ? 'Comentario Recibido' : (STATE.language === 'he' ? 'משוב שהתקבל' : 'Feedback Received');
+  const feedbackLabel = STATE.language === 'es' ? 'Comentario Recibido' : (STATE.language === 'he' ? 'משוב שהתקבל' : (STATE.language === 'xh' ? 'Ingxelo eFunyenweyo' : 'Feedback Received'));
   
   feedEl.innerHTML = STATE.suggestions.map(sug => `
     <div style="background: rgba(10, 4, 1, 0.3); border: 1px solid rgba(245, 158, 11, 0.12); border-radius: 6px; padding: 0.6rem 0.8rem; display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; margin-bottom: 0.5rem;">
@@ -711,7 +780,7 @@ function applyLanguage() {
   document.documentElement.lang = lang;
 
   // Update active segmented button styles
-  const langs = ['en', 'es', 'he'];
+  const langs = ['en', 'es', 'he', 'xh'];
   langs.forEach(l => {
     const btn = document.getElementById(`lang-btn-${l}`);
     if (btn) {
@@ -821,7 +890,7 @@ function applyLanguage() {
   if (statusEl) {
     const currentText = statusEl.textContent.trim();
     let matchedKey = null;
-    for (const l of ['en', 'es', 'he']) {
+    for (const l of ['en', 'es', 'he', 'xh']) {
       const key = Object.keys(TRANSLATIONS[l]).find(k => TRANSLATIONS[l][k] === currentText);
       if (key) {
         matchedKey = key;
@@ -830,7 +899,7 @@ function applyLanguage() {
     }
     if (matchedKey && t[matchedKey]) {
       statusEl.textContent = t[matchedKey];
-    } else if (currentText === 'Your turn! Make a move.' || currentText === '¡Tu turno! Haz un movimiento.' || currentText === 'תורך! בצע מהלך.') {
+    } else if (currentText === 'Your turn! Make a move.' || currentText === '¡Tu turno! Haz un movimiento.' || currentText === 'תורך! בצע מהלך.' || currentText === 'Lithuba lakho! Yenza inyathelo.') {
       statusEl.textContent = t.tttStatus;
     }
   }
@@ -898,6 +967,7 @@ function applyLanguage() {
 function toggleLanguage() {
   if (STATE.language === 'en') STATE.language = 'es';
   else if (STATE.language === 'es') STATE.language = 'he';
+  else if (STATE.language === 'he') STATE.language = 'xh';
   else STATE.language = 'en';
   applyLanguage();
 }
