@@ -70,7 +70,8 @@ const TRANSLATIONS = {
     tttChefCalculating: "Chef bot is calculating counter-move...",
     tttYouWon: "🎉 You won! Tasty victory.",
     tttDraw: "🤝 It is a draw! Bucket is empty.",
-    tttBotWon: "🌶️ Bot won! Too spicy for you."
+    tttBotWon: "🌶️ Bot won! Too spicy for you.",
+    adminLoginError: "Invalid PIN! Try again."
   },
   es: {
     langBtn: "🇺🇸 Cambiar a Inglés",
@@ -138,7 +139,77 @@ const TRANSLATIONS = {
     tttChefCalculating: "El bot Chef está calculando su contraataque...",
     tttYouWon: "🎉 ¡Ganaste! Sabrosa victoria.",
     tttDraw: "🤝 ¡Es un empate! El balde está vacío.",
-    tttBotWon: "🌶️ ¡El bot ganó! Demasiado picante para ti."
+    tttBotWon: "🌶️ ¡El bot ganó! Demasiado picante para ti.",
+    adminLoginError: "¡Código PIN inválido! Intente de nuevo."
+  },
+  he: {
+    langBtn: "🇮🇱 עברית",
+    connectionSimulated: "נסיעת שירות: מדומה",
+    connectionActive: "נסיעת שירות: פעילה",
+    connectionConnected: "מארח נסיעת שירות: מחובר",
+    tagline: "ממוקם בג'רזי סיטי, נוסד ב-2026",
+    declarativeTitle: "📝 כלי הזמנה דקלרטיביים (טפסי HTML)",
+    declarativeDesc: "טפסים טבעיים שהומרו לפעולות הזמנה של בינה מלאכותית באמצעות מאפייני HTML <code>toolname</code>, <code>tooldescription</code>, ו-<code>toolautosubmit</code>.",
+    bucketSizeLabel: "גודל הדלי",
+    spiceStyleLabel: "סגנון התיבול",
+    sideDishLabel: "בחר תוספת",
+    btnPlaceBucket: "🍗 בצע הזמנת דלי",
+    btnPlaceSandwich: "🥪 בצע הזמנת כריך ($10.99)",
+    customerNameLabel: "שם הלקוח",
+    btnSetOrderName: "👤 קבע שם להזמנה",
+    primarySauceLabel: "רוטב ראשון",
+    secondarySauceLabel: "רוטב שני",
+    btnConfigureSauces: "🍯 הגדר רטבים",
+    newSuggestionLabel: "הצעה לפריט תפריט או טעם חדש",
+    btnSubmitSuggestion: "💡 שלח הצעה",
+    loyaltyTitle: "👥 חברי מועדון Crispy Rewards",
+    voiceAssistantTitle: "🗣️ עוזר קולי של נסיעת שירות בינה מלאכותית",
+    voiceAssistantDesc: "הזמינו בשפה טבעית. הבינה המלאכותית המדומה של נסיעת השירות תתאים את בקשתכם לתוכניות WebMCP פעילות, תמלא טפסים, תאיר פאנלים ותאמת פרמטרים של התפריט.",
+    presetLabel: "הזמנות לקוחות קבועות מראש",
+    promptLabel: "הנחיית לקוח (למשל \"אני רוצה דלי של 10 חלקים עם סלט כרוב\")",
+    btnOrder: "הזמן",
+    terminalTitle: "עוזר-נסיעת-שירות @ לקוח-webmcp",
+    tttTitle: "🎮 זירת בינה מלאכותית של קריספי-איקס-עיגול",
+    tttDesc: "שחקו נגד שפי הבוט! אתם מניחים פולקעס (<strong style=\"color: var(--color-primary);\">🍗</strong>), הבוטים מניחים פלפלים חריפים (<strong style=\"color: var(--color-purple);\">🌶️</strong>).",
+    tttDifficultyLabel: "רמת קושי של הבוט",
+    tttResetBtn: "איפוס",
+    tttStatus: "תורך! בצע מהלך.",
+    tttScorePlayer: "שחקן (🍗)",
+    tttScoreDraws: "תיקו",
+    tttScoreBot: "בוט (🌶️)",
+    adminModeBtnLocked: "🔒 מצב מנהל קופאי",
+    adminModeBtnUnlocked: "🔓 מנהל קופאי: פתוח",
+    adminPasscodeTitle: "הזן קוד מנהל",
+    adminSubmitBtn: "שלח",
+    adminCancelBtn: "ביטול",
+    adminDashboardTitle: "🔑 לוח בקרה של הקופאי (פעיל)",
+    adminLockBtn: "נעילה",
+    adminLiveOrdersTitle: "עדכוני הזמנות חיים",
+    adminLiveOrdersDesc: "מציג עדכוני הזמנות חיים שנשלחו דרך ממשק המשתמש או הפעלת כלי בינה מלאכותית.",
+    adminRemoveRewardsTitle: "🗑️ הסר חבר מועדון",
+    adminRemoveRewardsDesc: "מבטל ומוחק פרופיל מועדון Crispy Rewards פעיל.",
+    adminRemoveSelectLabel: "בחר חבר מועדון להסרה",
+    adminRemoveBtn: "🗑️ הסר חבר",
+    adminKitchenToolsTitle: "⚙️ כלי פונקציות חוזרות של בקר המטבח",
+    adminKitchenToolsDesc: "נקודות קצה אימפרטיביות של JavaScript הרשומות באמצעות <code>document.modelContext.registerTool()</code>.",
+    adminSuggestionsTitle: "💡 הצעות לתפריט מצד לקוחות",
+    adminSuggestionsDesc: "משוב שנשלח על ידי אורחים המציעים טעמים או פריטים חדשים לתפריט.",
+    loyaltyMemberNameLabel: "שם חבר המועדון",
+    loyaltyFavoriteSideLabel: "תוספת מועדפת",
+    customerNamePlaceholder: "למשל אלי וולף",
+    suggestionPlaceholder: "הזן את ההצעה שלך כאן...",
+    loyaltyNamePlaceholder: "למשל אליס מרסר",
+    loyaltyFavoritePlaceholder: "למשל צ'יפס ואפל",
+    agentPromptPlaceholder: "אמור את ההזמנה שלך כאן...",
+    btnRegisterMember: "📋 רשום חבר",
+    btnRemoveMember: "🗑️ הסר חבר",
+    tttYourTurn: "תורך! הנח פולקע.",
+    tttCellFilled: "המשבצת כבר תפוסה!",
+    tttChefCalculating: "בוט השף מציב מהלך נגד...",
+    tttYouWon: "🎉 ניצחת! ניצחון טעים.",
+    tttDraw: "🤝 תיקו! הדלי ריק.",
+    tttBotWon: "🌶️ הבוט ניצח! חריף מדי בשבילך.",
+    adminLoginError: "קוד PIN לא חוקי! נסה שוב."
   }
 };
 
@@ -194,12 +265,12 @@ const SIMULATED_TOOLS = {
       
       // Live order tracker logging
       const isAgentSim = window.isAgentSimulating === true;
-      const customerLabel = STATE.order.customerName || (STATE.language === 'es' ? 'Invitado' : 'Guest');
-      const sidesLabel = STATE.language === 'es' ? 'Acompañamientos' : 'Sides';
-      const dipsLabel = STATE.language === 'es' ? 'Salsas' : 'Dips';
+      const customerLabel = STATE.order.customerName || (STATE.language === 'es' ? 'Invitado' : (STATE.language === 'he' ? 'אורח' : 'Guest'));
+      const sidesLabel = STATE.language === 'es' ? 'Acompañamientos' : (STATE.language === 'he' ? 'תוספות' : 'Sides');
+      const dipsLabel = STATE.language === 'es' ? 'Salsas' : (STATE.language === 'he' ? 'רטבים' : 'Dips');
       const originLabel = isAgentSim 
-        ? (STATE.language === 'es' ? '🤖 Autoconsulta de IA' : '🤖 Drive-Thru AI')
-        : (STATE.language === 'es' ? '👤 Clic de Cliente' : '👤 Customer Click');
+        ? (STATE.language === 'es' ? '🤖 Autoconsulta de IA' : (STATE.language === 'he' ? '🤖 בינה מלאכותית של נסיעת שירות' : '🤖 Drive-Thru AI'))
+        : (STATE.language === 'es' ? '👤 Clic de Cliente' : (STATE.language === 'he' ? '👤 לחיצת לקוח' : '👤 Customer Click'));
       const placedOrderRecord = {
         id: `#ORD-${Math.floor(1000 + Math.random() * 9000)}`,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
@@ -235,12 +306,12 @@ const SIMULATED_TOOLS = {
       
       // Live order tracker logging
       const isAgentSim = window.isAgentSimulating === true;
-      const customerLabel = STATE.order.customerName || (STATE.language === 'es' ? 'Invitado' : 'Guest');
-      const sidesLabel = STATE.language === 'es' ? 'Acompañamientos' : 'Sides';
-      const dipsLabel = STATE.language === 'es' ? 'Salsas' : 'Dips';
+      const customerLabel = STATE.order.customerName || (STATE.language === 'es' ? 'Invitado' : (STATE.language === 'he' ? 'אורח' : 'Guest'));
+      const sidesLabel = STATE.language === 'es' ? 'Acompañamientos' : (STATE.language === 'he' ? 'תוספות' : 'Sides');
+      const dipsLabel = STATE.language === 'es' ? 'Salsas' : (STATE.language === 'he' ? 'רטבים' : 'Dips');
       const originLabel = isAgentSim 
-        ? (STATE.language === 'es' ? '🤖 Autoconsulta de IA' : '🤖 Drive-Thru AI')
-        : (STATE.language === 'es' ? '👤 Clic de Cliente' : '👤 Customer Click');
+        ? (STATE.language === 'es' ? '🤖 Autoconsulta de IA' : (STATE.language === 'he' ? '🤖 בינה מלאכותית של נסיעת שירות' : '🤖 Drive-Thru AI'))
+        : (STATE.language === 'es' ? '👤 Clic de Cliente' : (STATE.language === 'he' ? '👤 לחיצת לקוח' : '👤 Customer Click'));
       const placedOrderRecord = {
         id: `#ORD-${Math.floor(1000 + Math.random() * 9000)}`,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
@@ -569,7 +640,7 @@ function updateLoyaltyUI() {
   const listEl = document.getElementById('interns-list');
   if (!listEl) return;
 
-  const likesLabel = STATE.language === 'es' ? 'Le gusta' : 'Likes';
+  const likesLabel = STATE.language === 'es' ? 'Le gusta' : (STATE.language === 'he' ? 'אוהב/ת' : 'Likes');
   listEl.innerHTML = STATE.loyaltyMembers.map(m => `
     <div style="background: rgba(245, 158, 11, 0.03); border: 1px solid rgba(245, 158, 11, 0.08); border-radius: 6px; padding: 0.5rem 0.75rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-top: 0.5rem;">
       <div>
@@ -583,7 +654,7 @@ function updateLoyaltyUI() {
   const removeSelect = document.getElementById('remove-member-name');
   if (removeSelect) {
     if (STATE.loyaltyMembers.length === 0) {
-      const emptyMsg = STATE.language === 'es' ? 'No hay miembros registrados' : 'No members registered';
+      const emptyMsg = STATE.language === 'es' ? 'No hay miembros registrados' : (STATE.language === 'he' ? 'אין חברים רשומים' : 'No members registered');
       removeSelect.innerHTML = `<option value="">${emptyMsg}</option>`;
     } else {
       removeSelect.innerHTML = STATE.loyaltyMembers.map(m => `
@@ -598,12 +669,12 @@ function updateSuggestionsUI() {
   if (!feedEl) return;
   
   if (!STATE.suggestions || STATE.suggestions.length === 0) {
-    const emptyMsg = STATE.language === 'es' ? 'No hay sugerencias enviadas aún.' : 'No suggestions submitted yet.';
+    const emptyMsg = STATE.language === 'es' ? 'No hay sugerencias enviadas aún.' : (STATE.language === 'he' ? 'אין הצעות שנשלחו עדיין.' : 'No suggestions submitted yet.');
     feedEl.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-dark); text-align: center; padding: 1rem;">${emptyMsg}</div>`;
     return;
   }
   
-  const feedbackLabel = STATE.language === 'es' ? 'Comentario Recibido' : 'Feedback Received';
+  const feedbackLabel = STATE.language === 'es' ? 'Comentario Recibido' : (STATE.language === 'he' ? 'משוב שהתקבל' : 'Feedback Received');
   
   feedEl.innerHTML = STATE.suggestions.map(sug => `
     <div style="background: rgba(10, 4, 1, 0.3); border: 1px solid rgba(245, 158, 11, 0.12); border-radius: 6px; padding: 0.6rem 0.8rem; display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; margin-bottom: 0.5rem;">
@@ -635,8 +706,24 @@ function applyLanguage() {
   const t = TRANSLATIONS[lang];
   if (!t) return;
 
-  const langBtn = document.getElementById('lang-btn');
-  if (langBtn) langBtn.textContent = t.langBtn;
+  // Handle document direction (RTL for Hebrew)
+  document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
+  document.documentElement.lang = lang;
+
+  // Update active segmented button styles
+  const langs = ['en', 'es', 'he'];
+  langs.forEach(l => {
+    const btn = document.getElementById(`lang-btn-${l}`);
+    if (btn) {
+      if (l === lang) {
+        btn.style.background = 'var(--color-primary)';
+        btn.style.color = '#000000';
+      } else {
+        btn.style.background = 'transparent';
+        btn.style.color = 'var(--text-muted)';
+      }
+    }
+  });
 
   const tagline = document.getElementById('app-tagline');
   if (tagline) tagline.textContent = t.tagline;
@@ -733,14 +820,18 @@ function applyLanguage() {
   const statusEl = document.getElementById('ttt-status');
   if (statusEl) {
     const currentText = statusEl.textContent.trim();
-    const oldLang = lang === 'en' ? 'es' : 'en';
-    const oldT = TRANSLATIONS[oldLang];
-    const newT = TRANSLATIONS[lang];
-    const matchedKey = Object.keys(oldT).find(key => oldT[key] === currentText);
-    if (matchedKey && newT[matchedKey]) {
-      statusEl.textContent = newT[matchedKey];
-    } else if (currentText === 'Your turn! Make a move.' || currentText === '¡Tu turno! Haz un movimiento.') {
-      statusEl.textContent = newT.tttStatus;
+    let matchedKey = null;
+    for (const l of ['en', 'es', 'he']) {
+      const key = Object.keys(TRANSLATIONS[l]).find(k => TRANSLATIONS[l][k] === currentText);
+      if (key) {
+        matchedKey = key;
+        break;
+      }
+    }
+    if (matchedKey && t[matchedKey]) {
+      statusEl.textContent = t[matchedKey];
+    } else if (currentText === 'Your turn! Make a move.' || currentText === '¡Tu turno! Haz un movimiento.' || currentText === 'תורך! בצע מהלך.') {
+      statusEl.textContent = t.tttStatus;
     }
   }
 
@@ -766,6 +857,9 @@ function applyLanguage() {
 
   const loginCancel = document.getElementById('admin-login-cancel');
   if (loginCancel) loginCancel.textContent = t.adminCancelBtn;
+
+  const loginError = document.getElementById('admin-login-error');
+  if (loginError) loginError.textContent = t.adminLoginError;
 
   const dashboardTitle = document.getElementById('admin-dashboard-title');
   if (dashboardTitle) dashboardTitle.innerHTML = t.adminDashboardTitle;
@@ -802,10 +896,17 @@ function applyLanguage() {
 }
 
 function toggleLanguage() {
-  STATE.language = STATE.language === 'en' ? 'es' : 'en';
+  if (STATE.language === 'en') STATE.language = 'es';
+  else if (STATE.language === 'es') STATE.language = 'he';
+  else STATE.language = 'en';
+  applyLanguage();
+}
+function setLanguage(lang) {
+  STATE.language = lang;
   applyLanguage();
 }
 window.toggleLanguage = toggleLanguage;
+window.setLanguage = setLanguage;
 
 // Drive-Thru Assistant Console logger
 function logToTerminal(type, text) {
@@ -1419,7 +1520,7 @@ function submitAdminPasscode() {
     if (btn) btn.textContent = TRANSLATIONS[STATE.language].adminModeBtnUnlocked;
     
     updateAdminOrdersUI();
-    logToTerminal('system', STATE.language === 'es' ? 'Acceso de seguridad autorizado. Modo Administrador de Cajero autenticado.' : 'Security access cleared. Cashier Admin Mode authenticated.');
+    logToTerminal('system', STATE.language === 'es' ? 'Acceso de seguridad autorizado. Modo Administrador de Cajero autenticado.' : (STATE.language === 'he' ? 'גישת אבטחה אושרה. מצב מנהל קופאי מאומת.' : 'Security access cleared. Cashier Admin Mode authenticated.'));
   } else {
     if (errorEl) errorEl.style.display = 'block';
     input.value = '';
@@ -1437,7 +1538,7 @@ function lockAdminMode() {
   if (btn) btn.textContent = TRANSLATIONS[STATE.language].adminModeBtnLocked;
   
   closeAdminLogin();
-  logToTerminal('system', STATE.language === 'es' ? 'Modo Administrador de Cajero bloqueado.' : 'Cashier Admin Mode locked.');
+  logToTerminal('system', STATE.language === 'es' ? 'Modo Administrador de Cajero bloqueado.' : (STATE.language === 'he' ? 'מצב מנהל קופאי נעול.' : 'Cashier Admin Mode locked.'));
 }
 
 function updateAdminOrdersUI() {
@@ -1445,7 +1546,7 @@ function updateAdminOrdersUI() {
   if (!feedEl) return;
   
   if (!STATE.placedOrders || STATE.placedOrders.length === 0) {
-    const emptyMsg = STATE.language === 'es' ? 'No hay pedidos realizados aún.' : 'No orders placed yet.';
+    const emptyMsg = STATE.language === 'es' ? 'No hay pedidos realizados aún.' : (STATE.language === 'he' ? 'אין הזמנות שבוצעו עדיין.' : 'No orders placed yet.');
     feedEl.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-dark); text-align: center; padding: 1rem;">${emptyMsg}</div>`;
     return;
   }
@@ -1458,7 +1559,7 @@ function updateAdminOrdersUI() {
       </div>
       <div style="color: var(--text-main); font-weight: 500;">${escapeHTML(ord.details)}</div>
       <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed rgba(245,158,11,0.1); padding-top: 0.4rem; font-size: 0.75rem; margin-top: 0.2rem;">
-        <span style="color: var(--text-muted); font-size: 0.75rem;">${STATE.language === 'es' ? 'Origen:' : 'Source:'} ${ord.origin}</span>
+        <span style="color: var(--text-muted); font-size: 0.75rem;">${STATE.language === 'es' ? 'Origen:' : (STATE.language === 'he' ? 'מקור:' : 'Source:')} ${ord.origin}</span>
         <span style="font-weight: 600; color: var(--color-accent); font-family: 'Fira Code', monospace; font-size: 0.85rem;">${ord.price}</span>
       </div>
     </div>

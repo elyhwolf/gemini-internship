@@ -23,9 +23,11 @@
       </div>
       
       <div style="display: flex; align-items: center; gap: 1rem;">
-        <button type="button" id="lang-btn" class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="toggleLanguage()">
-          🇪🇸 Switch to Español
-        </button>
+        <div class="lang-selector-group" style="display: flex; gap: 0.25rem; background: rgba(0, 0, 0, 0.4); padding: 0.25rem; border-radius: 20px; border: 1px solid var(--card-border);">
+          <button type="button" id="lang-btn-en" class="btn lang-btn active" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-radius: 15px; border: none; background: var(--color-primary); color: #000; box-shadow: none;" onclick="setLanguage('en')">🇺🇸 EN</button>
+          <button type="button" id="lang-btn-es" class="btn lang-btn" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-radius: 15px; border: none; background: transparent; color: var(--text-muted); box-shadow: none;" onclick="setLanguage('es')">🇪🇸 ES</button>
+          <button type="button" id="lang-btn-he" class="btn lang-btn" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-radius: 15px; border: none; background: transparent; color: var(--text-muted); box-shadow: none;" onclick="setLanguage('he')">🇮🇱 עב</button>
+        </div>
         <div id="connection-status" class="status-badge">
           <span class="status-dot"></span>
           Drive-Thru Host: Connected
