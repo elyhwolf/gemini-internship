@@ -784,6 +784,27 @@
         <div class="session-dots" id="session-dots" aria-label="Pomodoro sessions completed"></div>
       </div>
 
+      <!-- Duration Control Card -->
+      <div class="card settings-card" style="padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+        <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted);" id="lbl-settings-title">
+          Durations (min)
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <label for="input-work-duration" style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600;" id="lbl-input-work">Focus</label>
+            <input type="number" id="input-work-duration" min="1" max="180" value="25" style="width: 54px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; padding: 4px 6px; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; text-align: center; outline: none; border-color: var(--border);" onfocus="this.style.borderColor='var(--orange)'" onblur="this.style.borderColor='var(--border)'" />
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <label for="input-short-duration" style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600;" id="lbl-input-short">Short</label>
+            <input type="number" id="input-short-duration" min="1" max="180" value="5" style="width: 54px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; padding: 4px 6px; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; text-align: center; outline: none; border-color: var(--border);" onfocus="this.style.borderColor='var(--lime)'" onblur="this.style.borderColor='var(--border)'" />
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <label for="input-long-duration" style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600;" id="lbl-input-long">Long</label>
+            <input type="number" id="input-long-duration" min="1" max="180" value="15" style="width: 54px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; padding: 4px 6px; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; text-align: center; outline: none; border-color: var(--border);" onfocus="this.style.borderColor='var(--lime)'" onblur="this.style.borderColor='var(--border)'" />
+          </div>
+        </div>
+      </div>
+
       <!-- Stats bar -->
       <div class="stats-bar">
         <div class="card stat-card orange-theme">
@@ -880,7 +901,11 @@
       toastBreakDone: "⏰ Break over! Ready to focus?",
       toastTaskDone: '✅ "{task}" completed!',
       likesLabel: "Likes",
-      noTasksMsg: "No tasks active"
+      noTasksMsg: "No tasks active",
+      durationsTitle: "Durations (min)",
+      durationsFocus: "Focus",
+      durationsShort: "Short",
+      durationsLong: "Long"
     },
     es: {
       sponsor: "Patrocinado por Ely's Hot Chicken",
@@ -904,7 +929,11 @@
       toastBreakDone: "⏰ ¡Descanso terminado! ¿Listo para enfocarte?",
       toastTaskDone: '✅ ¡"{task}" completado!',
       likesLabel: "Le gusta",
-      noTasksMsg: "No hay tareas activas"
+      noTasksMsg: "No hay tareas activas",
+      durationsTitle: "Duración (min)",
+      durationsFocus: "Enfoque",
+      durationsShort: "Corto",
+      durationsLong: "Largo"
     },
     he: {
       sponsor: "בחסות Ely's Hot Chicken",
@@ -928,7 +957,11 @@
       toastBreakDone: "⏰ ההפסקה הסתיימה! מוכנים להתרכז?",
       toastTaskDone: '✅ "{task}" הושלם!',
       likesLabel: "אוהב/ת",
-      noTasksMsg: "אין משימות פעילות"
+      noTasksMsg: "אין משימות פעילות",
+      durationsTitle: "מרווחים (דקות)",
+      durationsFocus: "ריכוז",
+      durationsShort: "קצרה",
+      durationsLong: "ארוכה"
     },
     xh: {
       sponsor: "Ixhaswe yi-Ely's Hot Chicken",
@@ -952,7 +985,11 @@
       toastBreakDone: "⏰ Ikhefu liphelile! Ukulungele ukugxila?",
       toastTaskDone: '✅ "{task}" igqityiwe!',
       likesLabel: "Uthanda",
-      noTasksMsg: "Akukho misebenzi isebenzayo"
+      noTasksMsg: "Akukho misebenzi isebenzayo",
+      durationsTitle: "Amaxesha (imiz)",
+      durationsFocus: "Gxila",
+      durationsShort: "Ifutshane",
+      durationsLong: "Elide"
     }
   };
 
@@ -1023,6 +1060,12 @@
     const labelKey = MODES[mode].labelKey;
     document.getElementById('timer-mode-label').textContent = t[labelKey];
 
+    // Durations labels
+    document.getElementById('lbl-settings-title').textContent = t.durationsTitle;
+    document.getElementById('lbl-input-work').textContent = t.durationsFocus;
+    document.getElementById('lbl-input-short').textContent = t.durationsShort;
+    document.getElementById('lbl-input-long').textContent = t.durationsLong;
+
     // Re-render tasks to update completed checkbox labels/aria
     renderTasks();
   }
@@ -1048,6 +1091,91 @@
     document.getElementById('btn-play').textContent = '▶';
     document.getElementById('timer-card').classList.remove('running');
     clearInterval(interval);
+  }
+
+  function resetTimer() {
+    pauseTimer();
+    remaining = MODES[mode].duration;
+    totalSecs  = remaining;
+    updateDisplay();
+    updateRing();
+  }
+
+  function skipSession() {
+    pauseTimer();
+    completeSession(false);
+  }
+
+  function tick() {
+    remaining--;
+    if (remaining <= 0) {
+      remaining = 0;
+      updateDisplay();
+      updateRing();
+      completeSession(true);
+      return;
+    }
+    updateDisplay();
+    updateRing();
+
+    // Count focus minutes
+    if (mode === 'work') {
+      focusMinutes = Math.round((MODES.work.duration - remaining) / 60);
+      updateStats();
+    }
+  }
+
+  function completeSession(completed) {
+    pauseTimer();
+    playBeep(completed);
+
+    const t = TRANSLATIONS[currentLanguage];
+
+    if (mode === 'work' && completed) {
+      sessionsToday++;
+      cycleSession = (cycleSession + 1) % SESSIONS_PER_CYCLE;
+      focusMinutes += Math.round(MODES.work.duration / 60);
+
+      // Increment pomodoros on active task
+      if (activeTaskId !== null) {
+        const activeTask = tasks.find(tsk => tsk.id === activeTaskId);
+        if (activeTask) { activeTask.pomodoros++; renderTasks(); }
+      }
+
+      updateStats();
+      updateSessionDots();
+
+      if (cycleSession === 0) {
+        showToast(t.toastCycleDone);
+        switchMode('long');
+      } else {
+        showToast(t.toastSessionDone);
+        switchMode('short');
+      }
+    } else if (mode !== 'work' && completed) {
+      showToast(t.toastBreakDone);
+      switchMode('work');
+    }
+  }
+
+  function playBeep(success) {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const notes = success ? [523.25, 659.25, 783.99] : [440, 349.23];
+      notes.forEach((freq, i) => {
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = freq;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.18);
+        gain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + i * 0.18 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.18 + 0.35);
+        osc.start(ctx.currentTime + i * 0.18);
+        osc.stop(ctx.currentTime + i * 0.18 + 0.4);
+      });
+    } catch(e) { /* Audio not available */ }
   }
 
   // ── Mode Switching ──────────────────────────────────────────────────────
@@ -1094,6 +1222,8 @@
   // Expose triggers
   window.switchMode = switchMode;
   window.toggleTimer = toggleTimer;
+  window.resetTimer = resetTimer;
+  window.skipSession = skipSession;
 
   function updateSessionDots() {
     const el = document.getElementById('session-dots');
@@ -1225,6 +1355,35 @@
     return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
+  // ── Duration settings listeners ──────────────────────────────────────────
+  function setupDurationSettings() {
+    const inputWork = document.getElementById('input-work-duration');
+    const inputShort = document.getElementById('input-short-duration');
+    const inputLong = document.getElementById('input-long-duration');
+
+    if (inputWork) {
+      inputWork.addEventListener('input', (e) => {
+        const val = Math.max(1, parseInt(e.target.value) || 25);
+        MODES.work.duration = val * 60;
+        if (mode === 'work') resetTimer();
+      });
+    }
+    if (inputShort) {
+      inputShort.addEventListener('input', (e) => {
+        const val = Math.max(1, parseInt(e.target.value) || 5);
+        MODES.short.duration = val * 60;
+        if (mode === 'short') resetTimer();
+      });
+    }
+    if (inputLong) {
+      inputLong.addEventListener('input', (e) => {
+        const val = Math.max(1, parseInt(e.target.value) || 15);
+        MODES.long.duration = val * 60;
+        if (mode === 'long') resetTimer();
+      });
+    }
+  }
+
   // ── Init ─────────────────────────────────────────────────────────────────
   (function init() {
     const today = new Date().toDateString();
@@ -1238,6 +1397,7 @@
     
     // Set initial language and populate translations
     setLanguage(currentLanguage);
+    setupDurationSettings();
 
     updateDisplay();
     updateRing();
