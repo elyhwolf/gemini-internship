@@ -1,1411 +1,540 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ely's Hot Chicken Focus Timer — Sponsored Pomodoro App</title>
-  <meta name="description" content="A premium Pomodoro focus timer sponsored by Ely's Hot Chicken, with integrated task tracking, session stats, and fiery orange and lime green themes." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg-base: #06070a;
-      --bg-card: rgba(255, 255, 255, 0.03);
-      --bg-card-hover: rgba(255, 255, 255, 0.06);
-      --border: rgba(255, 255, 255, 0.07);
-      --border-bright: rgba(255, 255, 255, 0.14);
-
-      /* Lime Green */
-      --lime: #a3e635;
-      --lime-light: #bef264;
-      --lime-dim: rgba(163, 230, 53, 0.12);
-
-      /* Fiery Orange */
-      --orange: #f97316;
-      --orange-light: #fdba74;
-      --orange-dim: rgba(249, 115, 22, 0.15);
-
-      /* Chili Red */
-      --red: #ef4444;
-      --red-dim: rgba(239, 68, 68, 0.15);
-
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --text-dim: #475569;
-
-      --radius: 20px;
-      --radius-sm: 12px;
-      --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-
-      /* Timer ring */
-      --ring-size: 280px;
-      --ring-stroke: 10;
-      --ring-r: 125;
-      --ring-circ: 785.4; /* 2*pi*125 */
-    }
-
-    html, body {
-      height: 100%;
-      background: var(--bg-base);
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-      overflow-x: hidden;
-    }
-
-    /* ── Ambient Glow Background ── */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 65% 55% at 15% 15%, rgba(249, 115, 22, 0.15) 0%, transparent 60%),
-        radial-gradient(ellipse 55% 45% at 85% 85%, rgba(163, 230, 53, 0.12) 0%, transparent 60%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .app {
-      position: relative;
-      z-index: 1;
-      min-height: 100vh;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
-
-    /* ── Header ── */
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 24px 0 20px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .logo-container {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .logo-icon {
-      width: 36px;
-      height: 36px;
-      background: linear-gradient(135deg, var(--orange), var(--lime));
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      box-shadow: 0 0 15px rgba(249, 115, 22, 0.3);
-    }
-
-    .logo-text {
-      font-size: 1.25rem;
-      font-weight: 900;
-      letter-spacing: -0.03em;
-    }
-
-    .logo-text span { color: var(--lime); }
-
-    .sponsor-badge {
-      font-size: 0.62rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: var(--orange-light);
-      background: rgba(249, 115, 22, 0.1);
-      border: 1px solid rgba(249, 115, 22, 0.2);
-      padding: 2px 8px;
-      border-radius: 4px;
-      align-self: flex-start;
-      margin-top: 4px;
-    }
-
-    .header-controls {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .lang-selector-group {
-      display: flex;
-      gap: 0.25rem;
-      background: rgba(0, 0, 0, 0.4);
-      padding: 0.25rem;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-    }
-
-    .lang-btn {
-      padding: 0.35rem 0.7rem;
-      font-size: 0.75rem;
-      border-radius: 15px;
-      border: none;
-      background: transparent;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-weight: 600;
-      box-shadow: none;
-      transition: all var(--transition);
-    }
-
-    .lang-btn.active {
-      background: var(--orange);
-      color: #000000;
-    }
-
-    /* ── Main grid ── */
-    main {
-      display: grid;
-      grid-template-columns: 1fr 350px;
-      gap: 28px;
-      padding: 28px 0;
-      align-items: start;
-    }
-
-    /* ── Card ── */
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-    }
-
-    /* ── Timer Section ── */
-    .timer-section {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    /* Mode tabs */
-    .mode-tabs {
-      display: flex;
-      gap: 6px;
-      background: rgba(0, 0, 0, 0.3);
-      padding: 5px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-    }
-
-    .mode-tab {
-      flex: 1;
-      padding: 10px 14px;
-      border: none;
-      border-radius: 10px;
-      background: transparent;
-      color: var(--text-muted);
-      font-family: 'Inter', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all var(--transition);
-      letter-spacing: 0.02em;
-    }
-
-    .mode-tab.active {
-      background: var(--orange-dim);
-      color: var(--orange-light);
-      border: 1px solid rgba(249, 115, 22, 0.3);
-    }
-
-    .mode-tab.active[data-mode="short"] {
-      background: var(--lime-dim);
-      color: var(--lime);
-      border-color: rgba(163, 230, 53, 0.3);
-    }
-
-    .mode-tab.active[data-mode="long"] {
-      background: var(--lime-dim);
-      color: var(--lime);
-      border-color: rgba(163, 230, 53, 0.3);
-    }
-
-    .mode-tab:hover:not(.active) {
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--text);
-    }
-
-    /* Timer card */
-    .timer-card {
-      padding: 44px 32px 38px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 32px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .timer-card::before {
-      content: '';
-      position: absolute;
-      inset: -1px;
-      border-radius: var(--radius);
-      background: linear-gradient(135deg, rgba(249, 115, 22, 0.25), transparent 50%, rgba(163, 230, 53, 0.15));
-      z-index: -1;
-      opacity: 0;
-      transition: opacity var(--transition);
-    }
-
-    .timer-card.running::before { opacity: 1; }
-
-    /* SVG Ring Timer */
-    .ring-container {
-      position: relative;
-      width: var(--ring-size);
-      height: var(--ring-size);
-    }
-
-    .ring-svg {
-      width: 100%;
-      height: 100%;
-      transform: rotate(-90deg);
-    }
-
-    .ring-bg {
-      fill: none;
-      stroke: rgba(255, 255, 255, 0.04);
-      stroke-width: var(--ring-stroke);
-    }
-
-    .ring-progress {
-      fill: none;
-      stroke: var(--orange);
-      stroke-width: var(--ring-stroke);
-      stroke-linecap: round;
-      stroke-dasharray: var(--ring-circ);
-      stroke-dashoffset: 0;
-      transition: stroke-dashoffset 1s linear, stroke 0.4s ease;
-      filter: drop-shadow(0 0 10px var(--orange));
-    }
-
-    .ring-progress.short { stroke: var(--lime); filter: drop-shadow(0 0 10px var(--lime)); }
-    .ring-progress.long  { stroke: var(--lime-light);  filter: drop-shadow(0 0 10px var(--lime-light));  }
-
-    .timer-inner {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-    }
-
-    .timer-display {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 3.8rem;
-      font-weight: 700;
-      letter-spacing: -0.04em;
-      line-height: 1;
-      color: var(--text);
-      transition: color 0.3s;
-    }
-
-    .timer-mode-label {
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      font-weight: 600;
-    }
-
-    /* Pulse ring animation */
-    @keyframes pulse-ring {
-      0%, 100% { opacity: 0.4; transform: scale(1); }
-      50% { opacity: 0.15; transform: scale(1.04); }
-    }
-
-    .ring-pulse {
-      position: absolute;
-      inset: -12px;
-      border-radius: 50%;
-      border: 1px solid var(--orange);
-      animation: pulse-ring 2s ease-in-out infinite;
-      display: none;
-    }
-
-    .timer-card.running .ring-pulse { display: block; }
-
-    /* Controls */
-    .timer-controls {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .btn-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      border: 1px solid var(--border-bright);
-      background: rgba(255, 255, 255, 0.04);
-      color: var(--text-muted);
-      font-size: 1.2rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all var(--transition);
-    }
-
-    .btn-icon:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--text);
-      border-color: var(--border-bright);
-    }
-
-    .btn-play {
-      width: 76px;
-      height: 76px;
-      border-radius: 50%;
-      border: none;
-      background: linear-gradient(135deg, var(--orange), #c2410c);
-      color: white;
-      font-size: 1.6rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all var(--transition);
-      box-shadow: 0 0 25px rgba(249, 115, 22, 0.45), 0 4px 16px rgba(0, 0, 0, 0.4);
-    }
-
-    .btn-play:hover {
-      transform: scale(1.06);
-      box-shadow: 0 0 38px rgba(249, 115, 22, 0.65), 0 4px 20px rgba(0, 0, 0, 0.5);
-    }
-
-    .btn-play:active { transform: scale(0.97); }
-
-    /* Session dots */
-    .session-dots {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .session-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--text-dim);
-      transition: all var(--transition);
-    }
-
-    .session-dot.done {
-      background: var(--orange);
-      box-shadow: 0 0 8px var(--orange);
-    }
-
-    .session-dot.current {
-      background: var(--orange-light);
-      box-shadow: 0 0 10px var(--orange-light);
-      animation: dot-pulse 1.5s ease-in-out infinite;
-    }
-
-    @keyframes dot-pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.3); }
-    }
-
-    /* ── Task Panel ── */
-    .task-panel {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .panel-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px 20px 0;
-    }
-
-    .panel-title {
-      font-size: 0.85rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--text-muted);
-    }
-
-    .task-count-badge {
-      background: var(--orange-dim);
-      color: var(--orange-light);
-      border: 1px solid rgba(249, 115, 22, 0.25);
-      border-radius: 20px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      padding: 2px 9px;
-      font-family: 'JetBrains Mono', monospace;
-    }
-
-    /* Add task */
-    .add-task-form {
-      padding: 0 16px;
-      display: flex;
-      gap: 8px;
-    }
-
-    .task-input {
-      flex: 1;
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 10px 14px;
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-      font-size: 0.85rem;
-      outline: none;
-      transition: border-color var(--transition);
-    }
-
-    .task-input::placeholder { color: var(--text-dim); }
-
-    .task-input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px var(--orange-dim); }
-
-    .btn-add {
-      width: 38px;
-      height: 38px;
-      flex-shrink: 0;
-      border-radius: var(--radius-sm);
-      border: none;
-      background: var(--orange);
-      color: white;
-      font-size: 1.2rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all var(--transition);
-      box-shadow: 0 2px 10px rgba(249, 115, 22, 0.35);
-    }
-
-    .btn-add:hover {
-      background: var(--orange-light);
-      transform: scale(1.05);
-    }
-
-    /* Task list */
-    .task-list {
-      padding: 0 16px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      max-height: 380px;
-      overflow-y: auto;
-    }
-
-    .task-list::-webkit-scrollbar { width: 4px; }
-    .task-list::-webkit-scrollbar-track { background: transparent; }
-    .task-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-    .task-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      border-radius: var(--radius-sm);
-      background: rgba(0, 0, 0, 0.2);
-      border: 1px solid var(--border);
-      cursor: pointer;
-      transition: all var(--transition);
-      animation: task-in 0.25s ease-out;
-    }
-
-    @keyframes task-in {
-      from { opacity: 0; transform: translateY(-8px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .task-item:hover { background: rgba(255, 255, 255, 0.05); border-color: var(--border-bright); }
-
-    .task-item.active-task {
-      background: var(--orange-dim);
-      border-color: rgba(249, 115, 22, 0.3);
-    }
-
-    .task-item.done {
-      opacity: 0.45;
-    }
-
-    .task-check {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      border: 2px solid var(--text-dim);
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all var(--transition);
-      font-size: 0.65rem;
-    }
-
-    .task-item.done .task-check {
-      background: var(--lime);
-      border-color: var(--lime);
-      color: #000;
-      font-weight: 700;
-      box-shadow: 0 0 8px rgba(163, 230, 53, 0.5);
-    }
-
-    .task-item.active-task .task-check {
-      border-color: var(--orange-light);
-      box-shadow: 0 0 8px rgba(249, 115, 22, 0.5);
-    }
-
-    .task-text {
-      flex: 1;
-      font-size: 0.85rem;
-      line-height: 1.3;
-      transition: all var(--transition);
-    }
-
-    .task-item.done .task-text {
-      text-decoration: line-through;
-      color: var(--text-muted);
-    }
-
-    .task-pomodoros {
-      font-size: 0.7rem;
-      color: var(--orange-light);
-      font-family: 'JetBrains Mono', monospace;
-      white-space: nowrap;
-    }
-
-    .task-delete {
-      opacity: 0;
-      border: none;
-      background: none;
-      color: var(--text-dim);
-      font-size: 0.9rem;
-      cursor: pointer;
-      padding: 2px 4px;
-      border-radius: 4px;
-      transition: all var(--transition);
-      line-height: 1;
-    }
-
-    .task-item:hover .task-delete { opacity: 1; }
-    .task-delete:hover { color: var(--red); background: rgba(239, 68, 68, 0.1); }
-
-    .task-empty {
-      text-align: center;
-      padding: 32px 16px;
-      color: var(--text-muted);
-      font-size: 0.82rem;
-    }
-
-    .task-empty-icon { font-size: 2rem; margin-bottom: 8px; opacity: 0.5; }
-
-    /* ── Stats bar ── */
-    .stats-bar {
-      display: flex;
-      gap: 12px;
-    }
-
-    .stat-card {
-      flex: 1;
-      padding: 16px 18px;
-      border-radius: var(--radius);
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .stat-icon { font-size: 1.15rem; margin-bottom: 2px; }
-
-    .stat-val {
-      font-size: 1.5rem;
-      font-weight: 800;
-      font-family: 'JetBrains Mono', monospace;
-      letter-spacing: -0.03em;
-      line-height: 1;
-    }
-
-    .stat-lbl {
-      font-size: 0.68rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-weight: 600;
-    }
-
-    .stat-card.orange-theme { background: var(--orange-dim); border: 1px solid rgba(249, 115, 22, 0.2); }
-    .stat-card.orange-theme .stat-val { color: var(--orange-light); }
-
-    .stat-card.lime-theme { background: var(--lime-dim); border: 1px solid rgba(163, 230, 53, 0.2); }
-    .stat-card.lime-theme .stat-val { color: var(--lime); }
-
-    .stat-card.streak-theme { background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); }
-    .stat-card.streak-theme .stat-val { color: var(--red); }
-
-    /* ── Footer ── */
-    footer {
-      padding: 16px 0;
-      border-top: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 0.72rem;
-      color: var(--text-muted);
-    }
-
-    .kbd {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--border);
-      border-radius: 5px;
-      padding: 2px 7px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.68rem;
-    }
-
-    /* ── Notification toast ── */
-    .toast {
-      position: fixed;
-      top: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-80px);
-      background: rgba(15, 15, 25, 0.95);
-      border: 1px solid var(--border-bright);
-      backdrop-filter: blur(20px);
-      border-radius: 12px;
-      padding: 12px 24px;
-      font-size: 0.88rem;
-      font-weight: 500;
-      color: var(--text);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-      z-index: 999;
-      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-      white-space: nowrap;
-    }
-
-    .toast.show { transform: translateX(-50%) translateY(0); }
-
-    /* ── Animations ── */
-    @keyframes fade-in {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .app > * { animation: fade-in 0.4s ease-out both; }
-    main { animation-delay: 0.1s; }
-    footer { animation-delay: 0.2s; }
-
-    /* Responsive */
-    @media (max-width: 720px) {
-      main { grid-template-columns: 1fr; }
-      :root { --ring-size: 240px; }
-      .timer-display { font-size: 3rem; }
-      .header-stats { display: none; }
-      .stats-bar { display: grid; grid-template-columns: 1fr 1fr; }
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ely's Hot Chicken - WebMCP Drive-Thru</title>
+  <meta name="description" content="An agentic fried chicken restaurant ordering dashboard featuring WebMCP client-side tools and live AI Drive-Thru simulator.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
 <body>
 
-<div class="app">
-
-  <!-- Header -->
-  <header>
-    <div class="logo-container">
-      <div class="logo">
-        <div class="logo-icon">🍗</div>
-        <div class="logo-text">Chrono<span>Focus</span></div>
+  <div class="app-container">
+    <!-- Header -->
+    <header>
+      <div class="logo-section">
+        <div class="logo-symbol">🍗</div>
+        <div>
+          <h1 class="logo-text">Ely's Hot Chicken</h1>
+          <p id="app-tagline" style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">Based in Jersey City, ESTD 2026</p>
+        </div>
       </div>
-      <div class="sponsor-badge">Sponsored by Ely's Hot Chicken</div>
-    </div>
-    <div class="header-controls">
-      <!-- Segmented Language Switcher -->
-      <div class="lang-selector-group">
-        <button type="button" id="lang-btn-en" class="lang-btn active" onclick="setLanguage('en')">🇺🇸 EN</button>
-        <button type="button" id="lang-btn-es" class="lang-btn" onclick="setLanguage('es')">🇪🇸 ES</button>
-        <button type="button" id="lang-btn-he" class="lang-btn" onclick="setLanguage('he')">🇮🇱 עב</button>
-        <button type="button" id="lang-btn-xh" class="lang-btn" onclick="setLanguage('xh')">🇿🇦 XH</button>
+      
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <div class="lang-selector-group" style="display: flex; gap: 0.25rem; background: rgba(0, 0, 0, 0.4); padding: 0.25rem; border-radius: 20px; border: 1px solid var(--card-border);">
+          <button type="button" id="lang-btn-en" class="btn lang-btn active" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-radius: 15px; border: none; background: var(--color-primary); color: #000; box-shadow: none;" onclick="setLanguage('en')">🇺🇸 EN</button>
+          <button type="button" id="lang-btn-es" class="btn lang-btn" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-radius: 15px; border: none; background: transparent; color: var(--text-muted); box-shadow: none;" onclick="setLanguage('es')">🇪🇸 ES</button>
+          <button type="button" id="lang-btn-he" class="btn lang-btn" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-radius: 15px; border: none; background: transparent; color: var(--text-muted); box-shadow: none;" onclick="setLanguage('he')">🇮🇱 עב</button>
+          <button type="button" id="lang-btn-xh" class="btn lang-btn" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; border-radius: 15px; border: none; background: transparent; color: var(--text-muted); box-shadow: none;" onclick="setLanguage('xh')">🇿🇦 XH</button>
+        </div>
+        <div id="connection-status" class="status-badge">
+          <span class="status-dot"></span>
+          Drive-Thru Host: Connected
+        </div>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <!-- Main -->
-  <main>
+    <!-- Main Dashboard Grid -->
+    <main class="dashboard-grid">
+      
+      <!-- Left Column: Tool Registry & Active Directories -->
+      <section style="display: flex; flex-direction: column; gap: 1.5rem;">
+        
+        <!-- WebMCP Declarative Forms Card -->
+        <article class="card" id="declarative-tools-card">
+          <h2 class="card-title" id="declarative-title">
+            <span>📝</span> Declarative Ordering Tools (HTML Forms)
+          </h2>
+          <p id="declarative-desc" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+            Native forms converted into AI ordering actions via HTML <code>toolname</code>, <code>tooldescription</code>, and <code>toolautosubmit</code> attributes.
+          </p>
 
-    <!-- Left: Timer -->
-    <div class="timer-section">
+          <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            
+            <!-- Tool Form 1: Order Chicken Bucket -->
+            <form id="order-chicken-form" 
+                  toolname="order_chicken_bucket" 
+                  tooldescription="Places an order for a fried chicken bucket with custom size, spice, and sides." 
+                  toolautosubmit
+                  style="background: rgba(0, 0, 0, 0.2); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--card-border);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary);">order_chicken_bucket</h3>
+                <span class="tool-badge badge-declarative">declarative</span>
+              </div>
+              
+              <div class="form-group">
+                <label for="bucket-size">Bucket Size</label>
+                <select id="bucket-size" name="bucketSize">
+                  <option value="6-Piece Golden Tenders">6-Piece Golden Tenders ($9.99)</option>
+                  <option value="10-Piece Crispy Bucket" selected>10-Piece Crispy Bucket ($16.99)</option>
+                  <option value="20-Piece Spicy Feaster">20-Piece Spicy Feaster ($29.99)</option>
+                </select>
+              </div>
 
-      <!-- Mode Tabs -->
-      <div class="mode-tabs" role="tablist" aria-label="Timer mode">
-        <button class="mode-tab active" data-mode="work"  id="tab-work"  role="tab" onclick="switchMode('work')">🍗 Focus</button>
-        <button class="mode-tab"        data-mode="short" id="tab-short" role="tab" onclick="switchMode('short')">🥤 Short Break</button>
-        <button class="mode-tab"        data-mode="long"  id="tab-long"  role="tab" onclick="switchMode('long')">🍨 Long Break</button>
+              <div class="form-group">
+                <label for="spice-level">Spice Style</label>
+                <select id="spice-level" name="spiceLevel">
+                  <option value="Honey Glazed (Mild)">Honey Glazed (Mild)</option>
+                  <option value="Classic Golden">Classic Golden</option>
+                  <option value="Spicy Nashville Blast">Spicy Nashville Blast</option>
+                  <option value="Ghost Pepper Flame">Ghost Pepper Flame 🌶️🌶️</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="side-dish">Select Side Dish</label>
+                <select id="side-dish" name="sides">
+                  <option value="French Fries">French Fries</option>
+                  <option value="Waffle Fries" selected>Waffle Fries</option>
+                  <option value="Coleslaw">Coleslaw</option>
+                  <option value="Mac and Cheese">Mac and Cheese</option>
+                  <option value="Collard Greens">Collard Greens</option>
+                  <option value="Onion Rings">Onion Rings</option>
+                  <option value="Caesar Salad">Caesar Salad</option>
+                </select>
+              </div>
+              
+              <button type="submit" id="order-chicken-submit" class="btn btn-secondary" style="width: 100%;">
+                🍗 Place Bucket Order
+              </button>
+            </form>
+
+            <!-- Tool Form 4: Order Chicken Sandwich -->
+            <form id="order-sandwich-form" 
+                  toolname="order_chicken_sandwich" 
+                  tooldescription="Places an order for a hot chicken sandwich with custom spice style and sides." 
+                  toolautosubmit
+                  style="background: rgba(0, 0, 0, 0.2); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--card-border);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary);">order_chicken_sandwich</h3>
+                <span class="tool-badge badge-declarative">declarative</span>
+              </div>
+              
+              <div class="form-group">
+                <label for="sandwich-spice">Spice Style</label>
+                <select id="sandwich-spice" name="spiceLevel">
+                  <option value="Honey Glazed (Mild)">Honey Glazed (Mild)</option>
+                  <option value="Classic Golden" selected>Classic Golden</option>
+                  <option value="Spicy Nashville Blast">Spicy Nashville Blast</option>
+                  <option value="Ghost Pepper Flame">Ghost Pepper Flame 🌶️🌶️</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="sandwich-side">Select Side Dish</label>
+                <select id="sandwich-side" name="sides">
+                  <option value="French Fries">French Fries</option>
+                  <option value="Waffle Fries" selected>Waffle Fries</option>
+                  <option value="Coleslaw">Coleslaw</option>
+                  <option value="Mac and Cheese">Mac and Cheese</option>
+                  <option value="Collard Greens">Collard Greens</option>
+                  <option value="Onion Rings">Onion Rings</option>
+                  <option value="Caesar Salad">Caesar Salad</option>
+                </select>
+              </div>
+              
+              <button type="submit" id="order-sandwich-submit" class="btn btn-secondary" style="width: 100%;">
+                🥪 Place Sandwich Order ($10.99)
+              </button>
+            </form>
+
+            <!-- Tool Form 5: Set Customer Name -->
+            <form id="customer-name-form" 
+                  toolname="set_customer_name" 
+                  tooldescription="Configures the customer's name for the active order." 
+                  toolautosubmit
+                  style="background: rgba(0, 0, 0, 0.2); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--card-border);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary);">set_customer_name</h3>
+                <span class="tool-badge badge-declarative">declarative</span>
+              </div>
+
+              <div class="form-group">
+                <label for="order-customer-name">Customer Name</label>
+                <input type="text" id="order-customer-name" name="customerName" placeholder="e.g. Ely Wolf" required>
+              </div>
+
+              <button type="submit" id="customer-name-submit" class="btn btn-secondary" style="width: 100%;">
+                👤 Set Order Name
+              </button>
+            </form>
+
+            <!-- Tool Form 2: Choose Sauces -->
+            <form id="sauces-form" 
+                  toolname="choose_sauces" 
+                  tooldescription="Configures dip sauce combinations for the active order." 
+                  toolautosubmit
+                  style="background: rgba(0, 0, 0, 0.2); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--card-border);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary);">choose_sauces</h3>
+                <span class="tool-badge badge-declarative">declarative</span>
+              </div>
+
+              <div class="form-group">
+                <label for="sauce-primary">Primary Sauce</label>
+                <select id="sauce-primary" name="primarySauce">
+                  <option value="Creamy Honey Mustard" selected>Creamy Honey Mustard</option>
+                  <option value="Smoky Chipotle BBQ">Smoky Chipotle BBQ</option>
+                  <option value="Spicy Garlic Mayo">Spicy Garlic Mayo</option>
+                  <option value="Sweet Hot Chili">Sweet Hot Chili</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="sauce-secondary">Secondary Sauce</label>
+                <select id="sauce-secondary" name="secondarySauce">
+                  <option value="None">None (Single Sauce)</option>
+                  <option value="Creamy Honey Mustard">Creamy Honey Mustard</option>
+                  <option value="Smoky Chipotle BBQ" selected>Smoky Chipotle BBQ</option>
+                  <option value="Spicy Garlic Mayo">Spicy Garlic Mayo</option>
+                  <option value="Sweet Hot Chili">Sweet Hot Chili</option>
+                </select>
+              </div>
+
+              <button type="submit" id="sauces-submit" class="btn btn-secondary" style="width: 100%;">
+                🍯 Configure Sauces
+              </button>
+            </form>
+
+            <!-- Tool Form 6: Submit Suggestion -->
+            <form id="suggestion-form" 
+                  toolname="submit_menu_suggestion" 
+                  tooldescription="Submits a menu suggestion or flavor request to the restaurant kitchen managers." 
+                  toolautosubmit
+                  style="background: rgba(0, 0, 0, 0.2); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--card-border);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary);">submit_menu_suggestion</h3>
+                <span class="tool-badge badge-declarative">declarative</span>
+              </div>
+              
+              <div class="form-group">
+                <label for="suggestion-input">New Menu Item or Flavor Suggestion</label>
+                <textarea id="suggestion-input" name="suggestionText" rows="2" placeholder="Enter your suggestion here..." required></textarea>
+              </div>
+
+              <button type="submit" id="suggestion-submit" class="btn btn-secondary" style="width: 100%;">
+                💡 Submit Suggestion
+              </button>
+            </form>
+
+          </div>
+        </article>
+
+
+
+        <!-- Loyalty Directory (State viewer) -->
+        <article class="card">
+          <h2 class="card-title" id="loyalty-title">
+            <span>👥</span> Crispy Rewards Loyalty Members
+          </h2>
+          <div id="interns-list">
+            <!-- Populated dynamically by JS -->
+          </div>
+        </article>
+
+      </section>
+
+      <!-- Right Column: Interactive Agent Console & Simulator -->
+      <section style="display: flex; flex-direction: column; gap: 1.5rem;">
+        
+        <!-- Live Agent Terminal Card -->
+        <article class="card" id="agent-console-card" style="display: flex; flex-direction: column;">
+          <h2 class="card-title" id="voice-title">
+            <span>🗣️</span> AI Drive-Thru Voice Assistant
+          </h2>
+          <p id="voice-desc" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+            Order with natural language. The simulated Drive-Thru AI will match your request to active WebMCP schemas, fill forms, glow panels, and verify menu parameters.
+          </p>
+
+          <div class="simulator-layout" style="flex-grow: 1; display: flex; flex-direction: column; gap: 1.25rem;">
+            
+            <!-- Quick Presets -->
+            <div>
+              <label id="preset-label">Preset Customer Orders</label>
+              <div class="prompt-presets">
+                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Check kitchen status and queue')">⚙️ Kitchen Status</button>
+                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Order a 20-Piece Spicy Feaster bucket with Waffle Fries')">🍗 Order Feaster</button>
+                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Order a Nashville Hot Chicken Sandwich with Coleslaw')">🥪 Order Sandwich</button>
+                <button type="button" class="preset-chip" onclick="simulateAgentExecution('My name is Ely Wolf')">👤 Set Name</button>
+                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Suggest adding Mango Habanero flavor')">💡 Suggest Flavor</button>
+                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Configure Chipotle BBQ and Sweet Hot Chili sauces')">🍯 Custom Sauces</button>
+                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Register loyalty member Alice Mercer')">👥 Register Alice</button>
+                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Generate receipt for my order')">📊 Print Receipt</button>
+                <button type="button" class="preset-chip" onclick="simulateAgentExecution('Clear terminal console logs')">🗑️ Clear Console</button>
+                <button type="button" class="preset-chip" style="border-color: var(--color-purple);" onclick="simulateAgentExecution('Play Crispy Tac Toe move in center')">🎮 Play Crispy-Toe</button>
+              </div>
+            </div>
+
+            <!-- Custom Input Box -->
+            <div class="form-group">
+              <label id="prompt-label" for="agent-prompt">Customer Prompt (e.g. "I want a 10-piece bucket with coleslaw")</label>
+              <div class="prompt-input-container">
+                <input type="text" id="agent-prompt" placeholder="Say your order here..." onkeydown="if(event.key === 'Enter') submitAgentPrompt()">
+                <button type="button" id="agent-prompt-submit" class="btn" onclick="submitAgentPrompt()">
+                  Order
+                </button>
+              </div>
+            </div>
+
+            <!-- Terminal Output -->
+            <div class="terminal-container" style="flex-grow: 1; display: flex; flex-direction: column;">
+              <div class="terminal-header">
+                <div class="terminal-dots">
+                  <span class="dot dot-red"></span>
+                  <span class="dot dot-yellow"></span>
+                  <span class="dot dot-green"></span>
+                </div>
+                <div class="terminal-title" id="terminal-title">drive-thru-assistant @ client-webmcp</div>
+              </div>
+              <div id="terminal-body" class="terminal-body">
+                <!-- Log entries added dynamically -->
+              </div>
+            </div>
+
+          </div>
+        </article>
+
+        <!-- Tic-Tac-Toe AI Arena Card (Crispy-Tac-Toe) -->
+        <article class="card" id="tictactoe-card">
+          <h2 class="card-title" id="ttt-title">
+            <span>🎮</span> Crispy-Tac-Toe AI Arena
+          </h2>
+          <p id="ttt-desc" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Play against the Chef bots! You place Drumsticks (<strong style="color: var(--color-primary);">🍗</strong>), Bots place Spicy Hot Chilis (<strong style="color: var(--color-purple);">🌶️</strong>).
+          </p>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; gap: 0.5rem;">
+            <div class="form-group" style="margin-bottom: 0; flex-grow: 1;">
+              <label id="ttt-diff-label" for="ttt-difficulty" style="margin-bottom: 0.25rem;">Bot Difficulty</label>
+              <select id="ttt-difficulty" style="padding: 0.5rem; background: rgba(0, 0, 0, 0.4);">
+                <option value="easy">Easy Bot (Random)</option>
+                <option value="medium" selected>Medium Bot (Defensive)</option>
+                <option value="hard">Hard Bot (Minimax)</option>
+              </select>
+            </div>
+            <button type="button" id="ttt-reset" class="btn" style="padding: 0.5rem 1rem; margin-top: 1.15rem;" onclick="resetTicTacToe()">
+              Reset
+            </button>
+          </div>
+
+          <div id="ttt-status" style="text-align: center; font-size: 0.9rem; font-weight: 600; min-height: 1.5rem; color: var(--color-primary); margin-bottom: 0.5rem;">
+            Your turn! Make a move.
+          </div>
+
+          <!-- 3x3 Grid Board -->
+          <div class="tictactoe-board">
+            <div class="tictactoe-cell" data-index="0" onclick="makeTicTacToeMove(0)"></div>
+            <div class="tictactoe-cell" data-index="1" onclick="makeTicTacToeMove(1)"></div>
+            <div class="tictactoe-cell" data-index="2" onclick="makeTicTacToeMove(2)"></div>
+            <div class="tictactoe-cell" data-index="3" onclick="makeTicTacToeMove(3)"></div>
+            <div class="tictactoe-cell" data-index="4" onclick="makeTicTacToeMove(4)"></div>
+            <div class="tictactoe-cell" data-index="5" onclick="makeTicTacToeMove(5)"></div>
+            <div class="tictactoe-cell" data-index="6" onclick="makeTicTacToeMove(6)"></div>
+            <div class="tictactoe-cell" data-index="7" onclick="makeTicTacToeMove(7)"></div>
+            <div class="tictactoe-cell" data-index="8" onclick="makeTicTacToeMove(8)"></div>
+          </div>
+
+          <!-- Scoreboard -->
+          <div class="ttt-stats">
+            <div>
+              <div id="ttt-stat-player-label" style="color: var(--text-muted); font-size: 0.75rem;">Player (🍗)</div>
+              <div id="ttt-score-player" class="ttt-stat-val">0</div>
+            </div>
+            <div>
+              <div id="ttt-stat-draws-label" style="color: var(--text-muted); font-size: 0.75rem;">Draws</div>
+              <div id="ttt-score-draws" class="ttt-stat-val">0</div>
+            </div>
+            <div>
+              <div id="ttt-stat-bot-label" style="color: var(--text-muted); font-size: 0.75rem;">Bot (🌶️)</div>
+              <div id="ttt-score-bot" class="ttt-stat-val">0</div>
+            </div>
+          </div>
+        </article>
+
+      </section>
+
+    </main>
+
+    <!-- Footer containing Admin Mode -->
+    <footer style="margin-top: 3rem; text-align: center; border-top: 1px solid rgba(245, 158, 11, 0.1); padding-top: 1.5rem; padding-bottom: 2rem;">
+      <button type="button" id="admin-mode-btn" class="btn btn-secondary" onclick="toggleAdminMode()" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
+        🔒 Cashier Admin Mode
+      </button>
+      <div id="admin-login-modal" class="card" style="display: none; max-width: 320px; margin: 1rem auto; padding: 1.25rem;">
+        <h3 id="admin-login-title" style="font-size: 1rem; margin-bottom: 0.75rem; color: var(--color-primary);">Enter Admin Passcode</h3>
+        <div class="form-group" style="margin-bottom: 0.75rem;">
+          <input type="password" id="admin-passcode-input" placeholder="••••" style="text-align: center; letter-spacing: 0.5rem; font-size: 1.2rem; max-width: 160px; margin: 0 auto;" maxlength="4" onkeydown="if(event.key === 'Enter') submitAdminPasscode()">
+        </div>
+        <div style="display: flex; gap: 0.5rem; justify-content: center;">
+          <button type="button" id="admin-login-submit" class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="submitAdminPasscode()">Submit</button>
+          <button type="button" id="admin-login-cancel" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="closeAdminLogin()">Cancel</button>
+        </div>
+        <div id="admin-login-error" style="color: var(--color-danger); font-size: 0.75rem; margin-top: 0.5rem; display: none;">Invalid PIN! Try again.</div>
       </div>
+      
+      <!-- Admin Orders Live Feed Panel -->
+      <div id="admin-panel" class="card" style="display: none; max-width: 600px; margin: 1.5rem auto; text-align: left; border-color: var(--color-accent);">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(245,158,11,0.2); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+          <h3 id="admin-dashboard-title" style="font-size: 1.1rem; color: var(--color-primary); display: flex; align-items: center; gap: 0.5rem;">
+            🔑 Cashier Control Dashboard (Active)
+          </h3>
+          <button type="button" id="admin-dashboard-lock" class="btn btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;" onclick="lockAdminMode()">Lock</button>
+        </div>
+        <p id="admin-live-orders-desc" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Showing live order placements submitted via UI or AI Drive-Thru tool execution.</p>
+        <div id="admin-orders-feed" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
+          <div style="font-size: 0.85rem; color: var(--text-dark); text-align: center; padding: 1rem;">No orders placed yet.</div>
+        </div>
 
-      <!-- Timer Card -->
-      <div class="card timer-card" id="timer-card">
-        <div class="ring-container">
-          <div class="ring-pulse"></div>
-          <svg class="ring-svg" viewBox="0 0 280 280" aria-hidden="true">
-            <circle class="ring-bg"       cx="140" cy="140" r="125"/>
-            <circle class="ring-progress" cx="140" cy="140" r="125" id="ring"/>
-          </svg>
-          <div class="timer-inner">
-            <div class="timer-display" id="timer-display" aria-live="polite" aria-atomic="true">25:00</div>
-            <div class="timer-mode-label" id="timer-mode-label">Focus Session</div>
+        <!-- Manager Rewards Loyalty Form -->
+        <div style="border-top: 1px dashed rgba(245, 158, 11, 0.2); padding-top: 1.5rem; margin-top: 1rem;">
+          <h4 id="admin-register-rewards-title" style="font-size: 0.95rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>👥</span> Register Rewards Member
+          </h4>
+          <p id="admin-register-rewards-desc" style="font-size: 0.8rem; color: var(--text-dark); margin-bottom: 1rem;">
+            Creates a restaurant rewards loyalty profile. Requires manual manager review/approval.
+          </p>
+
+          <form id="loyalty-form" 
+                toolname="register_loyalty_member" 
+                tooldescription="Creates a restaurant rewards loyalty profile. Requires manual manager review/approval."
+                style="background: rgba(0, 0, 0, 0.2); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--card-border);">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary);">register_loyalty_member</h3>
+              <span class="tool-badge badge-declarative" style="color: var(--color-purple); background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.25);">manager review</span>
+            </div>
+
+            <div class="form-group">
+              <label for="member-name">Loyalty Member Name</label>
+              <input type="text" id="member-name" name="name" placeholder="e.g. Alice Mercer" required>
+            </div>
+
+            <div class="form-group">
+              <label for="member-favorite">Favorite side</label>
+              <input type="text" id="member-favorite" name="favoriteSide" placeholder="e.g. Waffle Fries" required>
+            </div>
+
+            <button type="submit" id="loyalty-submit" class="btn btn-secondary" style="width: 100%;">
+              📋 Register Member
+            </button>
+          </form>
+        </div>
+
+        <!-- Manager Remove Rewards Loyalty Member Form -->
+        <div style="border-top: 1px dashed rgba(245, 158, 11, 0.2); padding-top: 1.5rem; margin-top: 1rem;">
+          <h4 id="admin-remove-rewards-title" style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>🗑️</span> Remove Rewards Member
+          </h4>
+          <p id="admin-remove-rewards-desc" style="font-size: 0.8rem; color: var(--text-dark); margin-bottom: 1rem;">
+            Revokes and deletes an active rewards loyalty profile.
+          </p>
+
+          <form id="remove-loyalty-form" 
+                toolname="remove_loyalty_member" 
+                tooldescription="Removes a restaurant rewards loyalty profile."
+                style="background: rgba(0, 0, 0, 0.2); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--card-border);">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary);">remove_loyalty_member</h3>
+              <span class="tool-badge badge-declarative" style="color: var(--color-purple); background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.25);">manager review</span>
+            </div>
+
+            <div class="form-group">
+              <label for="remove-member-name">Select Rewards Member to Remove</label>
+              <select id="remove-member-name" name="name">
+                <!-- Populated dynamically by JS -->
+              </select>
+            </div>
+
+            <button type="submit" id="remove-loyalty-submit" class="btn btn-secondary" style="width: 100%;">
+              🗑️ Remove Member
+            </button>
+          </form>
+        </div>
+
+        <!-- WebMCP Imperative Kitchen APIs -->
+        <div style="border-top: 1px dashed rgba(245, 158, 11, 0.2); padding-top: 1.5rem; margin-top: 1rem;">
+          <h4 id="admin-kitchen-tools-title" style="font-size: 0.95rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>⚙️</span> Kitchen Controller Callback Tools
+          </h4>
+          <p id="admin-kitchen-tools-desc" style="font-size: 0.8rem; color: var(--text-dark); margin-bottom: 1rem;">
+            Imperative JavaScript endpoints registered via <code>document.modelContext.registerTool()</code>.
+          </p>
+
+          <div class="tool-list">
+            <!-- Tool Item: get_kitchen_status -->
+            <div class="tool-item">
+              <div class="tool-header">
+                <span class="tool-name">get_kitchen_status</span>
+                <span class="tool-badge badge-imperative">imperative</span>
+              </div>
+              <p class="tool-desc">Returns kitchen queue size, waiting estimations, and active fryer temperatures.</p>
+              <details>
+                <summary style="font-size: 0.8rem; cursor: pointer; color: var(--color-primary); font-weight: 500;">View Schema</summary>
+                <pre class="schema-viewer" style="margin-top: 0.5rem;">{
+  "type": "object",
+  "properties": {}
+}</pre>
+              </details>
+            </div>
+
+            <!-- Tool Item: generate_receipt -->
+            <div class="tool-item">
+              <div class="tool-header">
+                <span class="tool-name">generate_receipt</span>
+                <span class="tool-badge badge-imperative">imperative</span>
+              </div>
+              <p class="tool-desc">Produces a Markdown receipt summarising ordered buckets and configurations.</p>
+              <details>
+                <summary style="font-size: 0.8rem; cursor: pointer; color: var(--color-primary); font-weight: 500;">View Schema</summary>
+                <pre class="schema-viewer" style="margin-top: 0.5rem;">{
+  "type": "object",
+  "properties": {
+    "format": {
+      "type": "string",
+      "description": "Output formatting syntax (markdown or html)"
+    }
+  }
+}</pre>
+              </details>
+            </div>
+
+            <!-- Tool Item: clear_order_logs -->
+            <div class="tool-item">
+              <div class="tool-header">
+                <span class="tool-name">clear_order_logs</span>
+                <span class="tool-badge badge-imperative">imperative</span>
+              </div>
+              <p class="tool-desc">Clears drive-thru terminal display output history.</p>
+              <details>
+                <summary style="font-size: 0.8rem; cursor: pointer; color: var(--color-primary); font-weight: 500;">View Schema</summary>
+                <pre class="schema-viewer" style="margin-top: 0.5rem;">{
+  "type": "object",
+  "properties": {}
+}</pre>
+              </details>
+            </div>
           </div>
         </div>
 
-        <!-- Controls -->
-        <div class="timer-controls">
-          <button class="btn-icon" id="btn-reset" onclick="resetTimer()" title="Reset (R)" aria-label="Reset timer">↺</button>
-          <button class="btn-play" id="btn-play"  onclick="toggleTimer()" title="Start/Pause (Space)" aria-label="Start or pause timer">▶</button>
-          <button class="btn-icon" id="btn-skip"  onclick="skipSession()" title="Skip (S)" aria-label="Skip session">⏭</button>
-        </div>
-
-        <!-- Session dots -->
-        <div class="session-dots" id="session-dots" aria-label="Pomodoro sessions completed"></div>
-      </div>
-
-      <!-- Duration Control Card -->
-      <div class="card settings-card" style="padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
-        <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted);" id="lbl-settings-title">
-          Durations (min)
-        </div>
-        <div style="display: flex; gap: 12px; align-items: center;">
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <label for="input-work-duration" style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600;" id="lbl-input-work">Focus</label>
-            <input type="number" id="input-work-duration" min="1" max="180" value="25" style="width: 54px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; padding: 4px 6px; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; text-align: center; outline: none; border-color: var(--border);" onfocus="this.style.borderColor='var(--orange)'" onblur="this.style.borderColor='var(--border)'" />
-          </div>
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <label for="input-short-duration" style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600;" id="lbl-input-short">Short</label>
-            <input type="number" id="input-short-duration" min="1" max="180" value="5" style="width: 54px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; padding: 4px 6px; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; text-align: center; outline: none; border-color: var(--border);" onfocus="this.style.borderColor='var(--lime)'" onblur="this.style.borderColor='var(--border)'" />
-          </div>
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <label for="input-long-duration" style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600;" id="lbl-input-long">Long</label>
-            <input type="number" id="input-long-duration" min="1" max="180" value="15" style="width: 54px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; padding: 4px 6px; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; text-align: center; outline: none; border-color: var(--border);" onfocus="this.style.borderColor='var(--lime)'" onblur="this.style.borderColor='var(--border)'" />
+        <!-- Customer Suggestions Feed Panel -->
+        <div style="border-top: 1px dashed rgba(245, 158, 11, 0.2); padding-top: 1.5rem; margin-top: 1rem;">
+          <h4 id="admin-suggestions-title" style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>💡</span> Customer Menu Suggestions
+          </h4>
+          <p id="admin-suggestions-desc" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Feedback submitted by guests proposing new menu flavors or items.
+          </p>
+          <div id="admin-suggestions-feed" style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <div style="font-size: 0.85rem; color: var(--text-dark); text-align: center; padding: 1rem;">No suggestions submitted yet.</div>
           </div>
         </div>
       </div>
+    </footer>
+  </div>
 
-      <!-- Stats bar -->
-      <div class="stats-bar">
-        <div class="card stat-card orange-theme">
-          <div class="stat-icon">🍗</div>
-          <div class="stat-val" id="stat-sessions">0</div>
-          <div class="stat-lbl" id="lbl-sessions">Sessions</div>
-        </div>
-        <div class="card stat-card lime-theme">
-          <div class="stat-icon">✅</div>
-          <div class="stat-val" id="stat-tasks">0</div>
-          <div class="stat-lbl" id="lbl-tasks">Tasks Done</div>
-        </div>
-        <div class="card stat-card lime-theme">
-          <div class="stat-icon">⏱</div>
-          <div class="stat-val" id="stat-focus">0m</div>
-          <div class="stat-lbl" id="lbl-focus">Focus Time</div>
-        </div>
-        <div class="card stat-card streak-theme">
-          <div class="stat-icon">🔥</div>
-          <div class="stat-val" id="stat-streak">0</div>
-          <div class="stat-lbl" id="lbl-streak">Day Streak</div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Right: Task Panel -->
-    <div class="card task-panel">
-      <div class="panel-header">
-        <div class="panel-title" id="lbl-tasks-title">Tasks</div>
-        <div class="task-count-badge" id="task-badge">0</div>
-      </div>
-
-      <form class="add-task-form" id="add-task-form" onsubmit="addTask(event)">
-        <input
-          type="text"
-          class="task-input"
-          id="task-input"
-          placeholder="Add a task…"
-          autocomplete="off"
-          maxlength="80"
-          aria-label="New task name"
-        />
-        <button type="submit" class="btn-add" id="btn-add-task" aria-label="Add task">+</button>
-      </form>
-
-      <div class="task-list" id="task-list" role="list" aria-label="Task list">
-        <div class="task-empty" id="task-empty">
-          <div class="task-empty-icon">📋</div>
-          <span id="lbl-task-empty">Add tasks to focus on them during your sessions</span>
-        </div>
-      </div>
-    </div>
-
-  </main>
-
-  <!-- Footer -->
-  <footer>
-    <div id="lbl-shortcuts">
-      <span class="kbd">Space</span> Start/Pause &nbsp;
-      <span class="kbd">R</span> Reset &nbsp;
-      <span class="kbd">S</span> Skip
-    </div>
-    <div id="lbl-footer-credits">ChronoFocus · Sponsored by Ely's Hot Chicken · Built with ❤️</div>
-  </footer>
-
-</div>
-
-<!-- Toast -->
-<div class="toast" id="toast" role="alert" aria-live="assertive"></div>
-
-<script>
-  // ── Translations ───────────────────────────────────────────────────────
-  const TRANSLATIONS = {
-    en: {
-      sponsor: "Sponsored by Ely's Hot Chicken",
-      focusTab: "🍗 Focus",
-      shortTab: "🥤 Short Break",
-      longTab: "🍨 Long Break",
-      focusLabel: "Focus Session",
-      shortLabel: "Short Break",
-      longLabel: "Long Break",
-      sessions: "Sessions",
-      tasksDone: "Tasks Done",
-      focusTime: "Focus Time",
-      dayStreak: "Day Streak",
-      tasksTitle: "Tasks",
-      taskPlaceholder: "Add a task…",
-      taskEmpty: "Add tasks to focus on them during your sessions",
-      shortcuts: "<span class=\"kbd\">Space</span> Start/Pause &nbsp; <span class=\"kbd\">R</span> Reset &nbsp; <span class=\"kbd\">S</span> Skip",
-      credits: "ChronoFocus · Sponsored by Ely's Hot Chicken · Built with ❤️",
-      toastCycleDone: "🎉 4 sessions done! Take a long break.",
-      toastSessionDone: "✅ Session done! Time for a break.",
-      toastBreakDone: "⏰ Break over! Ready to focus?",
-      toastTaskDone: '✅ "{task}" completed!',
-      likesLabel: "Likes",
-      noTasksMsg: "No tasks active",
-      durationsTitle: "Durations (min)",
-      durationsFocus: "Focus",
-      durationsShort: "Short",
-      durationsLong: "Long"
-    },
-    es: {
-      sponsor: "Patrocinado por Ely's Hot Chicken",
-      focusTab: "🍗 Concentración",
-      shortTab: "🥤 Descanso Corto",
-      longTab: "🍨 Descanso Largo",
-      focusLabel: "Sesión de Enfoque",
-      shortLabel: "Descanso Corto",
-      longLabel: "Descanso Largo",
-      sessions: "Sesiones",
-      tasksDone: "Tareas Listas",
-      focusTime: "Tiempo Enfocado",
-      dayStreak: "Racha de Días",
-      tasksTitle: "Tareas",
-      taskPlaceholder: "Agregar tarea…",
-      taskEmpty: "Agrega tareas para enfocarte en ellas durante tus sesiones",
-      shortcuts: "<span class=\"kbd\">Espacio</span> Iniciar/Pausa &nbsp; <span class=\"kbd\">R</span> Reiniciar &nbsp; <span class=\"kbd\">S</span> Saltar",
-      credits: "ChronoFocus · Patrocinado por Ely's Hot Chicken · Hecho con ❤️",
-      toastCycleDone: "🎉 ¡4 sesiones listas! Toma un descanso largo.",
-      toastSessionDone: "✅ ¡Sesión terminada! Hora de descansar.",
-      toastBreakDone: "⏰ ¡Descanso terminado! ¿Listo para enfocarte?",
-      toastTaskDone: '✅ ¡"{task}" completado!',
-      likesLabel: "Le gusta",
-      noTasksMsg: "No hay tareas activas",
-      durationsTitle: "Duración (min)",
-      durationsFocus: "Enfoque",
-      durationsShort: "Corto",
-      durationsLong: "Largo"
-    },
-    he: {
-      sponsor: "בחסות Ely's Hot Chicken",
-      focusTab: "🍗 ריכוז",
-      shortTab: "🥤 הפסקה קצרה",
-      longTab: "🍨 הפסקה ארוכה",
-      focusLabel: "סשן ריכוז",
-      shortLabel: "הפסקה קצרה",
-      longLabel: "הפסקה ארוכה",
-      sessions: "סשנים",
-      tasksDone: "משימות שבוצעו",
-      focusTime: "זמן ריכוז",
-      dayStreak: "רצף ימים",
-      tasksTitle: "משימות",
-      taskPlaceholder: "הוסף משימה…",
-      taskEmpty: "הוסף משימות כדי להתרכז בהן במהלך הסשנים שלך",
-      shortcuts: "<span class=\"kbd\">רווח</span> הפעל/השהה &nbsp; <span class=\"kbd\">R</span> איפוס &nbsp; <span class=\"kbd\">S</span> דילוג",
-      credits: "ChronoFocus · בחסות Ely's Hot Chicken · נבנה באהבה ❤️",
-      toastCycleDone: "🎉 4 סשנים הושלמו! קחו הפסקה ארוכה.",
-      toastSessionDone: "✅ הסשן הסתיים! זמן להפסקה.",
-      toastBreakDone: "⏰ ההפסקה הסתיימה! מוכנים להתרכז?",
-      toastTaskDone: '✅ "{task}" הושלם!',
-      likesLabel: "אוהב/ת",
-      noTasksMsg: "אין משימות פעילות",
-      durationsTitle: "מרווחים (דקות)",
-      durationsFocus: "ריכוז",
-      durationsShort: "קצרה",
-      durationsLong: "ארוכה"
-    },
-    xh: {
-      sponsor: "Ixhaswe yi-Ely's Hot Chicken",
-      focusTab: "🍗 Gxila",
-      shortTab: "🥤 Ikhefu Elifutshane",
-      longTab: "🍨 Ikhefu Elide",
-      focusLabel: "Iseshoni yokugxila",
-      shortLabel: "Ikhefu Elifutshane",
-      longLabel: "Ikhefu Elide",
-      sessions: "Iiseshoni",
-      tasksDone: "Imisebenzi Egityiweyo",
-      focusTime: "Ixesha Lokugxila",
-      dayStreak: "Ukungagqithelwa ziintsuku",
-      tasksTitle: "Imisebenzi",
-      taskPlaceholder: "Faka umsebenzi…",
-      taskEmpty: "Faka imisebenzi ukuze ugxile kuyo ngexesha leeseshoni zakho",
-      shortcuts: "<span class=\"kbd\">Space</span> Qala/Nqumama &nbsp; <span class=\"kbd\">R</span> Seta kabusha &nbsp; <span class=\"kbd\">S</span> Skip",
-      credits: "ChronoFocus · Ixhaswe yi-Ely's Hot Chicken · Yakhiwe ngothando ❤️",
-      toastCycleDone: "🎉 Iiseshoni ezi-4 zigityiwe! Thatha ikhefu elide.",
-      toastSessionDone: "✅ Iseshoni igityiwe! Ixesha lekhefu.",
-      toastBreakDone: "⏰ Ikhefu liphelile! Ukulungele ukugxila?",
-      toastTaskDone: '✅ "{task}" igqityiwe!',
-      likesLabel: "Uthanda",
-      noTasksMsg: "Akukho misebenzi isebenzayo",
-      durationsTitle: "Amaxesha (imiz)",
-      durationsFocus: "Gxila",
-      durationsShort: "Ifutshane",
-      durationsLong: "Elide"
-    }
-  };
-
-  // ── State ──────────────────────────────────────────────────────────────
-  const MODES = {
-    work:  { labelKey: 'focusLabel',  duration: 25 * 60, tabId: 'tab-work',  ringClass: '' },
-    short: { labelKey: 'shortLabel',  duration:  5 * 60, tabId: 'tab-short', ringClass: 'short' },
-    long:  { labelKey: 'longLabel',   duration: 15 * 60, tabId: 'tab-long',  ringClass: 'long' },
-  };
-  const SESSIONS_PER_CYCLE = 4;
-  const RING_CIRC = 785.4;
-
-  let mode       = 'work';
-  let running    = false;
-  let remaining  = MODES.work.duration;
-  let totalSecs  = MODES.work.duration;
-  let interval   = null;
-  let sessionsToday  = 0;
-  let focusMinutes   = 0;
-  let tasksDone      = 0;
-  let streak         = 0;
-  let cycleSession   = 0; // 0–3
-  let tasks          = [];
-  let activeTaskId   = null;
-  let toastTimeout   = null;
-  let currentLanguage = localStorage.getItem('ely_hot_chicken_language') || 'en';
-
-  // ── Language ────────────────────────────────────────────────────────────
-  function setLanguage(lang) {
-    currentLanguage = lang;
-    localStorage.setItem('ely_hot_chicken_language', lang);
-    
-    // Toggle active state on buttons
-    ['en', 'es', 'he', 'xh'].forEach(l => {
-      const btn = document.getElementById(`lang-btn-${l}`);
-      if (btn) btn.classList.toggle('active', l === lang);
-    });
-
-    // Update document dir for RTL support in Hebrew
-    document.documentElement.dir = (lang === 'he') ? 'rtl' : 'ltr';
-    document.documentElement.lang = lang;
-
-    applyTranslations();
-  }
-
-  function applyTranslations() {
-    const t = TRANSLATIONS[currentLanguage];
-    if (!t) return;
-
-    // Header & Info
-    document.querySelector('.sponsor-badge').textContent = t.sponsor;
-    document.getElementById('lbl-sessions').textContent = t.sessions;
-    document.getElementById('lbl-tasks').textContent = t.tasksDone;
-    document.getElementById('lbl-focus').textContent = t.focusTime;
-    document.getElementById('lbl-streak').textContent = t.dayStreak;
-    document.getElementById('lbl-tasks-title').textContent = t.tasksTitle;
-    document.getElementById('task-input').placeholder = t.taskPlaceholder;
-    document.getElementById('lbl-task-empty').textContent = t.taskEmpty;
-    document.getElementById('lbl-shortcuts').innerHTML = t.shortcuts;
-    document.getElementById('lbl-footer-credits').textContent = t.credits;
-
-    // Tabs
-    document.getElementById('tab-work').textContent = t.focusTab;
-    document.getElementById('tab-short').textContent = t.shortTab;
-    document.getElementById('tab-long').textContent = t.longTab;
-
-    // Current Timer label
-    const labelKey = MODES[mode].labelKey;
-    document.getElementById('timer-mode-label').textContent = t[labelKey];
-
-    // Durations labels
-    document.getElementById('lbl-settings-title').textContent = t.durationsTitle;
-    document.getElementById('lbl-input-work').textContent = t.durationsFocus;
-    document.getElementById('lbl-input-short').textContent = t.durationsShort;
-    document.getElementById('lbl-input-long').textContent = t.durationsLong;
-
-    // Re-render tasks to update completed checkbox labels/aria
-    renderTasks();
-  }
-
-  // Expose to window context
-  window.setLanguage = setLanguage;
-
-  // ── Timer Core ──────────────────────────────────────────────────────────
-  function toggleTimer() {
-    running ? pauseTimer() : startTimer();
-  }
-
-  function startTimer() {
-    running = true;
-    document.getElementById('btn-play').textContent = '⏸';
-    document.getElementById('timer-card').classList.add('running');
-    updateSessionDots();
-    interval = setInterval(tick, 1000);
-  }
-
-  function pauseTimer() {
-    running = false;
-    document.getElementById('btn-play').textContent = '▶';
-    document.getElementById('timer-card').classList.remove('running');
-    clearInterval(interval);
-  }
-
-  function resetTimer() {
-    pauseTimer();
-    remaining = MODES[mode].duration;
-    totalSecs  = remaining;
-    updateDisplay();
-    updateRing();
-  }
-
-  function skipSession() {
-    pauseTimer();
-    completeSession(false);
-  }
-
-  function tick() {
-    remaining--;
-    if (remaining <= 0) {
-      remaining = 0;
-      updateDisplay();
-      updateRing();
-      completeSession(true);
-      return;
-    }
-    updateDisplay();
-    updateRing();
-
-    // Count focus minutes
-    if (mode === 'work') {
-      focusMinutes = Math.round((MODES.work.duration - remaining) / 60);
-      updateStats();
-    }
-  }
-
-  function completeSession(completed) {
-    pauseTimer();
-    playBeep(completed);
-
-    const t = TRANSLATIONS[currentLanguage];
-
-    if (mode === 'work' && completed) {
-      sessionsToday++;
-      cycleSession = (cycleSession + 1) % SESSIONS_PER_CYCLE;
-      focusMinutes += Math.round(MODES.work.duration / 60);
-
-      // Increment pomodoros on active task
-      if (activeTaskId !== null) {
-        const activeTask = tasks.find(tsk => tsk.id === activeTaskId);
-        if (activeTask) { activeTask.pomodoros++; renderTasks(); }
-      }
-
-      updateStats();
-      updateSessionDots();
-
-      if (cycleSession === 0) {
-        showToast(t.toastCycleDone);
-        switchMode('long');
-      } else {
-        showToast(t.toastSessionDone);
-        switchMode('short');
-      }
-    } else if (mode !== 'work' && completed) {
-      showToast(t.toastBreakDone);
-      switchMode('work');
-    }
-  }
-
-  function playBeep(success) {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const notes = success ? [523.25, 659.25, 783.99] : [440, 349.23];
-      notes.forEach((freq, i) => {
-        const osc  = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.frequency.value = freq;
-        osc.type = 'sine';
-        gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.18);
-        gain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + i * 0.18 + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.18 + 0.35);
-        osc.start(ctx.currentTime + i * 0.18);
-        osc.stop(ctx.currentTime + i * 0.18 + 0.4);
-      });
-    } catch(e) { /* Audio not available */ }
-  }
-
-  // ── Mode Switching ──────────────────────────────────────────────────────
-  function switchMode(newMode) {
-    pauseTimer();
-    mode = newMode;
-    remaining = MODES[mode].duration;
-    totalSecs  = remaining;
-
-    const t = TRANSLATIONS[currentLanguage];
-
-    // Tab styles
-    document.querySelectorAll('.mode-tab').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.mode === mode);
-    });
-
-    // Ring class
-    const ring = document.getElementById('ring');
-    ring.className = 'ring-progress ' + MODES[mode].ringClass;
-
-    // Label
-    const labelKey = MODES[mode].labelKey;
-    document.getElementById('timer-mode-label').textContent = t[labelKey];
-
-    updateDisplay();
-    updateRing();
-    updateSessionDots();
-  }
-
-  // ── Display ─────────────────────────────────────────────────────────────
-  function updateDisplay() {
-    const m = String(Math.floor(remaining / 60)).padStart(2, '0');
-    const s = String(remaining % 60).padStart(2, '0');
-    document.getElementById('timer-display').textContent = `${m}:${s}`;
-    document.title = `${m}:${s} — Ely's Hot Chicken Focus Timer`;
-  }
-
-  function updateRing() {
-    const pct = totalSecs > 0 ? remaining / totalSecs : 0;
-    const offset = RING_CIRC * (1 - pct);
-    document.getElementById('ring').style.strokeDashoffset = offset;
-  }
-
-  // Expose triggers
-  window.switchMode = switchMode;
-  window.toggleTimer = toggleTimer;
-  window.resetTimer = resetTimer;
-  window.skipSession = skipSession;
-
-  function updateSessionDots() {
-    const el = document.getElementById('session-dots');
-    el.innerHTML = '';
-    for (let i = 0; i < SESSIONS_PER_CYCLE; i++) {
-      const dot = document.createElement('div');
-      dot.className = 'session-dot';
-      if (i < cycleSession) dot.classList.add('done');
-      else if (i === cycleSession && mode === 'work' && running) dot.classList.add('current');
-      el.appendChild(dot);
-    }
-  }
-
-  // ── Stats ───────────────────────────────────────────────────────────────
-  function updateStats() {
-    const focusStr = focusMinutes >= 60
-      ? `${Math.floor(focusMinutes/60)}h${focusMinutes%60}m`
-      : `${focusMinutes}m`;
-
-    document.getElementById('stat-sessions').textContent = sessionsToday;
-    document.getElementById('stat-tasks').textContent    = tasksDone;
-    document.getElementById('stat-focus').textContent    = focusStr;
-    document.getElementById('stat-streak').textContent   = streak;
-  }
-
-  // ── Tasks ───────────────────────────────────────────────────────────────
-  function addTask(e) {
-    e.preventDefault();
-    const input = document.getElementById('task-input');
-    const text = input.value.trim();
-    if (!text) return;
-
-    const task = { id: Date.now(), text, done: false, pomodoros: 0 };
-    tasks.unshift(task);
-
-    // Auto-set as active if none active
-    if (activeTaskId === null) activeTaskId = task.id;
-
-    input.value = '';
-    renderTasks();
-  }
-  window.addTask = addTask;
-
-  function toggleTask(id) {
-    const task = tasks.find(t => t.id === id);
-    if (!task) return;
-    task.done = !task.done;
-    
-    const t = TRANSLATIONS[currentLanguage];
-
-    if (task.done) {
-      tasksDone++;
-      if (activeTaskId === id) {
-        // Pick next undone task
-        const next = tasks.find(tsk => !tsk.done && tsk.id !== id);
-        activeTaskId = next ? next.id : null;
-      }
-      updateStats();
-      showToast(t.toastTaskDone.replace('{task}', task.text));
-    } else {
-      tasksDone = Math.max(0, tasksDone - 1);
-      updateStats();
-    }
-    renderTasks();
-  }
-  window.toggleTask = toggleTask;
-
-  function setActive(id) {
-    const task = tasks.find(t => t.id === id);
-    if (!task || task.done) return;
-    activeTaskId = activeTaskId === id ? null : id;
-    renderTasks();
-  }
-  window.setActive = setActive;
-
-  function deleteTask(id) {
-    tasks = tasks.filter(t => t.id !== id);
-    if (activeTaskId === id) {
-      const next = tasks.find(t => !t.done);
-      activeTaskId = next ? next.id : null;
-    }
-    renderTasks();
-  }
-  window.deleteTask = deleteTask;
-
-  function renderTasks() {
-    const list = document.getElementById('task-list');
-    const empty = document.getElementById('task-empty');
-    const badge = document.getElementById('task-badge');
-
-    const active = tasks.filter(t => !t.done);
-    const done   = tasks.filter(t => t.done);
-    const all    = [...active, ...done];
-
-    badge.textContent = active.length;
-
-    if (all.length === 0) {
-      list.innerHTML = '';
-      empty.style.display = 'block';
-      return;
-    }
-
-    empty.style.display = 'none';
-    list.innerHTML = all.map(task => `
-      <div class="task-item ${task.done ? 'done' : ''} ${task.id === activeTaskId && !task.done ? 'active-task' : ''}"
-           role="listitem"
-           onclick="setActive(${task.id})">
-        <div class="task-check" onclick="event.stopPropagation(); toggleTask(${task.id})">
-          ${task.done ? '✓' : ''}
-        </div>
-        <div class="task-text">${escapeHtml(task.text)}</div>
-        ${task.pomodoros > 0 ? `<div class="task-pomodoros">🍗×${task.pomodoros}</div>` : ''}
-        <button class="task-delete" onclick="event.stopPropagation(); deleteTask(${task.id})" aria-label="Delete task">✕</button>
-      </div>
-    `).join('');
-  }
-
-  // ── Toast ────────────────────────────────────────────────────────────────
-  function showToast(msg) {
-    const toast = document.getElementById('toast');
-    toast.textContent = msg;
-    toast.classList.add('show');
-    clearTimeout(toastTimeout);
-    toastTimeout = setTimeout(() => toast.classList.remove('show'), 3500);
-  }
-
-  // ── Helpers ──────────────────────────────────────────────────────────────
-  function escapeHtml(str) {
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
-
-  // ── Duration settings listeners ──────────────────────────────────────────
-  function setupDurationSettings() {
-    const inputWork = document.getElementById('input-work-duration');
-    const inputShort = document.getElementById('input-short-duration');
-    const inputLong = document.getElementById('input-long-duration');
-
-    if (inputWork) {
-      inputWork.addEventListener('input', (e) => {
-        const val = Math.max(1, parseInt(e.target.value) || 25);
-        MODES.work.duration = val * 60;
-        if (mode === 'work') resetTimer();
-      });
-    }
-    if (inputShort) {
-      inputShort.addEventListener('input', (e) => {
-        const val = Math.max(1, parseInt(e.target.value) || 5);
-        MODES.short.duration = val * 60;
-        if (mode === 'short') resetTimer();
-      });
-    }
-    if (inputLong) {
-      inputLong.addEventListener('input', (e) => {
-        const val = Math.max(1, parseInt(e.target.value) || 15);
-        MODES.long.duration = val * 60;
-        if (mode === 'long') resetTimer();
-      });
-    }
-  }
-
-  // ── Init ─────────────────────────────────────────────────────────────────
-  (function init() {
-    const today = new Date().toDateString();
-    const saved = JSON.parse(localStorage.getItem('chronofocus') || '{}');
-    if (saved.date === today) {
-      sessionsToday = saved.sessions || 0;
-      focusMinutes  = saved.focusMinutes || 0;
-      tasksDone     = saved.tasksDone || 0;
-    }
-    streak = saved.streak || 0;
-    
-    // Set initial language and populate translations
-    setLanguage(currentLanguage);
-    setupDurationSettings();
-
-    updateDisplay();
-    updateRing();
-    updateStats();
-    updateSessionDots();
-    renderTasks();
-  })();
-</script>
-
+  <script type="module" src="app.js"></script>
 </body>
 </html>
