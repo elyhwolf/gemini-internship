@@ -133,6 +133,22 @@
 - **Overwritten index.html**: Overwriting root `index.html` with the timer code initially deleted the drive-thru dashboard.
   * **Fix**: Reverted the root file via Git (`git checkout 52ec0d8 -- index.html`) and relocated the timer code to `/focus-timer/index.html` to keep both projects active and separate.
 
+---
+
+# 📓 Developer Journal - July 1, 2026
+
+## 🛠️ What did I build today?
+- Updated `vite.config.js` to set the base path conditionally. It checks for the `GITHUB_ACTIONS` environment variable: deploying to GitHub Pages uses `/gemini-internship/` while Vercel or local builds deploy to root `/`.
+- Prepared the repository for Vercel integration by pushing clean base configuration updates to GitHub.
+- Outlined a detailed guide for the user to connect their GitHub repository to Vercel.
+
+## 🤖 What AI prompt worked?
+- Implementing a conditional env check (`process.env.GITHUB_ACTIONS`) in `vite.config.js` so a single config works flawlessly on both GitHub Pages and Vercel.
+
+## 🔍 What broke and how did I fix it?
+- **Root path mismatch on Vercel**: Statically referencing `/gemini-internship/` for asset resolution works on GitHub Pages but fails on Vercel subdomains which resolve directly to the root directory `/`.
+  * **Fix**: Used conditional environment parameters to serve `/` on Vercel and `/gemini-internship/` on GitHub Pages automatically.
+
 
 
 
