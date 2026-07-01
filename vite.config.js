@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  base: '/gemini-internship/',
+  base: process.env.GITHUB_ACTIONS ? '/gemini-internship/' : '/',
 })
