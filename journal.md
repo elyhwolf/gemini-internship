@@ -80,6 +80,59 @@
 ## 🔍 What broke and how did I fix it?
 - The demo setup completed smoothly; no rendering errors or synchronization warnings occurred.
 
+---
+
+# 📓 Developer Journal - June 27, 2026
+
+## 🛠️ What did I build today?
+- Integrated **isiXhosa (Xhosa)** language translation dictionary and switcher controls.
+- Localized dynamic logs, loyalty card labels, empty feed notifications, and game results into Xhosa.
+- Set up **GitHub Actions CI/CD workflow** (`deploy.yml`) to automatically build with Vite and deploy the project to **GitHub Pages**.
+- Created `vite.config.js` to configure the base subdirectory path (`/gemini-internship/`) for correct asset resolution.
+
+## 🤖 What AI prompt worked?
+- Designing a custom GitHub Actions pages yml structure with the latest cache options (`cache: npm`) for ultra-fast builds.
+
+## 🔍 What broke and how did I fix it?
+- **GitHub Pages 404 assets**: Initially assets failed to load because Vite built them with absolute root paths `/assets/`.
+  * **Fix**: Added `vite.config.js` with `base: '/gemini-internship/'` to resolve paths relative to the GitHub Pages repository namespace.
+
+---
+
+# 📓 Developer Journal - June 29, 2026
+
+## 🛠️ What did I build today?
+- Created a brand-new standalone application: **ChronoFocus** (Pomodoro Focus Timer + Task Tracker).
+- Styled the app with a vibrant **fiery orange and lime green** glassmorphic dark theme sponsored by **Ely's Hot Chicken**.
+- Integrated full multi-language switcher tabs (English, Spanish, Hebrew, Xhosa) with dynamic **RTL (Right-to-Left)** layout adjustments for Hebrew.
+- Added custom time configuration settings, allowing the user to dynamically adjust Focus Session, Short Break, and Long Break durations in minutes with instant active timer resets.
+- Added audio chimes on session completion and localStorage persistence for daily stats.
+
+## 🤖 What AI prompt worked?
+- Prompting the browser subagent to execute a full E2E user path: add a task, change focus duration to 10 minutes, click play, and verify the ticking countdown state.
+
+## 🔍 What broke and how did I fix it?
+- **Server crash on pipeline**: Running the local server pipe to `head -5` caused serve to terminate immediately once head exited due to a broken pipe.
+  * **Fix**: Relaunched the local server directly in the background without piping, ensuring a stable local environment.
+
+---
+
+# 📓 Developer Journal - June 30, 2026
+
+## 🛠️ What did I build today?
+- Restored the original **Ely's Hot Chicken Drive-Thru Dashboard** on port `5173` after a git checkout rollback.
+- Separated the new **ChronoFocus Timer** to run on its own port `5174` under `/focus-timer/`.
+- Restructured the ChronoFocus grid layout, moving the **stats bar** to a full-width row at the bottom to solve vertical clipping and stats cutoff issues.
+- Updated `package.json` build scripts to copy the static `focus-timer` folder to the `dist/` directory, allowing deployment of both sites side-by-side on GitHub Pages.
+- Pushed all updates to the remote GitHub repository.
+
+## 🤖 What AI prompt worked?
+- Visually inspecting the browser screenshot of port 5174 to identify container height clipping, realizing that the stats-bar should be full-width rather than squished inside Column 1.
+
+## 🔍 What broke and how did I fix it?
+- **Overwritten index.html**: Overwriting root `index.html` with the timer code initially deleted the drive-thru dashboard.
+  * **Fix**: Reverted the root file via Git (`git checkout 52ec0d8 -- index.html`) and relocated the timer code to `/focus-timer/index.html` to keep both projects active and separate.
+
 
 
 
