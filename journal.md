@@ -139,15 +139,17 @@
 
 ## 🛠️ What did I build today?
 - Updated `vite.config.js` to set the base path conditionally. It checks for the `GITHUB_ACTIONS` environment variable: deploying to GitHub Pages uses `/gemini-internship/` while Vercel or local builds deploy to root `/`.
-- Prepared the repository for Vercel integration by pushing clean base configuration updates to GitHub.
-- Outlined a detailed guide for the user to connect their GitHub repository to Vercel.
+- Connected the GitHub repository to **Vercel** for live production hosting.
+- Deployed both applications side-by-side: **Ely's Hot Chicken Drive-Thru** is live at `https://gemini-internship.vercel.app/` and the **ChronoFocus Timer** is live at `/focus-timer/`.
 
 ## 🤖 What AI prompt worked?
-- Implementing a conditional env check (`process.env.GITHUB_ACTIONS`) in `vite.config.js` so a single config works flawlessly on both GitHub Pages and Vercel.
+- Implementing a conditional environment check (`process.env.GITHUB_ACTIONS`) in `vite.config.js` so a single build script works flawlessly on both GitHub Pages and Vercel.
 
 ## 🔍 What broke and how did I fix it?
 - **Root path mismatch on Vercel**: Statically referencing `/gemini-internship/` for asset resolution works on GitHub Pages but fails on Vercel subdomains which resolve directly to the root directory `/`.
   * **Fix**: Used conditional environment parameters to serve `/` on Vercel and `/gemini-internship/` on GitHub Pages automatically.
+- **Vite Signup Bad Request**: Vercel registration verification code input returned a `400 Bad Request` code entry error.
+  * **Fix**: Bypassed manual email signups by selecting **"Continue with GitHub"** to authenticate via OAuth directly.
 
 
 
