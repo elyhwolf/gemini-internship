@@ -151,6 +151,21 @@
 - **Vite Signup Bad Request**: Vercel registration verification code input returned a `400 Bad Request` code entry error.
   * **Fix**: Bypassed manual email signups by selecting **"Continue with GitHub"** to authenticate via OAuth directly.
 
+---
+
+# 📓 Developer Journal - July 2, 2026
+
+## 🛠️ What did I build today?
+- Tested the newly configured Vercel CI/CD pipeline by making a code change locally.
+- Added a "CI/CD Active 🚀" badge/tagline in `index.html` to confirm live update cycles.
+- Pushed changes to the GitHub repository and verified the automated rebuild deployment process.
+
+## 🤖 What AI prompt worked?
+- Implementing localized tagline changes directly in index.html, pushing to main, and checking the live website status programmatically via `read_url_content` tools to verify live rebuild state.
+
+## 🔍 What broke and how did I fix it?
+- Rebuild completed cleanly on Vercel without warnings or build errors; the changes went live automatically within 20 seconds.
+
 
 
 
