@@ -180,6 +180,7 @@
 - Extended the chatbot logic to allow **creating and checking off tasks** directly through chat inputs in all supported languages.
 - Upgraded the chatbot to support **general conversational chit-chat** (handling greetings, mood checks, hot chicken spice queries, productivity quotes, and chicken-themed jokes).
 - Added full multi-language translations (English, Spanish, Hebrew, Xhosa) for the chatbot interface, text prompts, status logs, and greetings.
+- **ChronoCluck Hood Persona**: Restyled the chatbot's English voice to speak in lowercase hood/gang-affiliated slang (such as "yo what's good homie", "grind on some goals", "real talk", "stay safe").
 - Presented the live URLs for the primary Nashville Hot Chicken drive-thru simulator dashboard and the standalone glassmorphic ChronoFocus productivity timer.
 
 ## 🤖 What AI prompt worked?
@@ -187,6 +188,7 @@
 - Regular expression parsing with localized word matching to capture numbers (minutes) and trigger action handlers (switchMode, startTimer, resetTimer).
 - Context-matching regex capturing to extract task text descriptions for creation and target task names for status updates (completed/done toggles).
 - Splitting strings by alphanumeric sets to prevent short keywords (like "hi" in "chicken") from matching substring inclusions incorrectly.
+- Modifying appendChatMsg to enforce lowercase conversion on the output of bot responses.
 
 ## 🔍 What broke and how did I fix it?
 - **ChronoFocus Task list crash**: Setting `.style.display = 'none'` on the null reference `empty` crashed the script.
