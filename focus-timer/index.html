@@ -553,27 +553,33 @@
     }
 
     .task-check {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
       border: 2px solid var(--text-dim);
       flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: all var(--transition);
-      font-size: 0.65rem;
+      font-size: 0.75rem;
+      cursor: pointer;
     }
 
-    .task-item.done .task-check {
+    .task-check:hover {
+      border-color: var(--lime);
+      background: rgba(163, 230, 53, 0.15);
+    }
+
+    .task-check.checked {
       background: var(--lime);
       border-color: var(--lime);
       color: #000;
-      font-weight: 700;
+      font-weight: 800;
       box-shadow: 0 0 8px rgba(163, 230, 53, 0.5);
     }
 
-    .task-item.active-task .task-check {
+    .task-item.active-task .task-check:not(.checked) {
       border-color: var(--orange-light);
       box-shadow: 0 0 8px rgba(249, 115, 22, 0.5);
     }
@@ -839,12 +845,11 @@
           <button type="submit" class="btn-add" id="btn-add-task" aria-label="Add task">+</button>
         </form>
 
-        <div class="task-list" id="task-list" role="list" aria-label="Task list">
-          <div class="task-empty" id="task-empty">
-            <div class="task-empty-icon">📋</div>
-            <span id="lbl-task-empty">Add tasks to focus on them during your sessions</span>
-          </div>
+        <div class="task-empty" id="task-empty" style="display: block;">
+          <div class="task-empty-icon">📋</div>
+          <span id="lbl-task-empty">Add tasks to focus on them during your sessions</span>
         </div>
+        <div class="task-list" id="task-list" role="list" aria-label="Task list"></div>
       </div>
 
     </div>
@@ -1336,16 +1341,16 @@
 
     if (all.length === 0) {
       list.innerHTML = '';
-      empty.style.display = 'block';
+      if (empty) empty.style.display = 'block';
       return;
     }
 
-    empty.style.display = 'none';
+    if (empty) empty.style.display = 'none';
     list.innerHTML = all.map(task => `
       <div class="task-item ${task.done ? 'done' : ''} ${task.id === activeTaskId && !task.done ? 'active-task' : ''}"
            role="listitem"
            onclick="setActive(${task.id})">
-        <div class="task-check" onclick="event.stopPropagation(); toggleTask(${task.id})">
+        <div class="task-check ${task.done ? 'checked' : ''}" onclick="event.stopPropagation(); toggleTask(${task.id})" role="checkbox" aria-checked="${task.done}" tabindex="0" title="Toggle completion">
           ${task.done ? '✓' : ''}
         </div>
         <div class="task-text">${escapeHtml(task.text)}</div>
