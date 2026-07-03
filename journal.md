@@ -176,10 +176,13 @@
 - Resolved a critical rendering bug in ChronoFocus where adding a task failed due to the `#task-empty` node being deleted from the DOM during initial page clears.
 - Decoupled the empty state template `#task-empty` from `#task-list` in the HTML markup.
 - Refactored the `.task-check` circle into a beautiful square checkbox option with hover micro-animations and completed checks next to tasks.
+- **ChronoCluck AI Chatbot Pop-up**: Added a sleek glassmorphic chatbot popup in ChronoFocus that lets users request session timings (focus, short breaks, long breaks) and start/pause/reset controls in natural language.
+- Added full multi-language translations (English, Spanish, Hebrew, Xhosa) for the chatbot interface, text prompts, status logs, and greetings.
 - Presented the live URLs for the primary Nashville Hot Chicken drive-thru simulator dashboard and the standalone glassmorphic ChronoFocus productivity timer.
 
 ## 🤖 What AI prompt worked?
 - Analyzing the browser subagent's feedback on task list HTML state, recognizing that the initial `list.innerHTML = ''` execution cleared all children of `#task-list` (including `#task-empty`), which caused subsequent calls to crash on `null` style references.
+- Regular expression parsing with localized word matching to capture numbers (minutes) and trigger action handlers (switchMode, startTimer, resetTimer).
 
 ## 🔍 What broke and how did I fix it?
 - **ChronoFocus Task list crash**: Setting `.style.display = 'none'` on the null reference `empty` crashed the script.
