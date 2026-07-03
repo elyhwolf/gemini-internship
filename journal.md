@@ -181,6 +181,7 @@
 - Upgraded the chatbot to support **general conversational chit-chat** (handling greetings, mood checks, hot chicken spice queries, productivity quotes, and chicken-themed jokes).
 - Added full multi-language translations (English, Spanish, Hebrew, Xhosa) for the chatbot interface, text prompts, status logs, and greetings.
 - **ChronoCluck Hood Persona**: Restyled the chatbot's English voice to speak in lowercase hood/gang-affiliated slang (such as "yo what's good homie", "grind on some goals", "real talk", "stay safe").
+- Refactored the unknown query fallback response to match the gangster persona: `"my glock got brandished brudda could u repeat dat"`.
 - Presented the live URLs for the primary Nashville Hot Chicken drive-thru simulator dashboard and the standalone glassmorphic ChronoFocus productivity timer.
 
 ## 🤖 What AI prompt worked?
