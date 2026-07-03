@@ -1154,18 +1154,18 @@
       durationsShort: "Short",
       durationsLong: "Long",
       botTitle: "ChronoCluck AI",
-      botWelcome: "Howdy! I'm ChronoCluck. Ask me to set session times, start/pause, or reset the timer! (e.g. 'set focus to 15 min')",
+      botWelcome: "yo what's good homie. i'm chronocluck. tell me to set your timer, start/pause, or reset the joint. (e.g. 'set focus to 15 min')",
       botPlaceholder: "Ask ChronoCluck…",
-      botSetFocus: "🍗 Focus session set to {min} minutes!",
-      botSetShort: "🥤 Short break set to {min} minutes!",
-      botSetLong: "🍨 Long break set to {min} minutes!",
-      botStart: "▶ Timer started! Let's get focusin'!",
-      botPause: "⏸ Timer paused.",
-      botReset: "↺ Timer reset.",
-      botCreatedTask: '📋 Task "{task}" has been created!',
-      botCompletedTask: '✅ Task "{task}" marked as completed!',
-      botTaskNotFound: '🔍 I couldn\'t find any active task matching "{task}".',
-      botHelp: "I didn't quite get that. You can say:\n• 'set focus to 10 min'\n• 'add task buy chicken'\n• 'complete buy chicken'\n• 'start / pause / reset'"
+      botSetFocus: "🍗 locked in. focus session set to {min} minutes, real talk.",
+      botSetShort: "🥤 brief break set to {min} minutes. stay safe.",
+      botSetLong: "🍨 chill session set to {min} minutes. kick back.",
+      botStart: "▶ timer running. let's get focusin' on the block.",
+      botPause: "⏸ timer paused. on hold.",
+      botReset: "↺ timer reset. back to zero.",
+      botCreatedTask: '📋 task "{task}" added to the queue.',
+      botCompletedTask: '✅ task "{task}" marked completed. job done.',
+      botTaskNotFound: '🔍 couldn\'t find any active task matching "{task}".',
+      botHelp: "i didn't catch that. you can say:\n• 'set focus to 10 min'\n• 'add task buy chicken'\n• 'complete buy chicken'\n• 'start / pause / reset'"
     },
     es: {
       sponsor: "Patrocinado por Ely's Hot Chicken",
@@ -1764,7 +1764,11 @@
     if (!feed) return;
     const bubble = document.createElement('div');
     bubble.className = `chat-msg ${sender}`;
-    bubble.innerHTML = text.replace(/\n/g, '<br/>');
+    let processedText = text;
+    if (sender === 'bot') {
+      processedText = text.toLowerCase();
+    }
+    bubble.innerHTML = processedText.replace(/\n/g, '<br/>');
     feed.appendChild(bubble);
     feed.scrollTop = feed.scrollHeight;
   }
@@ -1772,35 +1776,35 @@
   const BOT_CHAT_RESPONSES = {
     en: {
       greetings: [
-        "Howdy partner! Ready to get focusin' and crunch on some goals today? 🍗",
-        "Hey there! Need help setting up your timer or managing your tasks? 🤖",
-        "Cluck cluck! Welcome back! Let's make today productive. 🐔"
+        "yo what's good homie. you ready to get focusin' and grind on some goals today? 🍗",
+        "sup. need help setting up the timer or managing your checklist? 🤖",
+        "cluck cluck. welcome back to the block. let's get it. 🐔"
       ],
       howAreYou: [
-        "I'm feeling extra crispy and motivated! Ready to count down some sessions with you! 🍗",
-        "Just fine! Staying focused and keeping the fryers warm. How are you doing? 🔥"
+        "i'm extra crispy and motivated. ready to count down some sessions on the block. 🍗",
+        "staying focused, keeping the fryers hot. how you livin'? 🔥"
       ],
       jokes: [
-        "Why did the chicken focus on the timer? To get to the other side of the task! 🐔",
-        "What do you call a chicken who loves productivity? A hard-boiled worker! 🥚",
-        "Why did the chicken cross the road? To submit their pull request! 💻"
+        "why did the chicken focus on the timer? to get to the other side of the task, real talk. 🐔",
+        "what do you call a chicken who loves productivity? a hard-boiled worker. 🥚",
+        "why did the chicken cross the road? to submit their pull request. 💻"
       ],
       motivation: [
-        "You're doing great! One session at a time, you'll reach your destination. Keep it up! 🍗🚀",
-        "Stay focused! The secret of getting ahead is getting started. Let's do this! 💪",
-        "Every session counts. Keep your eyes on the prize (and maybe some Nashville hot wings later)! 🌶️"
+        "you're doing great. one session at a time, we runnin' this. 🍗🚀",
+        "stay locked in. the secret of getting ahead is getting started, real talk. 💪",
+        "every session counts. keep your eyes on the prize and some hot wings later. 🌶️"
       ],
       identity: [
-        "I'm ChronoCluck, your trusted Ely's Hot Chicken focus mascot! Ask me to set timers or manage your checklist. 🤖",
-        "I'm the resident ChronoFocus AI Helper. Part chicken, part code, full productivity enthusiast! 🐔"
+        "i'm chronocluck, your trusted mascot from ely's hot chicken. tell me to set timers or manage your checklist. 🤖",
+        "i'm the resident chronofocus ai helper. part chicken, part code, full hustle. 🐔"
       ],
       elyChicken: [
-        "Ely's Nashville Hot Chicken is the ultimate fuel for productivity! Choose from Country (no heat) to Poultrygeist (extreme heat)! 🔥🍗",
-        "Ely's Hot Chicken: Cooked to golden crispy perfection. Perfect to order after a long focus session! 🤤"
+        "ely's Nashville hot chicken is the ultimate fuel. choose from Country to Poultrygeist. 🔥🍗",
+        "ely's hot chicken: cooked to golden crispy perfection. perfect to order after a long focus session. 🤤"
       ],
       unknown: [
-        "I'm not quite sure how to answer that, but I'm always happy to chat! Ask me to set a timer (e.g. 'set focus to 15 min') or create/complete tasks (e.g. 'add task read code'). Type 'help' for commands!",
-        "Hmm, my feathers got ruffled by that prompt. If you want to configure your session, try saying 'set short break to 5 min' or check out the shortcut guides!"
+        "i don't quite get that, but i'm always down to chat. tell me to set a timer or manage your tasks. type 'help' for commands.",
+        "my feathers got ruffled. if you want to configure your session, try saying 'set short break to 5 min' or check the guides."
       ]
     },
     es: {
