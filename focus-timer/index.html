@@ -1162,7 +1162,10 @@
       botStart: "▶ Timer started! Let's get focusin'!",
       botPause: "⏸ Timer paused.",
       botReset: "↺ Timer reset.",
-      botHelp: "I didn't quite get that. You can say:\n• 'set focus to 10 min'\n• 'short break 8 min'\n• 'start / pause / reset'"
+      botCreatedTask: '📋 Task "{task}" has been created!',
+      botCompletedTask: '✅ Task "{task}" marked as completed!',
+      botTaskNotFound: '🔍 I couldn\'t find any active task matching "{task}".',
+      botHelp: "I didn't quite get that. You can say:\n• 'set focus to 10 min'\n• 'add task buy chicken'\n• 'complete buy chicken'\n• 'start / pause / reset'"
     },
     es: {
       sponsor: "Patrocinado por Ely's Hot Chicken",
@@ -1200,7 +1203,10 @@
       botStart: "▶ ¡Temporizador iniciado! ¡A enfocarse!",
       botPause: "⏸ Temporizador pausado.",
       botReset: "↺ Temporizador reiniciado.",
-      botHelp: "No entendí bien. Puedes decir:\n• 'enfoque a 10 min'\n• 'descanso corto 8 min'\n• 'iniciar / pausar / reiniciar'"
+      botCreatedTask: '📋 ¡Se ha creado la tarea "{task}"!',
+      botCompletedTask: '✅ ¡Tarea "{task}" marcada como completada!',
+      botTaskNotFound: '🔍 No encontré ninguna tarea activa que coincida con "{task}".',
+      botHelp: "No entendí bien. Puedes decir:\n• 'enfoque a 10 min'\n• 'agregar tarea comprar pollo'\n• 'completar comprar pollo'\n• 'iniciar / pausar / reiniciar'"
     },
     he: {
       sponsor: "בחסות Ely's Hot Chicken",
@@ -1238,7 +1244,10 @@
       botStart: "▶ הטיימר הופעל! קדימה לעבודה!",
       botPause: "⏸ הטיימר הושהה.",
       botReset: "↺ הטיימר אופס.",
-      botHelp: "לא הבנתי. ניתן לומר:\n• 'ריכוז ל-10 דקות'\n• 'הפסקה קצרה של 8 דקות'\n• 'הפעל / השהה / איפוס'"
+      botCreatedTask: '📋 המשימה "{task}" נוצרה בהצלחה!',
+      botCompletedTask: '✅ המשימה "{task}" סומנה כבוצעה!',
+      botTaskNotFound: '🔍 לא מצאתי משימה פעילה שמתאימה ל-"{task}".',
+      botHelp: "לא הבנתי. ניתן לומר:\n• 'ריכוז ל-10 דקות'\n• 'הוסף משימה לקנות כנפיים'\n• 'בוצע לקנות כנפיים'\n• 'הפעל / השהה / איפוס'"
     },
     xh: {
       sponsor: "Ixhaswe yi-Ely's Hot Chicken",
@@ -1276,7 +1285,10 @@
       botStart: "▶ Itayima iqalile! Masigxile!",
       botPause: "⏸ Itayima inqumisiwe.",
       botReset: "↺ Itayima isetwe kabusha.",
-      botHelp: "Andikhange ndiyive kakuhle lonto. Ungathi:\n• 'gxila kwimizuzu eyi-10'\n• 'ikhefu elifutshane imizuzu eyi-8'\n• 'qala / nqumama / seta kabusha'"
+      botCreatedTask: '📋 Umsebenzi "{task}" ukiwe!',
+      botCompletedTask: '✅ Umsebenzi "{task}" uphawulwe njogugqityiweyo!',
+      botTaskNotFound: '🔍 Andikhange ndiwufumane umsebenzi ohambelana ne-"{task}".',
+      botHelp: "Andikhange ndiyive kakuhle lonto. Ungathi:\n• 'gxila kwimizuzu eyi-10'\n• 'faka umsebenzi ukuthenga inkuku'\n• 'gqiba ukuthenga inkuku'\n• 'qala / nqumama / seta kabusha'"
     }
   };
 
@@ -1760,6 +1772,48 @@
   function processBotMessage(msg) {
     const text = msg.toLowerCase().trim();
     const t = TRANSLATIONS[currentLanguage];
+
+    // Task creation parsing
+    const createRegex = /^(?:add task|create task|add todo|todo|new task|agregar tarea|nueva tarea|הוסף משימה|משימה חדשה|faka umsebenzi|umsebenzi omtsha)\s*[:\-\s]?\s*(.+)$/i;
+    const createMatch = msg.match(createRegex);
+    if (createMatch) {
+      const taskText = createMatch[1].trim();
+      if (taskText) {
+        const task = { id: Date.now(), text: taskText, done: false, pomodoros: 0 };
+        tasks.unshift(task);
+        if (activeTaskId === null) activeTaskId = task.id;
+        renderTasks();
+        return t.botCreatedTask.replace('{task}', taskText);
+      }
+    }
+
+    // Task completion parsing
+    const completeRegex = /^(?:complete task|complete|check off|finish task|finish|done|completar tarea|completar|סמן כבוצע|בוצע|סיימתי|gqiba umsebenzi|gqiba|gqityiwe)\s*[:\-\s]?\s*(.+)$/i;
+    const completeMatch = msg.match(completeRegex);
+    if (completeMatch) {
+      const taskText = completeMatch[1].trim().toLowerCase();
+      if (taskText) {
+        const matchedTask = tasks.find(tsk => tsk.text.toLowerCase().includes(taskText));
+        if (matchedTask) {
+          if (!matchedTask.done) {
+            toggleTask(matchedTask.id);
+          }
+          return t.botCompletedTask.replace('{task}', matchedTask.text);
+        } else {
+          const hasActiveKeyword = taskText.includes('active') || taskText.includes('current') || taskText.includes('actual') || taskText.includes('נוכחית') || taskText.includes('yamanje');
+          if (hasActiveKeyword && activeTaskId !== null) {
+            const activeTask = tasks.find(tsk => tsk.id === activeTaskId);
+            if (activeTask) {
+              if (!activeTask.done) {
+                toggleTask(activeTask.id);
+              }
+              return t.botCompletedTask.replace('{task}', activeTask.text);
+            }
+          }
+          return t.botTaskNotFound.replace('{task}', completeMatch[1].trim());
+        }
+      }
+    }
 
     const numMatch = text.match(/\b\d+\b/);
     const min = numMatch ? parseInt(numMatch[0]) : null;
