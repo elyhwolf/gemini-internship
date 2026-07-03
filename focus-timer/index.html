@@ -1769,11 +1769,145 @@
     feed.scrollTop = feed.scrollHeight;
   }
 
-  function processBotMessage(msg) {
+  const BOT_CHAT_RESPONSES = {
+    en: {
+      greetings: [
+        "Howdy partner! Ready to get focusin' and crunch on some goals today? 🍗",
+        "Hey there! Need help setting up your timer or managing your tasks? 🤖",
+        "Cluck cluck! Welcome back! Let's make today productive. 🐔"
+      ],
+      howAreYou: [
+        "I'm feeling extra crispy and motivated! Ready to count down some sessions with you! 🍗",
+        "Just fine! Staying focused and keeping the fryers warm. How are you doing? 🔥"
+      ],
+      jokes: [
+        "Why did the chicken focus on the timer? To get to the other side of the task! 🐔",
+        "What do you call a chicken who loves productivity? A hard-boiled worker! 🥚",
+        "Why did the chicken cross the road? To submit their pull request! 💻"
+      ],
+      motivation: [
+        "You're doing great! One session at a time, you'll reach your destination. Keep it up! 🍗🚀",
+        "Stay focused! The secret of getting ahead is getting started. Let's do this! 💪",
+        "Every session counts. Keep your eyes on the prize (and maybe some Nashville hot wings later)! 🌶️"
+      ],
+      identity: [
+        "I'm ChronoCluck, your trusted Ely's Hot Chicken focus mascot! Ask me to set timers or manage your checklist. 🤖",
+        "I'm the resident ChronoFocus AI Helper. Part chicken, part code, full productivity enthusiast! 🐔"
+      ],
+      elyChicken: [
+        "Ely's Nashville Hot Chicken is the ultimate fuel for productivity! Choose from Country (no heat) to Poultrygeist (extreme heat)! 🔥🍗",
+        "Ely's Hot Chicken: Cooked to golden crispy perfection. Perfect to order after a long focus session! 🤤"
+      ],
+      unknown: [
+        "I'm not quite sure how to answer that, but I'm always happy to chat! Ask me to set a timer (e.g. 'set focus to 15 min') or create/complete tasks (e.g. 'add task read code'). Type 'help' for commands!",
+        "Hmm, my feathers got ruffled by that prompt. If you want to configure your session, try saying 'set short break to 5 min' or check out the shortcut guides!"
+      ]
+    },
+    es: {
+      greetings: [
+        "¡Hola! ¿Listo para concentrarte hoy? 🍗",
+        "¡Hola! ¿Necesitas ayuda con el temporizador o tus tareas? 🤖",
+        "¡Kikirikí! ¡Bienvenido de nuevo! Hagamos que hoy sea productivo. 🐔"
+      ],
+      howAreYou: [
+        "¡Me siento súper crujiente y motivado! Listo para contar sesiones contigo. 🍗",
+        "¡Excelente! Manteniendo el enfoque y las freidoras calientes. ¿Y tú qué tal?"
+      ],
+      jokes: [
+        "¿Por qué el pollo cruzó la calle? ¡Para llegar al otro lado de la lista de tareas! 🐔",
+        "¿Cómo se llama un pollo muy productivo? ¡Un trabajador bien cocido! 🥚"
+      ],
+      motivation: [
+        "¡Lo estás haciendo genial! Una sesión a la vez. ¡Sigue así! 🍗🚀",
+        "¡Mantén el enfoque! El secreto para salir adelante es comenzar. ¡Hagámoslo! 💪"
+      ],
+      identity: [
+        "Soy ChronoCluck, la mascota de concentración de Ely's Hot Chicken. Pídeme temporizadores o tareas. 🤖",
+        "¡Soy el Asistente IA de ChronoFocus! Mitad pollo, mitad código, ¡entusiasta de la productividad! 🐔"
+      ],
+      elyChicken: [
+        "¡Ely's Nashville Hot Chicken es el combustible definitivo para la productividad! Puedes elegir entre Country (sin picante) hasta Poultrygeist (picante extremo)! 🔥🍗"
+      ],
+      unknown: [
+        "No estoy seguro de cómo responder a eso, ¡pero siempre me alegra conversar! Pídeme configurar el temporizador ('enfoque a 15 min') o manejar tareas. Escribe 'ayuda' para ver comandos.",
+        "Hmm, eso me dejó pensando. Si quieres configurar tu sesión, intenta decir 'concentracion a 25 min' o consulta la guía."
+      ]
+    },
+    he: {
+      greetings: [
+        "שלום! מוכן להתרכז היום? 🍗",
+        "היי! צריך עזרה בהגדרת הטיימר או בניהול המשימות שלך? 🤖",
+        "קוקוריקו! ברוך הבא! בוא נהפוך את היום הזה לפרודוקטיבי. 🐔"
+      ],
+      howAreYou: [
+        "אני מרגיש פריך במיוחד ומלא מוטיבציה! מוכן להתחיל לספור סשנים איתך. 🍗",
+        "הכל מצוין! שומר על ריכוז ומחמם את סירי הטיגון. מה שלומך?"
+      ],
+      jokes: [
+        "למה התרנגולת עברה את הכביש? כדי להגיע לצד השני של רשימת המשימות! 🐔",
+        "איך קוראים לתרנגולת שאוהבת פרודוקטיביות? עובדת קשה במיוחד! 🥚"
+      ],
+      motivation: [
+        "אתה עושה עבודה מדהימה! סשן אחד בכל פעם. תמשיך ככה! 🍗🚀",
+        "הישאר מרוכז! הסוד להתקדם הוא פשוט להתחיל. בוא נעשה את זה! 💪"
+      ],
+      identity: [
+        "אני ChronoCluck, קמע הריכוז של Ely's Hot Chicken! בקש ממני טיימרים או משימות. 🤖",
+        "אני עוזר הבינה המלאכותית של ChronoFocus. חצי תרנגולת, חצי קוד, ומאה אחוז מוטיבציה! 🐔"
+      ],
+      elyChicken: [
+        "העוף של אלי הוא הדלק האולטימטיבי לפרודוקטיביות! בחר רמת חריפות מ-Country (ללא חריפות) ועד Poultrygeist (חריף בטירוף)! 🔥🍗"
+      ],
+      unknown: [
+        "אני לא בטוח איך לענות על זה, אבל תמיד אשמח לשוחח! בקש ממני להגדיר טיימר (למשל: 'ריכוז ל-15 דקות') או לנהל משימות. הקלד 'עזרה' לפקודות נוספות.",
+        "ההודעה הזו בלבלה אותי קצת. אם ברצונך להגדיר את הסשן שלך, נסה לומר 'ריכוז ל-25 דקות'."
+      ]
+    },
+    xh: {
+      greetings: [
+        "Molo! Ukulungele ukugxila namhlanje? 🍗",
+        "Molo! Uyakufuna uncedo ngesitayima okanye ngemisebenzi yakho? 🤖",
+        "Kuku! Wamkelekile! Masenze namhlanje ibe nemveliso. 🐔"
+      ],
+      howAreYou: [
+        "Ndiziva ndicrispy kwaye ndikhuthazekile! Ukulungele ukubala iiseshoni nawe. 🍗",
+        "Ndilungile kakhulu! Ndishushu kwaye ndilungele ukugxila. Unjani wena?"
+      ],
+      jokes: [
+        "Kutheni inkuku iwele indlela? Ukuze ifike kwelinye icala lomsebenzi! 🐔",
+        "Ubizwa ngokuba yintoni inkuku ethanda imveliso? Umsebenzi olukhuni! 🥚"
+      ],
+      motivation: [
+        "Wenza kakuhle kakhulu! Iseshoni enye ngexesha. Gcina phezulu! 🍗🚀",
+        "Gcina ugxilo! Imfihlo yokufumana phambili kukuqala. Masenze oku! 💪"
+      ],
+      identity: [
+        "NdinguChronoCluck, imascot yokugxila ye-Ely's Hot Chicken! Ndicele iitayima okanye imisebenzi. 🤖",
+        "NdinguMncedisi we-AI we-ChronoFocus. Inxalenye yenkuku, inxalenye yekhowudi, unololiwe wokugxila! 🐔"
+      ],
+      elyChicken: [
+        "I-Ely's Nashville Hot Chicken yeyona mafutha okugqibela okugxila! Khetha phakathi kweCountry ukuya kwiPoultrygeist! 🔥🍗"
+      ],
+      unknown: [
+        "Andiqinisekanga ukuba ndiphendule njani kulonto, kodwa ndihlala ndikuvuyela ukuncokola! Ndicele ukuseta itayima okanye ufake imisebenzi.",
+        "Hmm, ndididekile kancinci. Ukuba ufuna ukulungiselela iseshoni yakho, zama ukuthi 'gxila kwimizuzu eyi-25'."
+      ]
+    }
+  };
+
+    function processBotMessage(msg) {
     const text = msg.toLowerCase().trim();
     const t = TRANSLATIONS[currentLanguage];
+    const lang = currentLanguage;
+    const r = BOT_CHAT_RESPONSES[lang] || BOT_CHAT_RESPONSES.en;
 
-    // Task creation parsing
+    const rand = arr => arr[Math.floor(Math.random() * arr.length)];
+
+    // Split text by non-alphanumeric characters for word match
+    const words = text.split(/[^a-zA-Z0-9\u0590-\u05FF\u00C0-\u017F]+/);
+    const hasWord = w => words.includes(w);
+
+    // 1. Task creation parsing
     const createRegex = /^(?:add task|create task|add todo|todo|new task|agregar tarea|nueva tarea|הוסף משימה|משימה חדשה|faka umsebenzi|umsebenzi omtsha)\s*[:\-\s]?\s*(.+)$/i;
     const createMatch = msg.match(createRegex);
     if (createMatch) {
@@ -1787,7 +1921,7 @@
       }
     }
 
-    // Task completion parsing
+    // 2. Task completion parsing
     const completeRegex = /^(?:complete task|complete|check off|finish task|finish|done|completar tarea|completar|סמן כבוצע|בוצע|סיימתי|gqiba umsebenzi|gqiba|gqityiwe)\s*[:\-\s]?\s*(.+)$/i;
     const completeMatch = msg.match(completeRegex);
     if (completeMatch) {
@@ -1815,6 +1949,7 @@
       }
     }
 
+    // 3. Durations parsing (e.g. set focus to 10 min)
     const numMatch = text.match(/\b\d+\b/);
     const min = numMatch ? parseInt(numMatch[0]) : null;
 
@@ -1849,6 +1984,7 @@
       }
     }
 
+    // 4. Timer Controls parsing
     if (isStart) {
       startTimer();
       return t.botStart;
@@ -1862,7 +1998,44 @@
       return t.botReset;
     }
 
-    return t.botHelp;
+    // 5. Conversational routing
+    const isHelp = hasWord('help') || hasWord('commands') || hasWord('ayuda') || hasWord('עזרה') || hasWord('פקודות') || hasWord('nceda');
+    if (isHelp) {
+      return t.botHelp;
+    }
+
+    const isGreeting = hasWord('hello') || hasWord('hi') || hasWord('hey') || hasWord('howdy') || hasWord('hola') || hasWord('molo') || hasWord('שלום') || hasWord('קוקוריקו') || hasWord('kikiriki') || text.includes('welcome');
+    if (isGreeting) {
+      return rand(r.greetings);
+    }
+
+    const isHowAreYou = text.includes('how are you') || text.includes("how's it going") || text.includes('como estas') || text.includes('מה שלומך') || text.includes('מה נשמע') || hasWord('unjani') || text.includes('how you doing');
+    if (isHowAreYou) {
+      return rand(r.howAreYou);
+    }
+
+    const isJoke = hasWord('joke') || hasWord('chiste') || hasWord('בדיחה') || hasWord('בדיחות') || hasWord('qhula') || text.includes('funny');
+    if (isJoke) {
+      return rand(r.jokes);
+    }
+
+    const isMotivation = text.includes('motivate') || text.includes('motivation') || text.includes('motívame') || text.includes('motivar') || text.includes('עידוד') || text.includes('מוטיבציה') || hasWord('khuthaza') || text.includes('inspire');
+    if (isMotivation) {
+      return rand(r.motivation);
+    }
+
+    const isIdentity = text.includes('who are you') || hasWord('name') || text.includes('quien eres') || text.includes('מי אתה') || hasWord('ungubani');
+    if (isIdentity) {
+      return rand(r.identity);
+    }
+
+    const isElyChicken = hasWord('ely') || hasWord('chicken') || hasWord('spice') || hasWord('hot') || hasWord('menu') || hasWord('spicy') || hasWord('pollo') || hasWord('עוף') || hasWord('inkuku') || hasWord('fryer') || hasWord('wings') || text.includes('nashville');
+    if (isElyChicken) {
+      return rand(r.elyChicken);
+    }
+
+    // 6. Unknown chat fallback
+    return rand(r.unknown);
   }
 
   // ── Init ─────────────────────────────────────────────────────────────────
