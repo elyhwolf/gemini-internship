@@ -178,6 +178,7 @@
 - Refactored the `.task-check` circle into a beautiful square checkbox option with hover micro-animations and completed checks next to tasks.
 - **ChronoCluck AI Chatbot Pop-up**: Added a sleek glassmorphic chatbot popup in ChronoFocus that lets users request session timings (focus, short breaks, long breaks) and start/pause/reset controls in natural language.
 - Extended the chatbot logic to allow **creating and checking off tasks** directly through chat inputs in all supported languages.
+- Upgraded the chatbot to support **general conversational chit-chat** (handling greetings, mood checks, hot chicken spice queries, productivity quotes, and chicken-themed jokes).
 - Added full multi-language translations (English, Spanish, Hebrew, Xhosa) for the chatbot interface, text prompts, status logs, and greetings.
 - Presented the live URLs for the primary Nashville Hot Chicken drive-thru simulator dashboard and the standalone glassmorphic ChronoFocus productivity timer.
 
@@ -185,10 +186,13 @@
 - Analyzing the browser subagent's feedback on task list HTML state, recognizing that the initial `list.innerHTML = ''` execution cleared all children of `#task-list` (including `#task-empty`), which caused subsequent calls to crash on `null` style references.
 - Regular expression parsing with localized word matching to capture numbers (minutes) and trigger action handlers (switchMode, startTimer, resetTimer).
 - Context-matching regex capturing to extract task text descriptions for creation and target task names for status updates (completed/done toggles).
+- Splitting strings by alphanumeric sets to prevent short keywords (like "hi" in "chicken") from matching substring inclusions incorrectly.
 
 ## 🔍 What broke and how did I fix it?
 - **ChronoFocus Task list crash**: Setting `.style.display = 'none'` on the null reference `empty` crashed the script.
   * **Fix**: Restructured HTML to keep `#task-empty` outside the clearable list container, and added safety validation guards inside `renderTasks()`.
+- **Chatbot greeting substring matching collision**: Short keywords like `"hi"` matched substrings in words like `"chicken"`, triggering greetings instead of jokes.
+  * **Fix**: Implemented space/punctuation split arrays (`words`) and check methods (`hasWord()`) to guarantee matching of exact words.
 
 
 
