@@ -735,6 +735,210 @@
       .timer-display { font-size: 3rem; }
       .header-stats { display: none; }
     }
+
+    /* ── Chatbot CSS ── */
+    .chatbot-trigger {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--orange), var(--orange-light));
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px rgba(249, 115, 22, 0.45);
+      z-index: 1000;
+      transition: all var(--transition);
+    }
+    .chatbot-trigger:hover {
+      transform: scale(1.08) rotate(8deg);
+      box-shadow: 0 4px 28px rgba(249, 115, 22, 0.65);
+    }
+    html[dir="rtl"] .chatbot-trigger {
+      right: auto;
+      left: 24px;
+    }
+
+    .chatbot-panel {
+      position: fixed;
+      bottom: 92px;
+      right: 24px;
+      width: 350px;
+      height: 460px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+      animation: chat-slide 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    html[dir="rtl"] .chatbot-panel {
+      right: auto;
+      left: 24px;
+    }
+
+    @keyframes chat-slide {
+      from { opacity: 0; transform: translateY(30px) scale(0.95); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .chatbot-header {
+      padding: 14px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .chatbot-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .chatbot-status {
+      font-size: 0.62rem;
+      color: var(--lime);
+      font-weight: 600;
+    }
+
+    .chatbot-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      cursor: pointer;
+      padding: 4px;
+      transition: color var(--transition);
+    }
+    .chatbot-close:hover {
+      color: var(--red);
+    }
+
+    .chatbot-feed {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: rgba(0, 0, 0, 0.15);
+    }
+
+    .chatbot-feed::-webkit-scrollbar { width: 4px; }
+    .chatbot-feed::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .chat-msg {
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      animation: msg-in 0.2s ease-out;
+    }
+
+    @keyframes msg-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .chat-msg.bot {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: var(--text);
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+
+    .chat-msg.user {
+      background: var(--orange-dim);
+      border: 1px solid rgba(249, 115, 22, 0.3);
+      color: var(--orange-light);
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+    
+    html[dir="rtl"] .chat-msg.bot {
+      border-bottom-left-radius: 14px;
+      border-bottom-right-radius: 4px;
+      align-self: flex-start;
+    }
+    html[dir="rtl"] .chat-msg.user {
+      border-bottom-right-radius: 14px;
+      border-bottom-left-radius: 4px;
+      align-self: flex-end;
+    }
+
+    .chatbot-input-form {
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      background: rgba(0, 0, 0, 0.3);
+      border-top: 1px solid var(--border);
+    }
+
+    .chatbot-input-form input {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      color: var(--text);
+      font-size: 0.8rem;
+      outline: none;
+      font-family: inherit;
+    }
+    .chatbot-input-form input:focus {
+      border-color: var(--orange);
+    }
+
+    .chatbot-send {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: var(--orange);
+      color: white;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition);
+    }
+    .chatbot-send:hover {
+      background: var(--orange-light);
+      transform: scale(1.05);
+    }
+
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      padding: 4px 8px;
+    }
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      animation: typing-blink 1.4s infinite both;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typing-blink {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -895,6 +1099,30 @@
 <!-- Toast -->
 <div class="toast" id="toast" role="alert" aria-live="assertive"></div>
 
+<!-- Chatbot Trigger Button -->
+<button id="chatbot-trigger" class="chatbot-trigger" onclick="toggleChatbot()" title="ChronoCluck AI Assistant">
+  🤖
+</button>
+
+<!-- Chatbot Floating Panel -->
+<div id="chatbot-panel" class="card chatbot-panel" style="display: none;">
+  <div class="chatbot-header">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 1.25rem;">🤖</span>
+      <div>
+        <div class="chatbot-title" id="lbl-bot-title">ChronoCluck AI</div>
+        <div class="chatbot-status" id="lbl-bot-status">Online · Focus Helper</div>
+      </div>
+    </div>
+    <button class="chatbot-close" onclick="toggleChatbot()">✕</button>
+  </div>
+  <div class="chatbot-feed" id="chatbot-feed"></div>
+  <form class="chatbot-input-form" onsubmit="handleBotSubmit(event)">
+    <input type="text" id="chatbot-input" placeholder="Ask ChronoCluck…" autocomplete="off" maxlength="120" />
+    <button type="submit" class="chatbot-send">➔</button>
+  </form>
+</div>
+
 <script>
   // ── Translations ───────────────────────────────────────────────────────
   const TRANSLATIONS = {
@@ -924,7 +1152,17 @@
       durationsTitle: "Durations (min)",
       durationsFocus: "Focus",
       durationsShort: "Short",
-      durationsLong: "Long"
+      durationsLong: "Long",
+      botTitle: "ChronoCluck AI",
+      botWelcome: "Howdy! I'm ChronoCluck. Ask me to set session times, start/pause, or reset the timer! (e.g. 'set focus to 15 min')",
+      botPlaceholder: "Ask ChronoCluck…",
+      botSetFocus: "🍗 Focus session set to {min} minutes!",
+      botSetShort: "🥤 Short break set to {min} minutes!",
+      botSetLong: "🍨 Long break set to {min} minutes!",
+      botStart: "▶ Timer started! Let's get focusin'!",
+      botPause: "⏸ Timer paused.",
+      botReset: "↺ Timer reset.",
+      botHelp: "I didn't quite get that. You can say:\n• 'set focus to 10 min'\n• 'short break 8 min'\n• 'start / pause / reset'"
     },
     es: {
       sponsor: "Patrocinado por Ely's Hot Chicken",
@@ -952,7 +1190,17 @@
       durationsTitle: "Duración (min)",
       durationsFocus: "Enfoque",
       durationsShort: "Corto",
-      durationsLong: "Largo"
+      durationsLong: "Largo",
+      botTitle: "IA ChronoCluck",
+      botWelcome: "¡Hola! Soy ChronoCluck. ¡Pídeme configurar tiempos, iniciar/pausar o reiniciar el temporizador! (ej. 'concentracion a 15 min')",
+      botPlaceholder: "Preguntar a ChronoCluck…",
+      botSetFocus: "🍗 ¡Tiempo de concentración configurado en {min} minutos!",
+      botSetShort: "🥤 ¡Descanso corto configurado en {min} minutos!",
+      botSetLong: "🍨 ¡Descanso largo configurado en {min} minutos!",
+      botStart: "▶ ¡Temporizador iniciado! ¡A enfocarse!",
+      botPause: "⏸ Temporizador pausado.",
+      botReset: "↺ Temporizador reiniciado.",
+      botHelp: "No entendí bien. Puedes decir:\n• 'enfoque a 10 min'\n• 'descanso corto 8 min'\n• 'iniciar / pausar / reiniciar'"
     },
     he: {
       sponsor: "בחסות Ely's Hot Chicken",
@@ -980,7 +1228,17 @@
       durationsTitle: "מרווחים (דקות)",
       durationsFocus: "ריכוז",
       durationsShort: "קצרה",
-      durationsLong: "ארוכה"
+      durationsLong: "ארוכה",
+      botTitle: "צ'אטבוט ChronoCluck",
+      botWelcome: "שלום! אני ChronoCluck. בקש ממני להגדיר זמנים, להפעיל/להשהות או לאפס את הטיימר! (למשל: 'ריכוז ל-15 דקות')",
+      botPlaceholder: "שאל את ChronoCluck…",
+      botSetFocus: "🍗 זמן הריכוז הוגדר ל-{min} דקות!",
+      botSetShort: "🥤 הפסקה קצרה הוגדרה ל-{min} דקות!",
+      botSetLong: "🍨 הפסקה ארוכה הוגדרה ל-{min} דקות!",
+      botStart: "▶ הטיימר הופעל! קדימה לעבודה!",
+      botPause: "⏸ הטיימר הושהה.",
+      botReset: "↺ הטיימר אופס.",
+      botHelp: "לא הבנתי. ניתן לומר:\n• 'ריכוז ל-10 דקות'\n• 'הפסקה קצרה של 8 דקות'\n• 'הפעל / השהה / איפוס'"
     },
     xh: {
       sponsor: "Ixhaswe yi-Ely's Hot Chicken",
@@ -1008,7 +1266,17 @@
       durationsTitle: "Amaxesha (imiz)",
       durationsFocus: "Gxila",
       durationsShort: "Ifutshane",
-      durationsLong: "Elide"
+      durationsLong: "Elide",
+      botTitle: "ChronoCluck AI",
+      botWelcome: "Molo! NdinguChronoCluck. Ndicele ukuba ndisete amaxesha, ndiqale/ndinqumame okanye ndisete kabusha itayima! (umz. 'gxila kwimizuzu eyi-15')",
+      botPlaceholder: "Buza iChronoCluck…",
+      botSetFocus: "🍗 Iseshoni yokugxila isetwe kwimizuzu eyi-{min}!",
+      botSetShort: "🥤 Ikhefu elifutshane lisetwe kwimizuzu eyi-{min}!",
+      botSetLong: "🍨 Ikhefu elide lisetwe kwimizuzu eyi-{min}!",
+      botStart: "▶ Itayima iqalile! Masigxile!",
+      botPause: "⏸ Itayima inqumisiwe.",
+      botReset: "↺ Itayima isetwe kabusha.",
+      botHelp: "Andikhange ndiyive kakuhle lonto. Ungathi:\n• 'gxila kwimizuzu eyi-10'\n• 'ikhefu elifutshane imizuzu eyi-8'\n• 'qala / nqumama / seta kabusha'"
     }
   };
 
@@ -1084,6 +1352,17 @@
     document.getElementById('lbl-input-work').textContent = t.durationsFocus;
     document.getElementById('lbl-input-short').textContent = t.durationsShort;
     document.getElementById('lbl-input-long').textContent = t.durationsLong;
+
+    // Chatbot labels
+    const botTitle = document.getElementById('lbl-bot-title');
+    const botInput = document.getElementById('chatbot-input');
+    if (botTitle) botTitle.textContent = t.botTitle;
+    if (botInput) botInput.placeholder = t.botPlaceholder;
+
+    const feed = document.getElementById('chatbot-feed');
+    if (feed && feed.children.length <= 1) {
+      if (window.initChatbot) window.initChatbot();
+    }
 
     // Re-render tasks to update completed checkbox labels/aria
     renderTasks();
@@ -1410,6 +1689,127 @@
     if (e.key === 'r' || e.key === 'R') resetTimer();
     if (e.key === 's' || e.key === 'S') skipSession();
   });
+
+  // ── Chatbot Logic ────────────────────────────────────────────────────────
+  function toggleChatbot() {
+    const panel = document.getElementById('chatbot-panel');
+    if (!panel) return;
+    const isHidden = panel.style.display === 'none';
+    panel.style.display = isHidden ? 'flex' : 'none';
+    
+    if (isHidden) {
+      initChatbot();
+      const input = document.getElementById('chatbot-input');
+      if (input) input.focus();
+    }
+  }
+  window.toggleChatbot = toggleChatbot;
+
+  function initChatbot() {
+    const feed = document.getElementById('chatbot-feed');
+    if (!feed) return;
+    if (feed.innerHTML.trim() === '') {
+      const welcome = TRANSLATIONS[currentLanguage].botWelcome;
+      feed.innerHTML = `
+        <div class="chat-msg bot">${welcome}</div>
+      `;
+    }
+  }
+  window.initChatbot = initChatbot;
+
+  function handleBotSubmit(e) {
+    e.preventDefault();
+    const input = document.getElementById('chatbot-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    appendChatMsg(text, 'user');
+    input.value = '';
+
+    const feed = document.getElementById('chatbot-feed');
+    const indicator = document.createElement('div');
+    indicator.className = 'chat-msg bot typing-indicator-container';
+    indicator.innerHTML = `
+      <div class="typing-indicator">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    `;
+    feed.appendChild(indicator);
+    feed.scrollTop = feed.scrollHeight;
+
+    setTimeout(() => {
+      indicator.remove();
+      const response = processBotMessage(text);
+      appendChatMsg(response, 'bot');
+    }, 600);
+  }
+  window.handleBotSubmit = handleBotSubmit;
+
+  function appendChatMsg(text, sender) {
+    const feed = document.getElementById('chatbot-feed');
+    if (!feed) return;
+    const bubble = document.createElement('div');
+    bubble.className = `chat-msg ${sender}`;
+    bubble.innerHTML = text.replace(/\n/g, '<br/>');
+    feed.appendChild(bubble);
+    feed.scrollTop = feed.scrollHeight;
+  }
+
+  function processBotMessage(msg) {
+    const text = msg.toLowerCase().trim();
+    const t = TRANSLATIONS[currentLanguage];
+
+    const numMatch = text.match(/\b\d+\b/);
+    const min = numMatch ? parseInt(numMatch[0]) : null;
+
+    const isFocus = text.includes('focus') || text.includes('work') || text.includes('concentracion') || text.includes('enfoque') || text.includes('ריכוז') || text.includes('gxila') || text.includes('omsebenzi');
+    const isShort = text.includes('short') || text.includes('corto') || text.includes('קצרה') || text.includes('ifutshane');
+    const isLong  = text.includes('long') || text.includes('largo') || text.includes('ארוכה') || text.includes('elide');
+    const isReset = text.includes('reset') || text.includes('reiniciar') || text.includes('איפוס') || text.includes('seta kabusha');
+    const isStart = text.includes('start') || text.includes('play') || text.includes('iniciar') || text.includes('הפעל') || text.includes('qala') || text.includes('resume');
+    const isPause = text.includes('pause') || text.includes('pausa') || text.includes('השהה') || text.includes('nqumama') || text.includes('stop');
+
+    if (min !== null) {
+      if (isFocus) {
+        const input = document.getElementById('input-work-duration');
+        if (input) input.value = min;
+        MODES.work.duration = min * 60;
+        switchMode('work');
+        return t.botSetFocus.replace('{min}', min);
+      }
+      if (isShort) {
+        const input = document.getElementById('input-short-duration');
+        if (input) input.value = min;
+        MODES.short.duration = min * 60;
+        switchMode('short');
+        return t.botSetShort.replace('{min}', min);
+      }
+      if (isLong) {
+        const input = document.getElementById('input-long-duration');
+        if (input) input.value = min;
+        MODES.long.duration = min * 60;
+        switchMode('long');
+        return t.botSetLong.replace('{min}', min);
+      }
+    }
+
+    if (isStart) {
+      startTimer();
+      return t.botStart;
+    }
+    if (isPause) {
+      pauseTimer();
+      return t.botPause;
+    }
+    if (isReset) {
+      resetTimer();
+      return t.botReset;
+    }
+
+    return t.botHelp;
+  }
 
   // ── Init ─────────────────────────────────────────────────────────────────
   (function init() {
