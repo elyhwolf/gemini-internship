@@ -197,6 +197,19 @@
 - **Chatbot greeting substring matching collision**: Short keywords like `"hi"` matched substrings in words like `"chicken"`, triggering greetings instead of jokes.
   * **Fix**: Implemented space/punctuation split arrays (`words`) and check methods (`hasWord()`) to guarantee matching of exact words.
 
+---
 
+# 📓 Developer Journal - July 4, 2026
 
+## 🛠️ What did I build today?
+- **ChronoCluck Slang Customization**: Customized the chatbot's terms of address dynamically.
+- **Dynamic Address Slang Replacement**: Refactored the chatbot rendering logic to dynamically replace `"homie"` with a randomly selected slang term: `"bro"`, `"brodie"`, `"brudda"`, `"mud"`, or `"gang"`.
+- **Integrated Dynamic Initialization**: Updated `initChatbot()` to pass the welcome message through `appendChatMsg`, ensuring that the initial welcome greeting dynamically chooses a slang term on load.
+- Verified that all responses render in lowercase and randomly address the user as requested.
 
+## 🤖 What AI prompt worked?
+- Implementing a dynamic replacement mapping via Regex callback replacements `processedText.replace(/\bhomie\b/g, () => randomSlang)` inside `appendChatMsg` to dynamically randomize greetings without manual string changes.
+
+## 🔍 What broke and how did I fix it?
+- **Welcome message address slang caching**: The initial welcome message in the chatbot container was hardcoded in `initChatbot()` through `innerHTML`, causing it to miss the dynamic slang replacement engine.
+  * **Fix**: Refactored `initChatbot()` to feed the welcome message through the `appendChatMsg()` pipeline, enabling dynamic slang selection on load.
