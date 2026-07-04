@@ -1722,9 +1722,7 @@
     if (!feed) return;
     if (feed.innerHTML.trim() === '') {
       const welcome = TRANSLATIONS[currentLanguage].botWelcome;
-      feed.innerHTML = `
-        <div class="chat-msg bot">${welcome}</div>
-      `;
+      appendChatMsg(welcome, 'bot');
     }
   }
   window.initChatbot = initChatbot;
@@ -1767,6 +1765,10 @@
     let processedText = text;
     if (sender === 'bot') {
       processedText = text.toLowerCase();
+      const slangList = ["bro", "brodie", "brudda", "mud", "gang"];
+      processedText = processedText.replace(/\bhomie\b/g, () => {
+        return slangList[Math.floor(Math.random() * slangList.length)];
+      });
     }
     bubble.innerHTML = processedText.replace(/\n/g, '<br/>');
     feed.appendChild(bubble);
