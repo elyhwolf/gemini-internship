@@ -222,6 +222,7 @@
 - **Vercel/Gitignore Environment Configuration**: Appended `.env` file target mapping to the project `.gitignore` rules to safeguard private credentials.
 - **Local Environment Variable File**: Initialized a new `.env` configuration file containing `GEMINI_API_KEY=YOUR_API_KEY_HERE`.
 - **CLI Workspace Verification**: Tested the newly compiled local `/opt/homebrew/bin/gemini` CLI interface setup, verifying the version and execution flags.
+- **Markdown System Prompt Storage**: Created `system_prompt.md` containing the custom AI chatbot's hood persona constraints and updated the client-side code in `focus-timer/index.html` to dynamically fetch and log the prompt configuration on load.
 
 ## 🤖 What AI prompt worked?
 - Implementing version validation checks (`gemini --version`) and headless prompt query test calls with sandbox trust bypass configuration (`gemini --skip-trust -p "hello"`) to confirm Generative Language API routing.
