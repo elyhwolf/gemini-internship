@@ -1717,12 +1717,23 @@
   }
   window.toggleChatbot = toggleChatbot;
 
+  let chatbotSystemPrompt = "";
+
   function initChatbot() {
     const feed = document.getElementById('chatbot-feed');
     if (!feed) return;
     if (feed.innerHTML.trim() === '') {
       const welcome = TRANSLATIONS[currentLanguage].botWelcome;
       appendChatMsg(welcome, 'bot');
+      
+      // Fetch system prompt stored in a markdown file
+      fetch('../system_prompt.md')
+        .then(r => r.text())
+        .then(text => {
+          chatbotSystemPrompt = text;
+          console.log("system prompt loaded from markdown:\n", chatbotSystemPrompt);
+        })
+        .catch(err => console.warn("could not load system prompt file", err));
     }
   }
   window.initChatbot = initChatbot;
