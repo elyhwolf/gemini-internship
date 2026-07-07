@@ -232,3 +232,18 @@
   * **Fix**: Appended the `--skip-trust` flag to verify API call functionality in headless execution contexts.
 - **Valid API Key Required**: The subsequent API validation call failed with code 400 (Invalid API Key) as expected when using the placeholder key.
   * **Fix**: Indicated to the developer that they can replace `YOUR_API_KEY_HERE` with their actual key inside the `.env` file.
+
+---
+
+# 📓 Developer Journal - July 7, 2026
+
+## 🛠️ What did I build today?
+- **AI Persona Instructions File**: Created `instructions.md` containing the custom AI chatbot's persona instructions.
+- **Robust Prompt Loading Pipeline**: Updated the client-side loading pipeline in `focus-timer/index.html` to fetch `instructions.md` as the primary instruction source, falling back to `system_prompt.md` in case of path differences.
+- Verified that all changes are successfully deployed to the production environment on Vercel.
+
+## 🤖 What AI prompt worked?
+- Implementing a dual-fetch fallback structure in JS to try `instructions.md` and check for `system_prompt.md` on failure, ensuring compatibility with whichever file is checked.
+
+## 🔍 What broke and how did I fix it?
+- The build and deployment completed without issues; no script or assets configuration failures were encountered.
