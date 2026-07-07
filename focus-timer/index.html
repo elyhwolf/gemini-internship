@@ -1726,14 +1726,22 @@
       const welcome = TRANSLATIONS[currentLanguage].botWelcome;
       appendChatMsg(welcome, 'bot');
       
-      // Fetch system prompt stored in a markdown file
-      fetch('../system_prompt.md')
+      // Fetch system prompt stored in a markdown file (primary choice: instructions.md, fallback: system_prompt.md)
+      fetch('../instructions.md')
         .then(r => r.text())
         .then(text => {
           chatbotSystemPrompt = text;
-          console.log("system prompt loaded from markdown:\n", chatbotSystemPrompt);
+          console.log("system prompt loaded from instructions.md:\n", chatbotSystemPrompt);
         })
-        .catch(err => console.warn("could not load system prompt file", err));
+        .catch(err => {
+          fetch('../system_prompt.md')
+            .then(r2 => r2.text())
+            .then(text2 => {
+              chatbotSystemPrompt = text2;
+              console.log("system prompt loaded from fallback system_prompt.md:\n", chatbotSystemPrompt);
+            })
+            .catch(err2 => console.warn("could not load system prompt file", err2));
+        });
     }
   }
   window.initChatbot = initChatbot;
