@@ -247,3 +247,17 @@
 
 ## 🔍 What broke and how did I fix it?
 - The build and deployment completed without issues; no script or assets configuration failures were encountered.
+
+---
+
+# 📓 Developer Journal - July 9, 2026
+
+## 🛠️ What did I build today?
+- **AI Persona Run Script**: Created `run_agent.py` to programmatically load `.env` variables, read the custom AI persona instructions from `instructions.md`, and feed them into the model config using the Google Antigravity SDK.
+- Verified that the Python script loads the environment variables manually without requiring third-party library dependencies, making execution extremely lightweight.
+
+## 🤖 What AI prompt worked?
+- Implementing a dependency-free custom environment parser in Python (`load_env`) to parse local `.env` assignments reliably without importing packages.
+
+## 🔍 What broke and how did I fix it?
+- The Python script correctly handles local SDK package installation checks, printing clear installation warnings if the `google-antigravity` package is missing.
