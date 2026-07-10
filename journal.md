@@ -278,3 +278,5 @@
 ## 🔍 What broke and how did I fix it?
 - **Global Variable Deletions**: Initial replacement range patterns deleted `BOT_CHAT_RESPONSES` mapping definitions.
   * **Fix**: Restructured replacement chunks into smaller, more targeted edits to avoid modifying unrelated variables.
+- **Parse-Time Syntax Error via import.meta**: Standard script tags loaded in non-module environments crash the entire page runtime if the `import.meta` token is encountered during static parse checking.
+  * **Fix**: Encapsulated the environment check within a dynamically evaluated function block `new Function("try { return import.meta.env.VITE_GEMINI_API_KEY; } catch(e) { return ''; }")()`. This masks the token from parse-time validations while correctly resolving environment properties in Vite-bundled pipelines.
