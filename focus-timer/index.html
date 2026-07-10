@@ -1746,6 +1746,29 @@
   }
   window.initChatbot = initChatbot;
 
+  let chatHistory = [];
+
+  function toggleChatSettings() {
+    const settings = document.getElementById('chatbot-settings');
+    if (!settings) return;
+    const isHidden = settings.style.display === 'none';
+    settings.style.display = isHidden ? 'block' : 'none';
+    if (isHidden) {
+      const savedKey = localStorage.getItem('gemini_api_key') || '';
+      document.getElementById('chatbot-api-key').value = savedKey;
+    }
+  }
+  window.toggleChatSettings = toggleChatSettings;
+
+  function saveApiKey() {
+    const keyVal = document.getElementById('chatbot-api-key').value.trim();
+    localStorage.setItem('gemini_api_key', keyVal);
+    const settings = document.getElementById('chatbot-settings');
+    if (settings) settings.style.display = 'none';
+    alert("api key saved successfully!");
+  }
+  window.saveApiKey = saveApiKey;
+
   function handleBotSubmit(e) {
     e.preventDefault();
     const input = document.getElementById('chatbot-input');
@@ -1754,6 +1777,9 @@
 
     appendChatMsg(text, 'user');
     input.value = '';
+
+    // append to rolling conversation history
+    chatHistory.push({ role: "user", parts: [{ text: text }] });
 
     const feed = document.getElementById('chatbot-feed');
     const indicator = document.createElement('div');
@@ -1768,11 +1794,80 @@
     feed.appendChild(indicator);
     feed.scrollTop = feed.scrollHeight;
 
-    setTimeout(() => {
+    // check if there is an API key available
+    let key = localStorage.getItem('gemini_api_key') || "";
+    if (!key) {
+      try {
+        if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GEMINI_API_KEY) {
+          key = import.meta.env.VITE_GEMINI_API_KEY;
+        }
+      } catch(err) {}
+    }
+
+    // determine if it matches an offline fast command first
+    const cmdResult = processLocalCommand(text);
+    if (cmdResult !== null) {
+      setTimeout(() => {
+        indicator.remove();
+        appendChatMsg(cmdResult, 'bot');
+        chatHistory.push({ role: "model", parts: [{ text: cmdResult }] });
+      }, 500);
+      return;
+    }
+
+    // if no command and no valid key, run the simulated chat fallback
+    if (!key || key === "YOUR_API_KEY_HERE") {
+      setTimeout(() => {
+        indicator.remove();
+        const fallbackRes = processBotMessageFallback(text);
+        appendChatMsg(fallbackRes, 'bot');
+        chatHistory.push({ role: "model", parts: [{ text: fallbackRes }] });
+      }, 600);
+      return;
+    }
+
+    // make live Gemini API call
+    // limit history length to 12 turns for token safety
+    if (chatHistory.length > 12) {
+      chatHistory = chatHistory.slice(-12);
+    }
+
+    const systemPrompt = chatbotSystemPrompt || "you are chronocluck, the official focus mascot for ely's hot chicken. you talk in lowercase street slang and gang-affiliated endearments (bro, brodie, brudda, mud, gang). help users configure focus timers or create/complete tasks.";
+
+    fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: chatHistory,
+        systemInstruction: {
+          parts: [{ text: systemPrompt }]
+        }
+      })
+    })
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`api returned status ${res.status}`);
+      }
+      return res.json();
+    })
+    .then(data => {
       indicator.remove();
-      const response = processBotMessage(text);
-      appendChatMsg(response, 'bot');
-    }, 600);
+      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "hmm, something went wrong with my system, brudda.";
+      appendChatMsg(reply, 'bot');
+      chatHistory.push({ role: "model", parts: [{ text: reply }] });
+
+      // post-process the response to check if the model says it's running a command (like setting a timer or completing a task)
+      processLocalCommand(reply);
+    })
+    .catch(err => {
+      console.error(err);
+      indicator.remove();
+      const errorMsg = "my connection got dropped brudda. please check your api key settings.";
+      appendChatMsg(errorMsg, 'bot');
+      chatHistory.push({ role: "model", parts: [{ text: errorMsg }] });
+    });
   }
   window.handleBotSubmit = handleBotSubmit;
 
@@ -1920,17 +2015,9 @@
     }
   };
 
-    function processBotMessage(msg) {
+  function processLocalCommand(msg) {
     const text = msg.toLowerCase().trim();
     const t = TRANSLATIONS[currentLanguage];
-    const lang = currentLanguage;
-    const r = BOT_CHAT_RESPONSES[lang] || BOT_CHAT_RESPONSES.en;
-
-    const rand = arr => arr[Math.floor(Math.random() * arr.length)];
-
-    // Split text by non-alphanumeric characters for word match
-    const words = text.split(/[^a-zA-Z0-9\u0590-\u05FF\u00C0-\u017F]+/);
-    const hasWord = w => words.includes(w);
 
     // 1. Task creation parsing
     const createRegex = /^(?:add task|create task|add todo|todo|new task|agregar tarea|nueva tarea|הוסף משימה|משימה חדשה|faka umsebenzi|umsebenzi omtsha)\s*[:\-\s]?\s*(.+)$/i;
@@ -2023,7 +2110,18 @@
       return t.botReset;
     }
 
-    // 5. Conversational routing
+    return null;
+  }
+
+  function processBotMessageFallback(msg) {
+    const text = msg.toLowerCase().trim();
+    const t = TRANSLATIONS[currentLanguage];
+    const lang = currentLanguage;
+    const r = BOT_CHAT_RESPONSES[lang] || BOT_CHAT_RESPONSES.en;
+    const rand = arr => arr[Math.floor(Math.random() * arr.length)];
+    const words = text.split(/[^a-zA-Z0-9\u0590-\u05FF\u00C0-\u017F]+/);
+    const hasWord = w => words.includes(w);
+
     const isHelp = hasWord('help') || hasWord('commands') || hasWord('ayuda') || hasWord('עזרה') || hasWord('פקודות') || hasWord('nceda');
     if (isHelp) {
       return t.botHelp;
@@ -2059,7 +2157,6 @@
       return rand(r.elyChicken);
     }
 
-    // 6. Unknown chat fallback
     return rand(r.unknown);
   }
 
