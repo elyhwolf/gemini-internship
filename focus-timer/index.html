@@ -1798,9 +1798,8 @@
     let key = localStorage.getItem('gemini_api_key') || "";
     if (!key) {
       try {
-        if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GEMINI_API_KEY) {
-          key = import.meta.env.VITE_GEMINI_API_KEY;
-        }
+        const viteKey = new Function("try { return import.meta.env.VITE_GEMINI_API_KEY; } catch(e) { return ''; }")();
+        if (viteKey) key = viteKey;
       } catch(err) {}
     }
 
