@@ -261,3 +261,20 @@
 
 ## 🔍 What broke and how did I fix it?
 - The Python script correctly handles local SDK package installation checks, printing clear installation warnings if the `google-antigravity` package is missing.
+
+---
+
+# 📓 Developer Journal - July 10, 2026
+
+## 🛠️ What did I build today?
+- **Live Gemini API Web Chatbot**: Connected the client-side ChronoCluck assistant to the actual Gemini 2.5 Flash model API using standard fetch requests.
+- **Glassmorphic Settings panel**: Added an on-the-fly settings configuration panel accessible via a gear icon (`⚙️`) in the chatbot header to paste and save API keys to `localStorage`.
+- **Hybrid Conversational Routing**: Configured the chatbot submission pipeline to route messages locally first (running offline command parsers) and trigger real API calls for open-ended conversation.
+- **System Prompt Parameter Integration**: Passed the content of `instructions.md` (or `system_prompt.md`) as the API's `systemInstruction` parameters to style model completions.
+
+## 🤖 What AI prompt worked?
+- Implementing a dual routing configuration to parse client commands first and feed conversation requests into the live API.
+
+## 🔍 What broke and how did I fix it?
+- **Global Variable Deletions**: Initial replacement range patterns deleted `BOT_CHAT_RESPONSES` mapping definitions.
+  * **Fix**: Restructured replacement chunks into smaller, more targeted edits to avoid modifying unrelated variables.
