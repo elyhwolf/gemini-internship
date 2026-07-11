@@ -1747,6 +1747,13 @@
   window.initChatbot = initChatbot;
 
   let chatHistory = [];
+  let annoyanceLevel = 0;
+
+  function isNonsense(text) {
+    const keywords = ["focus", "work", "short", "long", "reset", "start", "play", "pause", "stop", "resume", "add", "create", "todo", "task", "complete", "finish", "done", "check", "help", "commands", "hello", "hi", "hey", "howdy", "hola", "molo", "welcome", "how", "going", "doing", "joke", "chiste", "funny", "motivate", "motivation", "inspire", "who", "name", "ely", "chicken", "spice", "hot", "menu", "spicy", "wings", "nashville"];
+    const lowercaseText = text.toLowerCase();
+    return !keywords.some(kw => lowercaseText.includes(kw));
+  }
 
   function toggleChatSettings() {
     const settings = document.getElementById('chatbot-settings');
@@ -1774,6 +1781,13 @@
     const input = document.getElementById('chatbot-input');
     const text = input.value.trim();
     if (!text) return;
+
+    // Increment annoyanceLevel if user input matches nonsense criteria, reset it otherwise
+    if (isNonsense(text)) {
+      annoyanceLevel = Math.min(annoyanceLevel + 1, 3);
+    } else {
+      annoyanceLevel = 0;
+    }
 
     appendChatMsg(text, 'user');
     input.value = '';
@@ -1806,6 +1820,7 @@
     // determine if it matches an offline fast command first
     const cmdResult = processLocalCommand(text);
     if (cmdResult !== null) {
+      annoyanceLevel = 0; // Successfully parsed command, reset annoyance
       setTimeout(() => {
         indicator.remove();
         appendChatMsg(cmdResult, 'bot');
@@ -1831,7 +1846,12 @@
       chatHistory = chatHistory.slice(-12);
     }
 
-    const systemPrompt = chatbotSystemPrompt || "you are chronocluck, the official focus mascot for ely's hot chicken. you talk in lowercase street slang and gang-affiliated endearments (bro, brodie, brudda, mud, gang). help users configure focus timers or create/complete tasks.";
+    let systemPrompt = chatbotSystemPrompt || "you are chronocluck, the official focus mascot for ely's hot chicken. you talk in lowercase street slang and gang-affiliated endearments (bro, brodie, brudda, mud, gang). help users configure focus timers or create/complete tasks.";
+    
+    // Inject annoyance guidelines if annoyanceLevel > 0
+    if (annoyanceLevel > 0) {
+      systemPrompt += `\n\n[SYSTEM NOTE: Your current annoyance level is ${annoyanceLevel} out of 3. Level 1: You are slightly annoyed because the user typed unrecognized text. Level 2: You are brandishing your glock and demand they repeat themselves clearly. Level 3: You are extremely angry and threating to clean the hot chicken fryer with them if they don't focus. Speak matching this annoyance state in character.]`;
+    }
 
     fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
       method: 'POST',
@@ -2123,40 +2143,57 @@
 
     const isHelp = hasWord('help') || hasWord('commands') || hasWord('ayuda') || hasWord('עזרה') || hasWord('פקודות') || hasWord('nceda');
     if (isHelp) {
+      annoyanceLevel = 0;
       return t.botHelp;
     }
 
     const isGreeting = hasWord('hello') || hasWord('hi') || hasWord('hey') || hasWord('howdy') || hasWord('hola') || hasWord('molo') || hasWord('שלום') || hasWord('קוקוריקו') || hasWord('kikiriki') || text.includes('welcome');
     if (isGreeting) {
+      annoyanceLevel = 0;
       return rand(r.greetings);
     }
 
     const isHowAreYou = text.includes('how are you') || text.includes("how's it going") || text.includes('como estas') || text.includes('מה שלומך') || text.includes('מה נשמע') || hasWord('unjani') || text.includes('how you doing');
     if (isHowAreYou) {
+      annoyanceLevel = 0;
       return rand(r.howAreYou);
     }
 
     const isJoke = hasWord('joke') || hasWord('chiste') || hasWord('בדיחה') || hasWord('בדיחות') || hasWord('qhula') || text.includes('funny');
     if (isJoke) {
+      annoyanceLevel = 0;
       return rand(r.jokes);
     }
 
     const isMotivation = text.includes('motivate') || text.includes('motivation') || text.includes('motívame') || text.includes('motivar') || text.includes('עידוד') || text.includes('מוטיבציה') || hasWord('khuthaza') || text.includes('inspire');
     if (isMotivation) {
+      annoyanceLevel = 0;
       return rand(r.motivation);
     }
 
     const isIdentity = text.includes('who are you') || hasWord('name') || text.includes('quien eres') || text.includes('מי אתה') || hasWord('ungubani');
     if (isIdentity) {
+      annoyanceLevel = 0;
       return rand(r.identity);
     }
 
     const isElyChicken = hasWord('ely') || hasWord('chicken') || hasWord('spice') || hasWord('hot') || hasWord('menu') || hasWord('spicy') || hasWord('pollo') || hasWord('עוף') || hasWord('inkuku') || hasWord('fryer') || hasWord('wings') || text.includes('nashville');
     if (isElyChicken) {
+      annoyanceLevel = 0;
       return rand(r.elyChicken);
     }
 
-    return rand(r.unknown);
+    // Annoyance scaling unknowns
+    if (annoyanceLevel <= 1) {
+      return t.botError || "my glock got brandished brudda could u repeat dat";
+    }
+    if (annoyanceLevel === 2) {
+      return "yo gang, you speaking gibberish. speak clearly or my glock gets brandished again, real talk.";
+    }
+    if (annoyanceLevel === 3) {
+      return "my glock is out brudda. could you repeat dat before things get hot on the block?";
+    }
+    return "you trippin' mud. i don't understand a single word. stop playing before we have to clean the fryer with you.";
   }
 
   // ── Init ─────────────────────────────────────────────────────────────────
