@@ -1154,7 +1154,7 @@
       durationsShort: "Short",
       durationsLong: "Long",
       botTitle: "ChronoCluck AI",
-      botWelcome: "yo what's good homie. i'm chronocluck. tell me to set your timer, start/pause, or reset the joint. (e.g. 'set focus to 15 min')",
+      botWelcome: "sup. need help setting up the timer or managing your checklist? 🤖",
       botPlaceholder: "Ask ChronoCluck…",
       botSetFocus: "🍗 locked in. focus session set to {min} minutes, real talk.",
       botSetShort: "🥤 brief break set to {min} minutes. stay safe.",
@@ -1748,6 +1748,7 @@
 
   let chatHistory = [];
   let annoyanceLevel = 0;
+  let waitingForHelpResponse = false;
 
   function isNonsense(text) {
     const keywords = ["focus", "work", "short", "long", "reset", "start", "play", "pause", "stop", "resume", "add", "create", "todo", "task", "complete", "finish", "done", "check", "help", "commands", "hello", "hi", "hey", "howdy", "hola", "molo", "welcome", "how", "going", "doing", "joke", "chiste", "funny", "motivate", "motivation", "inspire", "who", "name", "ely", "chicken", "spice", "hot", "menu", "spicy", "wings", "nashville"];
@@ -1781,6 +1782,52 @@
     const input = document.getElementById('chatbot-input');
     const text = input.value.trim();
     if (!text) return;
+
+    // Check if waiting for a yes/no response to the help question
+    if (waitingForHelpResponse) {
+      const lowercaseText = text.toLowerCase();
+      const yesKeywords = ["yes", "yeah", "yup", "sure", "ok", "yeah", "כן", "ewe"];
+      const noKeywords = ["no", "nah", "nope", "לא", "hayi"];
+      
+      const isYes = yesKeywords.some(kw => lowercaseText.includes(kw));
+      const isNo = noKeywords.some(kw => lowercaseText.includes(kw));
+      
+      if (isYes || isNo) {
+        waitingForHelpResponse = false;
+        annoyanceLevel = 0; // successfully answered the question, reset annoyance
+        
+        appendChatMsg(text, 'user');
+        input.value = '';
+        chatHistory.push({ role: "user", parts: [{ text: text }] });
+
+        const feed = document.getElementById('chatbot-feed');
+        const indicator = document.createElement('div');
+        indicator.className = 'chat-msg bot typing-indicator-container';
+        indicator.innerHTML = `
+          <div class="typing-indicator">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+          </div>
+        `;
+        feed.appendChild(indicator);
+        feed.scrollTop = feed.scrollHeight;
+
+        const replyText = isYes 
+          ? "ight cool. tell me 'set focus to 25 min' or 'add task read book' and i'll get it sorted, gang."
+          : "ight chill. let me know if you need anything, i'll be on the block.";
+          
+        setTimeout(() => {
+          indicator.remove();
+          appendChatMsg(replyText, 'bot');
+          chatHistory.push({ role: "model", parts: [{ text: replyText }] });
+        }, 600);
+        return;
+      } else {
+        // If they ignore the yes/no question, reset flag and process normally
+        waitingForHelpResponse = false;
+      }
+    }
 
     // Increment annoyanceLevel if user input matches nonsense criteria, reset it otherwise
     if (isNonsense(text)) {
@@ -1908,6 +1955,11 @@
   function appendChatMsg(text, sender) {
     const feed = document.getElementById('chatbot-feed');
     if (!feed) return;
+
+    // Set state if bot asks the specific help question
+    if (sender === 'bot' && text.includes("need help setting up the timer")) {
+      waitingForHelpResponse = true;
+    }
     const bubble = document.createElement('div');
     bubble.className = `chat-msg ${sender}`;
     let processedText = text;
