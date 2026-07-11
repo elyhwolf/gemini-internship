@@ -296,3 +296,4 @@
 ## 🔍 What broke and how did I fix it?
 - **Annoyance Cap limits**: Initially capped `annoyanceLevel` at 3, preventing the escalation logic from reaching Level 4.
   * **Fix**: Updated math limits to `Math.min(annoyanceLevel + 1, 4)` to allow progression to the final threshold.
+- **Yes/No Branching State**: Implemented `waitingForHelpResponse` toggle to intercept user inputs after the specific help greeting is printed, routing to custom helpful guidelines on "yes" and typical sign-off on "no".
