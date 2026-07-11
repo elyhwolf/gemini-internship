@@ -280,3 +280,19 @@
   * **Fix**: Restructured replacement chunks into smaller, more targeted edits to avoid modifying unrelated variables.
 - **Parse-Time Syntax Error via import.meta**: Standard script tags loaded in non-module environments crash the entire page runtime if the `import.meta` token is encountered during static parse checking.
   * **Fix**: Encapsulated the environment check within a dynamically evaluated function block `new Function("try { return import.meta.env.VITE_GEMINI_API_KEY; } catch(e) { return ''; }")()`. This masks the token from parse-time validations while correctly resolving environment properties in Vite-bundled pipelines.
+
+---
+
+# 📓 Developer Journal - July 11, 2026
+
+## 🛠️ What did I build today?
+- **ChronoCluck Patience Thresholds**: Configured progressive annoyance level escalation capping at Level 4.
+- **Auto-Close Behavior**: Programmed ChronoCluck to reply `"ight im done with u"` and automatically close the chat panel interface after 1.5 seconds when `annoyanceLevel` reaches 4.
+- Verified that all changes are successfully deployed and functional in production.
+
+## 🤖 What AI prompt worked?
+- Setting up a state-monitoring intercept check directly inside the submission handler to intercept inputs, trigger close animations, and bypass live API requests when the patience threshold is breached.
+
+## 🔍 What broke and how did I fix it?
+- **Annoyance Cap limits**: Initially capped `annoyanceLevel` at 3, preventing the escalation logic from reaching Level 4.
+  * **Fix**: Updated math limits to `Math.min(annoyanceLevel + 1, 4)` to allow progression to the final threshold.
