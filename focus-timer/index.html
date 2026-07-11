@@ -1784,7 +1784,7 @@
 
     // Increment annoyanceLevel if user input matches nonsense criteria, reset it otherwise
     if (isNonsense(text)) {
-      annoyanceLevel = Math.min(annoyanceLevel + 1, 3);
+      annoyanceLevel = Math.min(annoyanceLevel + 1, 4);
     } else {
       annoyanceLevel = 0;
     }
@@ -1807,6 +1807,21 @@
     `;
     feed.appendChild(indicator);
     feed.scrollTop = feed.scrollHeight;
+
+    // If annoyanceLevel is 4, ChronoCluck is done and closes the chat panel
+    if (annoyanceLevel === 4) {
+      setTimeout(() => {
+        indicator.remove();
+        const doneMsg = "ight im done with u";
+        appendChatMsg(doneMsg, 'bot');
+        chatHistory.push({ role: "model", parts: [{ text: doneMsg }] });
+        
+        setTimeout(() => {
+          toggleChatbot();
+        }, 1500);
+      }, 600);
+      return;
+    }
 
     // check if there is an API key available
     let key = localStorage.getItem('gemini_api_key') || "";
@@ -2193,7 +2208,7 @@
     if (annoyanceLevel === 3) {
       return "my glock is out brudda. could you repeat dat before things get hot on the block?";
     }
-    return "you trippin' mud. i don't understand a single word. stop playing before we have to clean the fryer with you.";
+    return "ight im done with u";
   }
 
   // ── Init ─────────────────────────────────────────────────────────────────
