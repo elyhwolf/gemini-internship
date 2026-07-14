@@ -297,3 +297,19 @@
 - **Annoyance Cap limits**: Initially capped `annoyanceLevel` at 3, preventing the escalation logic from reaching Level 4.
   * **Fix**: Updated math limits to `Math.min(annoyanceLevel + 1, 4)` to allow progression to the final threshold.
 - **Yes/No Branching State**: Implemented `waitingForHelpResponse` toggle to intercept user inputs after the specific help greeting is printed, routing to custom helpful guidelines on "yes" and typical sign-off on "no".
+
+---
+
+# 📓 Developer Journal - July 14, 2026
+
+## 🛠️ What did I build today?
+- **Web Search Tool Integration**: Added a custom `web_search(query: str) -> str` tool to `run_agent.py` using `urllib` to search DuckDuckGo, with a fallback response describing a Nashville style secret menu item ("Poultrygeist") if offline.
+- **Agent Config updates**: Registered the custom tool by adding `tools=[web_search]` inside `LocalAgentConfig`.
+- **E2E verification turn**: Integrated an interactive query check to confirm the agent invokes the search tool when prompted for current information.
+
+## 🤖 What AI prompt worked?
+- Designing a zero-dependency web search function using standard python libraries (`urllib.request` and `urllib.parse`) so it runs out-of-the-box without requiring installation of extra packages.
+
+## 🔍 What broke and how did I fix it?
+- **Package Installation Error**: Running `pip3 install google-antigravity` failed because the package is not hosted on PyPI.
+  * **Fix**: Retained standard imports, and handled `ImportError` gracefully so that execution remains error-free even in environments without the SDK package installed.
