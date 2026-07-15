@@ -304,12 +304,15 @@
 
 ## 🛠️ What did I build today?
 - **Web Search Tool Integration**: Added a custom `web_search(query: str) -> str` tool to `run_agent.py` using `urllib` to search DuckDuckGo, with a fallback response describing a Nashville style secret menu item ("Poultrygeist") if offline.
-- **Agent Config updates**: Registered the custom tool by adding `tools=[web_search]` inside `LocalAgentConfig`.
-- **E2E verification turn**: Integrated an interactive query check to confirm the agent invokes the search tool when prompted for current information.
+- **Communication Tool integration**: Added `send_text_message(phone_number: str, message: str) -> str` to dispatch SMS messages via Twilio REST API endpoints using standard libraries (`urllib` and `base64`). If credentials are not present, it gracefully logs the message `📢 [MOCK SMS TO +15551234567]: ...` directly to the CLI console.
+- **Agent Config updates**: Registered the custom tools by setting `tools=[web_search, send_text_message]` inside `LocalAgentConfig`.
+- **E2E verification turn**: Integrated interactive query checks to confirm the agent invokes the web search and text messaging tools when prompted.
 
 ## 🤖 What AI prompt worked?
-- Designing a zero-dependency web search function using standard python libraries (`urllib.request` and `urllib.parse`) so it runs out-of-the-box without requiring installation of extra packages.
+- Designing a zero-dependency web search and Twilio HTTP client using standard python libraries (`urllib.request`, `urllib.parse`, and `base64`) so the script runs out-of-the-box without requiring installation of extra packages.
 
 ## 🔍 What broke and how did I fix it?
 - **Package Installation Error**: Running `pip3 install google-antigravity` failed because the package is not hosted on PyPI.
   * **Fix**: Retained standard imports, and handled `ImportError` gracefully so that execution remains error-free even in environments without the SDK package installed.
+- **Missing Twilio credentials validation**: If Twilio environment variables are unset, the SMS tool would fail with key errors.
+  * **Fix**: Added a fallback check that intercepts missing configurations, outputs the payload to standard stdout stream logs, and returns simulated logs to the agent conversation context.
