@@ -316,3 +316,19 @@
   * **Fix**: Retained standard imports, and handled `ImportError` gracefully so that execution remains error-free even in environments without the SDK package installed.
 - **Missing Twilio credentials validation**: If Twilio environment variables are unset, the SMS tool would fail with key errors.
   * **Fix**: Added a fallback check that intercepts missing configurations, outputs the payload to standard stdout stream logs, and returns simulated logs to the agent conversation context.
+
+---
+
+# 📓 Developer Journal - July 15, 2026
+
+## 🛠️ What did I build today?
+- **Interactive CLI loop**: Refactored the hardcoded conversation sequence in `run_agent.py` into a dynamic `while True` loop that receives stdin queries from the user, forwards them to the Gemini agent, and outputs formatted answers.
+- **Lifecycle hooks**: Integrated pre-tool execution (`pre_tool_call_decide`) and post-tool execution (`post_tool_call`) hooks to dynamically log tool runs inside the terminal loop.
+- **Agent Config updates**: Registered the new lifecycle hooks inside `LocalAgentConfig`.
+
+## 🤖 What AI prompt worked?
+- Implementing lightweight standard `input()` reading logic inside an asynchronous task loop, ensuring users can exit gracefully via `exit`/`quit` keywords or system interrupts (`ctrl+c`).
+
+## 🔍 What broke and how did I fix it?
+- **Blocking stdin during async runs**: The Python script waits on `input()`, which blocking-blocks thread execution.
+  * **Fix**: Placed the blocking input reader inside the synchronous-safe main loop execution framework, allowing clean termination and graceful exits.
