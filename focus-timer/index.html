@@ -1114,8 +1114,21 @@
         <div class="chatbot-status" id="lbl-bot-status">Online · Focus Helper</div>
       </div>
     </div>
-    <button class="chatbot-close" onclick="toggleChatbot()">✕</button>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <button class="chatbot-settings-toggle" onclick="toggleChatSettings()" title="Settings" style="background: none; border: none; cursor: pointer; font-size: 1rem; color: #fff; opacity: 0.8; transition: opacity 0.2s; padding: 4px;">⚙️</button>
+      <button class="chatbot-close" onclick="toggleChatbot()">✕</button>
+    </div>
   </div>
+  
+  <!-- Chatbot Settings Input (Persisted locally) -->
+  <div id="chatbot-settings" class="chatbot-settings-panel" style="display: none; padding: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); background: rgba(0, 0, 0, 0.3);">
+    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255, 255, 255, 0.6); margin-bottom: 6px;">Gemini API Key Configuration</div>
+    <div style="display: flex; gap: 8px;">
+      <input type="password" id="chatbot-api-key" placeholder="Enter API Key..." style="flex: 1; padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(0, 0, 0, 0.5); color: #fff; font-size: 0.8rem;" />
+      <button onclick="saveApiKey()" style="padding: 6px 12px; border-radius: 6px; border: none; background: #ff6b00; color: #fff; font-weight: 500; font-size: 0.8rem; cursor: pointer;">Save</button>
+    </div>
+  </div>
+
   <div class="chatbot-feed" id="chatbot-feed"></div>
   <form class="chatbot-input-form" onsubmit="handleBotSubmit(event)">
     <input type="text" id="chatbot-input" placeholder="Ask ChronoCluck…" autocomplete="off" maxlength="120" />
