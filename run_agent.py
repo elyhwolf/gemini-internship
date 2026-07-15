@@ -112,34 +112,54 @@ try:
         except Exception as e:
             return f"Failed to send SMS to {phone_number}: {str(e)}"
 
+    from google.antigravity.hooks import hooks
+    from google.antigravity.types import HookResult
+
+    @hooks.pre_tool_call_decide
+    async def pre_tool(data) -> HookResult:
+        print(f"\n⚙️ [Tool Execution]: Calling tool '{data.name}' with arguments: {data.arguments}...")
+        return HookResult(allow=True)
+
+    @hooks.post_tool_call
+    async def post_tool(data):
+        print(f"✅ [Tool Execution]: Completed successfully.")
+
     async def main():
-        # Set up custom system instructions from the markdown content and custom tools
+        # Set up custom system instructions from the markdown content, custom tools, and lifecycle hooks
         config = LocalAgentConfig(
             api_key=api_key,
             system_instructions=CustomSystemInstructions(text=system_instructions),
-            tools=[web_search, send_text_message]
+            tools=[web_search, send_text_message],
+            hooks=[pre_tool, post_tool]
         )
         
-        print("Initializing ChronoCluck Agent with system prompt and communication tools...")
+        print("\n=======================================================")
+        print("🤖 ChronoCluck Conversational Agent CLI Loop Initialized")
+        print("Voice: lowercase hood slang, hot chicken theme")
+        print("Tools available: web_search, send_text_message")
+        print("Type 'exit' or 'quit' to terminate the session.")
+        print("=======================================================\n")
+        
         async with Agent(config) as agent:
-            # First CLI prompt call simulating user interaction
-            print("\nUser: hello")
-            response = await agent.chat("hello")
-            print(f"Agent: {await response.text()}")
-            
-            print("\nUser: tell me a chicken joke")
-            response = await agent.chat("tell me a chicken joke")
-            print(f"Agent: {await response.text()}")
-
-            # Test the web search tool
-            print("\nUser: can you search for the secret menu at Ely's Hot Chicken?")
-            response = await agent.chat("can you search for the secret menu at Ely's Hot Chicken?")
-            print(f"Agent: {await response.text()}")
-
-            # Test the text messaging tool
-            print("\nUser: can you send a text to +15551234567 saying I got a Poultrygeist order ready?")
-            response = await agent.chat("can you send a text to +15551234567 saying I got a Poultrygeist order ready?")
-            print(f"Agent: {await response.text()}")
+            while True:
+                try:
+                    user_input = input("\nYou: ").strip()
+                    if not user_input:
+                        continue
+                    if user_input.lower() in ["exit", "quit"]:
+                        print("\nnight chill, chronocluck out. catch u on the block brudda! 🐔")
+                        break
+                    
+                    print("thinking...")
+                    response = await agent.chat(user_input)
+                    
+                    reply_text = await response.text()
+                    print(f"ChronoCluck: {reply_text}")
+                except (KeyboardInterrupt, EOFError):
+                    print("\n\nnight chill, chronocluck out. catch u on the block brudda! 🐔")
+                    break
+                except Exception as e:
+                    print(f"\n❌ Conversation Error: {e}")
 
     if __name__ == "__main__":
         asyncio.run(main())
