@@ -1770,6 +1770,31 @@
     if (e.key === 's' || e.key === 'S') skipSession();
   });
 
+  // ── Weird Voice Button Interceptor ───────────────────────────────────────
+  document.addEventListener('click', e => {
+    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+      playChickenVoice();
+    }
+  });
+
+  function playChickenVoice() {
+    try {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance("CHICKEN!");
+        utterance.pitch = 0.5 + Math.random() * 1.5;
+        utterance.rate = 0.8 + Math.random() * 1.2;
+        utterance.volume = 0.75;
+        
+        const voices = window.speechSynthesis.getVoices();
+        if (voices.length > 0) {
+          utterance.voice = voices[Math.floor(Math.random() * voices.length)];
+        }
+        window.speechSynthesis.speak(utterance);
+      }
+    } catch(err) {}
+  }
+
   // ── Chatbot Logic ────────────────────────────────────────────────────────
   function toggleChatbot() {
     const panel = document.getElementById('chatbot-panel');
