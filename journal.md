@@ -343,13 +343,17 @@
 - **Sound Integrations**:
   - Crispy Bite Crunch: Synthesized a Web Audio white noise filter sweep to play a chicken bite crunch sound when skipping Pomodoro timer modes.
   - SpeechSynthesis voice trigger: Attached a global click event interceptor to speak "CHICKEN!" in a randomized pitch and rate voice whenever any page button is pressed.
+  - Multilingual voice support: Updated speech synthesis to translate the word "chicken" dynamically based on the active translation language (English: CHICKEN!, Spanish: POLLO!, Hebrew: עוף!, Xhosa: INKUKU!) and filtered client voice engines to match the BCP-47 language tag natively.
 
 ## 🤖 What AI prompt worked?
 - Designing Vite post-build pipeline commands (`&& cp instructions.md dist/instructions.md`) to mirror static prompt assets directly to served locations.
 - Synthesizing custom white noise audio buffers and connecting them to biquad filters programmatically using Web Audio API nodes in vanilla JS.
+- Implementing dynamic language tag and text translation maps in browser client interfaces to direct TTS voice engine selectors natively.
 
 ## 🔍 What broke and how did I fix it?
 - **404 Page Assets in Production**: The chatbot on Vercel was failing to load the persona instructions file because Vite does not bundle markdown files outside folder imports.
   * **Fix**: Updated `package.json` build task commands to recursively copy files, resolving requests dynamically in production.
 - **SpeechSynthesis stack overlapping**: Repeated rapid button clicks caused voice queues to stack, creating delayed speech.
   * **Fix**: Added `window.speechSynthesis.cancel()` before speaking to clear previous queues instantly.
+- **Accent mismatch in foreign languages**: Speaking translated words using default English voice engines results in distorted mispronunciations.
+  * **Fix**: Programmed `playChickenVoice` to retrieve and filter active voice assets matching the BCP-47 tag of the selected language (`currentLanguage`), utilizing native pronunciation packages.
