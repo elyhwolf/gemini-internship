@@ -1928,7 +1928,7 @@
       systemPrompt += `\n\n[SYSTEM NOTE: Your current annoyance level is ${annoyanceLevel} out of 3. Level 1: You are slightly annoyed because the user typed unrecognized text. Level 2: You are brandishing your glock and demand they repeat themselves clearly. Level 3: You are extremely angry and threating to clean the hot chicken fryer with them if they don't focus. Speak matching this annoyance state in character.]`;
     }
 
-    fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+    fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

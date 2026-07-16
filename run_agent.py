@@ -11,13 +11,49 @@ def load_env():
                     k, v = line.split("=", 1)
                     os.environ[k.strip()] = v.strip()
 
+def save_env_key(key_val: str):
+    """Save the Gemini API key to the local .env file."""
+    lines = []
+    has_key = False
+    has_vite_key = False
+    
+    if os.path.exists(".env"):
+        with open(".env", "r", encoding="utf-8") as f:
+            for line in f:
+                stripped = line.strip()
+                if stripped.startswith("GEMINI_API_KEY="):
+                    lines.append(f"GEMINI_API_KEY={key_val}\n")
+                    has_key = True
+                elif stripped.startswith("VITE_GEMINI_API_KEY="):
+                    lines.append(f"VITE_GEMINI_API_KEY={key_val}\n")
+                    has_vite_key = True
+                else:
+                    lines.append(line + "\n")
+    
+    if not has_key:
+        lines.append(f"GEMINI_API_KEY={key_val}\n")
+    if not has_vite_key:
+        lines.append(f"VITE_GEMINI_API_KEY={key_val}\n")
+        
+    with open(".env", "w", encoding="utf-8") as f:
+        f.writelines(lines)
+
 # Load API keys from the local .env file
 load_env()
 
 # Get key from environment
 api_key = os.environ.get("GEMINI_API_KEY")
 if not api_key or api_key == "YOUR_API_KEY_HERE":
-    print("Warning: GEMINI_API_KEY placeholder detected. Please set your real API key in the .env file.")
+    print("\n⚠️  No valid GEMINI_API_KEY found in the local environment.")
+    api_key_input = input("Please paste your Gemini API Key: ").strip()
+    if api_key_input:
+        save_env_key(api_key_input)
+        os.environ["GEMINI_API_KEY"] = api_key_input
+        os.environ["VITE_GEMINI_API_KEY"] = api_key_input
+        api_key = api_key_input
+        print("✅ API Key successfully stored inside your .env file and loaded!")
+    else:
+        print("Running with placeholder key settings...")
 
 # Read the custom AI persona instructions from instructions.md
 try:
