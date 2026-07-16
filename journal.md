@@ -332,3 +332,18 @@
 ## 🔍 What broke and how did I fix it?
 - **Blocking stdin during async runs**: The Python script waits on `input()`, which blocking-blocks thread execution.
   * **Fix**: Placed the blocking input reader inside the synchronous-safe main loop execution framework, allowing clean termination and graceful exits.
+
+---
+
+# 📓 Developer Journal - July 16, 2026
+
+## 🛠️ What did I build today?
+- **Production Asset Copies**: Configured Vite build script parameters in `package.json` to automatically copy `instructions.md` and `system_prompt.md` to the `dist/` build output folder. This ensures the live Vercel deployment has access to the persona instructions and solves Wednesday's (July 8) and Friday's (July 10) tasks in the production hosting pipeline.
+- **Bonus Checkpoint Artifact Delivery**: Discovered the bonus checkpoint report `api_key_security_adherence.md` was saved locally in the agent brain directory. Created and saved it in the root repository directory to make it visible in version control.
+
+## 🤖 What AI prompt worked?
+- Designing Vite post-build pipeline commands (`&& cp instructions.md dist/instructions.md`) to mirror static prompt assets directly to served locations.
+
+## 🔍 What broke and how did I fix it?
+- **404 Page Assets in Production**: The chatbot on Vercel was failing to load the persona instructions file because Vite does not bundle markdown files outside folder imports.
+  * **Fix**: Updated `package.json` build task commands to recursively copy files, resolving requests dynamically in production.
