@@ -344,11 +344,13 @@
   - Crispy Bite Crunch: Synthesized a Web Audio white noise filter sweep to play a chicken bite crunch sound when skipping Pomodoro timer modes.
   - SpeechSynthesis voice trigger: Attached a global click event interceptor to speak "CHICKEN!" in a randomized pitch and rate voice whenever any page button is pressed.
   - Multilingual voice support: Updated speech synthesis to translate the word "chicken" dynamically based on the active translation language (English: CHICKEN!, Spanish: POLLO!, Hebrew: עוף!, Xhosa: INKUKU!) and filtered client voice engines to match the BCP-47 language tag natively.
+  - Donald Trump voice emulation: Modified speech synthesis to speak randomized iconic Trump phrases (e.g. *"CHICKEN! A very great chicken, the best chicken, believe me!"*) at a lower pitch (`0.82`) and slower rate (`0.86`) using a filtered list of male/David/Mark voice engines.
 
 ## 🤖 What AI prompt worked?
 - Designing Vite post-build pipeline commands (`&& cp instructions.md dist/instructions.md`) to mirror static prompt assets directly to served locations.
 - Synthesizing custom white noise audio buffers and connecting them to biquad filters programmatically using Web Audio API nodes in vanilla JS.
 - Implementing dynamic language tag and text translation maps in browser client interfaces to direct TTS voice engine selectors natively.
+- Emulating specific historical speech patterns and vocal signatures using rate/pitch configurations and phrasing scripts in browser Web Speech APIs.
 
 ## 🔍 What broke and how did I fix it?
 - **404 Page Assets in Production**: The chatbot on Vercel was failing to load the persona instructions file because Vite does not bundle markdown files outside folder imports.
@@ -357,3 +359,5 @@
   * **Fix**: Added `window.speechSynthesis.cancel()` before speaking to clear previous queues instantly.
 - **Accent mismatch in foreign languages**: Speaking translated words using default English voice engines results in distorted mispronunciations.
   * **Fix**: Programmed `playChickenVoice` to retrieve and filter active voice assets matching the BCP-47 tag of the selected language (`currentLanguage`), utilizing native pronunciation packages.
+- **Gender mismatch in voice select**: Default genderless synthesis does not capture the requested masculine profile.
+  * **Fix**: Programmed a fallback matching mechanism that prioritizes male and David/Mark voice tags, falling back to general language tags when custom engines are missing.
