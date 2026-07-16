@@ -1450,7 +1450,11 @@
 
   function completeSession(completed) {
     pauseTimer();
-    playBeep(completed);
+    if (completed) {
+      playBeep(true);
+    } else {
+      playCrunch();
+    }
 
     const t = TRANSLATIONS[currentLanguage];
 
@@ -1479,6 +1483,57 @@
       showToast(t.toastBreakDone);
       switchMode('work');
     }
+  }
+
+  function playCrunch() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const bufferSize = ctx.sampleRate * 0.35; // 350ms duration
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      
+      // Fill with white noise for the crunchy texture
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+      
+      const noiseSource = ctx.createBufferSource();
+      noiseSource.buffer = buffer;
+      
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 1000;
+      filter.Q.value = 1.0;
+      
+      const gain = ctx.createGain();
+      
+      noiseSource.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      
+      // Sharp bite envelope: instant attack, rapid decay
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+      
+      // Add low-frequency bite 'thud'
+      const osc = ctx.createOscillator();
+      const oscGain = ctx.createGain();
+      osc.connect(oscGain);
+      oscGain.connect(ctx.destination);
+      
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(150, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.15);
+      
+      oscGain.gain.setValueAtTime(0.4, ctx.currentTime);
+      oscGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+      
+      noiseSource.start(ctx.currentTime);
+      noiseSource.stop(ctx.currentTime + 0.35);
+      
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.15);
+    } catch(e) { /* Audio not available */ }
   }
 
   function playBeep(success) {
