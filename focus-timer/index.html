@@ -1777,19 +1777,48 @@
     }
   });
 
+  function getChickenTranslation() {
+    const chickenMap = {
+      en: "CHICKEN!",
+      es: "POLLO!",
+      he: "עוף!",
+      xh: "INKUKU!"
+    };
+    return chickenMap[currentLanguage] || "CHICKEN!";
+  }
+
+  function getLanguageTag() {
+    const langMap = {
+      en: 'en-US',
+      es: 'es-ES',
+      he: 'he-IL',
+      xh: 'xh-ZA'
+    };
+    return langMap[currentLanguage] || 'en-US';
+  }
+
   function playChickenVoice() {
     try {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance("CHICKEN!");
+        
+        const text = getChickenTranslation();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = getLanguageTag();
+        
         utterance.pitch = 0.5 + Math.random() * 1.5;
         utterance.rate = 0.8 + Math.random() * 1.2;
         utterance.volume = 0.75;
         
         const voices = window.speechSynthesis.getVoices();
-        if (voices.length > 0) {
+        const matchingVoices = voices.filter(v => v.lang.startsWith(currentLanguage));
+        
+        if (matchingVoices.length > 0) {
+          utterance.voice = matchingVoices[Math.floor(Math.random() * matchingVoices.length)];
+        } else if (voices.length > 0) {
           utterance.voice = voices[Math.floor(Math.random() * voices.length)];
         }
+        
         window.speechSynthesis.speak(utterance);
       }
     } catch(err) {}
