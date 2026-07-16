@@ -1777,31 +1777,14 @@
     }
   });
 
-  function getTrumpPhrase() {
-    const phrases = {
-      en: [
-        "CHICKEN! A very great chicken, the best chicken, believe me!",
-        "CHICKEN! Huge! Tremendous chicken!",
-        "CHICKEN! Nobody knows chicken like I do, it's true!"
-      ],
-      es: [
-        "POLLO! Un pollo muy grande, el mejor pollo, ¡créeme!",
-        "POLLO! ¡Enorme! ¡Un pollo tremendo!",
-        "POLLO! Nadie sabe de pollo como yo, ¡es verdad!"
-      ],
-      he: [
-        "עוף! עוף גדול מאוד, העוף הכי טוב, תאמין לי!",
-        "עוף! ענק! עוף עצום!",
-        "עוף! אף אחד לא מכיר עוף כמוני, זה נכון!"
-      ],
-      xh: [
-        "INKUKU! Inkuku enkulu kakhulu, eyona nkuku ilungileyo, ndikholelwe!",
-        "INKUKU! Inkuku enkulu kakhulu!",
-        "INKUKU! Akukho mntu uyaziyo inkuku njengam, yinyani leyo!"
-      ]
+  function getChickenTranslation() {
+    const chickenMap = {
+      en: "CHICKEN!",
+      es: "POLLO!",
+      he: "עוף!",
+      xh: "INKUKU!"
     };
-    const list = phrases[currentLanguage] || phrases.en;
-    return list[Math.floor(Math.random() * list.length)];
+    return chickenMap[currentLanguage] || "CHICKEN!";
   }
 
   function getLanguageTag() {
@@ -1819,7 +1802,7 @@
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         
-        const text = getTrumpPhrase();
+        const text = getChickenTranslation();
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = getLanguageTag();
         
