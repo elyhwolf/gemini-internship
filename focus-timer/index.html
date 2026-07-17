@@ -1877,9 +1877,13 @@
   let waitingForHelpResponse = false;
 
   function isNonsense(text) {
-    const keywords = ["focus", "work", "short", "long", "reset", "start", "play", "pause", "stop", "resume", "add", "create", "todo", "task", "complete", "finish", "done", "check", "help", "commands", "hello", "hi", "hey", "howdy", "hola", "molo", "welcome", "how", "going", "doing", "joke", "chiste", "funny", "motivate", "motivation", "inspire", "who", "name", "ely", "chicken", "spice", "hot", "menu", "spicy", "wings", "nashville"];
-    const lowercaseText = text.toLowerCase();
-    return !keywords.some(kw => lowercaseText.includes(kw));
+    const clean = text.trim().toLowerCase();
+    if (clean.length < 2) return true;
+    const hasVowelsOrHebrew = /[aeiouyаеиоуאאההוי\u0590-\u05FF]/i.test(clean);
+    if (!hasVowelsOrHebrew) return true;
+    const repeatingLetters = /(.)\1{4,}/.test(clean);
+    if (repeatingLetters) return true;
+    return false;
   }
 
   function toggleChatSettings() {
@@ -2130,6 +2134,13 @@
         "ely's Nashville hot chicken is the ultimate fuel. choose from Country to Poultrygeist. 🔥🍗",
         "ely's hot chicken: cooked to golden crispy perfection. perfect to order after a long focus session. 🤤"
       ],
+      conversational: [
+        "i hear you brudda, that's real talk. let's set a focus timer and lock in, gang.",
+        "no cap, that sounds like a plan. let's stay focused and make it happen, mud.",
+        "that's clean, gang. but we gotta lock in on the tasks first. start the clock!",
+        "real talk brudda. you want me to set a focus session or add a task to get this sorted?",
+        "i feel that, brodie. let's stay focused and get this hot chicken bread, mud."
+      ],
       unknown: [
         "i don't quite get that, but i'm always down to chat. tell me to set a timer or manage your tasks. type 'help' for commands.",
         "my glock got brandished brudda could u repeat dat. if you want to configure your session, try saying 'set short break to 5 min' or check the guides."
@@ -2160,6 +2171,12 @@
       elyChicken: [
         "¡Ely's Nashville Hot Chicken es el combustible definitivo para la productividad! Puedes elegir entre Country (sin picante) hasta Poultrygeist (picante extremo)! 🔥🍗"
       ],
+      conversational: [
+        "Te entiendo, amigo. ¡Pongamos un temporizador de enfoque y concentrémonos!",
+        "Eso suena como un buen plan. Mantengamos el enfoque y hagámoslo realidad.",
+        "¡Excelente! Pero primero concentrémonos en las tareas pendientes. ¡Inicia el reloj!",
+        "Hablemos claro, amigo. ¿Quieres que configure una sesión de enfoque o añada una tarea?"
+      ],
       unknown: [
         "No estoy seguro de cómo responder a eso, ¡pero siempre me alegra conversar! Pídeme configurar el temporizador ('enfoque a 15 min') o manejar tareas. Escribe 'ayuda' para ver comandos.",
         "Hmm, eso me dejó pensando. Si quieres configurar tu sesión, intenta decir 'concentracion a 25 min' o consulta la guía."
@@ -2176,7 +2193,7 @@
         "הכל מצוין! שומר על ריכוז ומחמם את סירי הטיגון. מה שלומך?"
       ],
       jokes: [
-        "למה התרנגולת עברה את הכביש? כדי להגיע לצד השני של רשימת המשימות! 🐔",
+        "למה התרנגולת עברה את הכביש? כדי להגיע לצด השני של רשימת המשימות! 🐔",
         "איך קוראים לתרנגולת שאוהבת פרודוקטיביות? עובדת קשה במיוחד! 🥚"
       ],
       motivation: [
@@ -2189,6 +2206,12 @@
       ],
       elyChicken: [
         "העוף של אלי הוא הדלק האולטימטיבי לפרודוקטיביות! בחר רמת חריפות מ-Country (ללא חריפות) ועד Poultrygeist (חריף בטירוף)! 🔥🍗"
+      ],
+      conversational: [
+        "אני מבין אותך, אח שלי. בוא נגדיר טיימר ריכוז ונתחיל לעבוד, גנג.",
+        "זה נשמע כמו תוכנית מעולה. בוא נישאר מרוכזים ונעשה את זה, אחי.",
+        "זה נקי, חבר. אבל קודם כל בוא נתרכז במשימות. הפעל את השעון!",
+        "בוא נדבר תכלס. אתה רוצה שאגדיר סשן ריכוז או שאוסיף משימה לרשימה?"
       ],
       unknown: [
         "אני לא בטוח איך לענות על זה, אבל תמיד אשמח לשוחח! בקש ממני להגדיר טיימר (למשל: 'ריכוז ל-15 דקות') או לנהל משימות. הקלד 'עזרה' לפקודות נוספות.",
@@ -2219,6 +2242,11 @@
       ],
       elyChicken: [
         "I-Ely's Nashville Hot Chicken yeyona mafutha okugqibela okugxila! Khetha phakathi kweCountry ukuya kwiPoultrygeist! 🔥🍗"
+      ],
+      conversational: [
+        "Ndiyakuva mfondini, linyani elo. Masingenise ixesha lokugxila kwaye sisebenze.",
+        "Lonto ivakala ngathi sisicwangciso esihle. Masingene emsebenzini.",
+        "Kuhle kakhulu, kodwa masiqale sigxile kwimisebenzi yethu. Qala iwotshi!"
       ],
       unknown: [
         "Andiqinisekanga ukuba ndiphendule njani kulonto, kodwa ndihlala ndikuvuyela ukuncokola! Ndicele ukuseta itayima okanye ufake imisebenzi.",
@@ -2376,8 +2404,13 @@
       return rand(r.elyChicken);
     }
 
+    // Conversational fallback for unrecognized but valid messages
+    if (annoyanceLevel === 0 && r.conversational) {
+      return rand(r.conversational);
+    }
+
     // Annoyance scaling unknowns
-    if (annoyanceLevel <= 1) {
+    if (annoyanceLevel === 1) {
       return t.botError || "my glock got brandished brudda could u repeat dat";
     }
     if (annoyanceLevel === 2) {
