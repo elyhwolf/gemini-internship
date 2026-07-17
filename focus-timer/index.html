@@ -2021,8 +2021,15 @@
       return;
     }
 
+    const isInvalidKey = !key || 
+                         key === "YOUR_API_KEY_HERE" || 
+                         key === "GEMINI_API_KEY" || 
+                         key === "VITE_GEMINI_API_KEY" || 
+                         key.includes("MockKey") || 
+                         key.includes("FakeKey");
+
     // if no command and no valid key, run the simulated chat fallback
-    if (!key || key === "YOUR_API_KEY_HERE") {
+    if (isInvalidKey) {
       setTimeout(() => {
         indicator.remove();
         const fallbackRes = processBotMessageFallback(text);
