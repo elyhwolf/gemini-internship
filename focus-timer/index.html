@@ -2040,6 +2040,18 @@
 
     let systemPrompt = chatbotSystemPrompt || "you are chronocluck, the official focus mascot for ely's hot chicken. you talk in lowercase street slang and gang-affiliated endearments (bro, brodie, brudda, mud, gang). help users configure focus timers or create/complete tasks.";
     
+    // Inject structural command guidelines for tool calling
+    systemPrompt += "\n\n[CRITICAL NOTE]: If the user asks you to perform an action (set a timer, add a task, or complete a task), you MUST append the corresponding exact command at the very end of your response on a new line. Format it exactly as:\n" +
+                    "- For adding a task: [COMMAND: add task <task description>]\n" +
+                    "- For completing a task: [COMMAND: complete task <task description>]\n" +
+                    "- For setting a focus timer: [COMMAND: set focus to <number> min]\n" +
+                    "- For setting a short break: [COMMAND: set short break to <number> min]\n" +
+                    "- For setting a long break: [COMMAND: set long break to <number> min]\n" +
+                    "- For starting the timer: [COMMAND: start]\n" +
+                    "- For pausing the timer: [COMMAND: pause]\n" +
+                    "- For resetting the timer: [COMMAND: reset]\n" +
+                    "Example: \"ight brudda, i added read book to your list! [COMMAND: add task read book]\"";
+
     // Inject annoyance guidelines if annoyanceLevel > 0
     if (annoyanceLevel > 0) {
       systemPrompt += `\n\n[SYSTEM NOTE: Your current annoyance level is ${annoyanceLevel} out of 3. Level 1: You are slightly annoyed because the user typed unrecognized text. Level 2: You are brandishing your glock and demand they repeat themselves clearly. Level 3: You are extremely angry and threating to clean the hot chicken fryer with them if they don't focus. Speak matching this annoyance state in character.]`;
@@ -2065,12 +2077,23 @@
     })
     .then(data => {
       indicator.remove();
-      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "hmm, something went wrong with my system, brudda.";
+      let reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "hmm, something went wrong with my system, brudda.";
+      
+      // Parse for [COMMAND: <cmd>] in the reply
+      const commandRegex = /\[COMMAND:\s*([^\]]+)\]/i;
+      const commandMatch = reply.match(commandRegex);
+      if (commandMatch) {
+        const cmd = commandMatch[1].trim();
+        processLocalCommand(cmd);
+        // Strip the command bracket from the displayed reply
+        reply = reply.replace(commandRegex, '').trim();
+      } else {
+        // Fallback: if no structured command is found, try running processLocalCommand on the raw reply as a fallback
+        processLocalCommand(reply);
+      }
+
       appendChatMsg(reply, 'bot');
       chatHistory.push({ role: "model", parts: [{ text: reply }] });
-
-      // post-process the response to check if the model says it's running a command (like setting a timer or completing a task)
-      processLocalCommand(reply);
     })
     .catch(err => {
       console.error(err);
@@ -2259,8 +2282,8 @@
     const text = msg.toLowerCase().trim();
     const t = TRANSLATIONS[currentLanguage];
 
-    // 1. Task creation parsing
-    const createRegex = /^(?:add task|create task|add todo|todo|new task|agregar tarea|nueva tarea|הוסף משימה|משימה חדשה|faka umsebenzi|umsebenzi omtsha)\s*[:\-\s]?\s*(.+)$/i;
+    // 1. Task creation parsing (flexible regex without start-of-line anchor)
+    const createRegex = /(?:add task|create task|add todo|todo|new task|agregar tarea|nueva tarea|הוסף משימה|משימה חדשה|faka umsebenzi|umsebenzi omtsha)\s*[:\-\s]?\s*(.+)$/i;
     const createMatch = msg.match(createRegex);
     if (createMatch) {
       const taskText = createMatch[1].trim();
@@ -2273,8 +2296,8 @@
       }
     }
 
-    // 2. Task completion parsing
-    const completeRegex = /^(?:complete task|complete|check off|finish task|finish|done|completar tarea|completar|סמן כבוצע|בוצע|סיימתי|gqiba umsebenzi|gqiba|gqityiwe)\s*[:\-\s]?\s*(.+)$/i;
+    // 2. Task completion parsing (flexible regex without start-of-line anchor)
+    const completeRegex = /(?:complete task|complete|check off|finish task|finish|done|completar tarea|completar|סמן כבוצע|בוצע|סיימתי|gqiba umsebenzi|gqiba|gqityiwe)\s*[:\-\s]?\s*(.+)$/i;
     const completeMatch = msg.match(completeRegex);
     if (completeMatch) {
       const taskText = completeMatch[1].trim().toLowerCase();
