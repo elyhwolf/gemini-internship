@@ -5,7 +5,7 @@
   "main": "index.html",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && cp -r focus-timer dist/focus-timer && cp instructions.md dist/instructions.md && cp system_prompt.md dist/system_prompt.md",
+    "build": "vite build && cp -r focus-timer dist/focus-timer && cp instructions.md dist/instructions.md",
     "preview": "vite preview"
   },
   "keywords": [],
