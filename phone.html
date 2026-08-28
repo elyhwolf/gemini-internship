@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📱 ChronoFocus — Virtual Device Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --panel-bg: rgba(15, 23, 42, 0.75);
+      --panel-border: rgba(255, 255, 255, 0.1);
+      --accent: #f97316;
+      --accent-glow: rgba(249, 115, 22, 0.4);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      
+      /* Phone Device Styling */
+      --phone-width: 390px;
+      --phone-height: 820px;
+      --frame-color: #1e293b;
+      --frame-border: #334155;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 15% 20%, rgba(249, 115, 22, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(132, 204, 22, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.9) 0%, var(--bg-dark) 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Top Studio Navigation */
+    header {
+      height: 70px;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--panel-border);
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(16px);
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #f97316, #84cc16);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+
+    .brand-title h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      background: linear-gradient(to right, #ffffff, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-title p {
+      font-size: 0.75rem;
+      color: #84cc16;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .toolbar-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      padding: 4px;
+      gap: 4px;
+    }
+
+    .btn-tool {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-tool:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .btn-tool.active {
+      background: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 2px 10px var(--accent-glow);
+    }
+
+    .btn-action {
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: white;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(249, 115, 22, 0.35);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-action:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(249, 115, 22, 0.5);
+    }
+
+    /* Main Studio Canvas */
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      position: relative;
+    }
+
+    .simulator-stage {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4rem;
+      width: 100%;
+      max-width: 1400px;
+    }
+
+    /* Phone Device Frame 3D Container */
+    .phone-wrapper {
+      perspective: 1200px;
+      transition: transform 0.4s ease;
+    }
+
+    .phone-device {
+      width: var(--phone-width);
+      height: var(--phone-height);
+      background: var(--frame-color);
+      border-radius: 52px;
+      padding: 12px;
+      position: relative;
+      box-shadow: 
+        0 25px 60px -15px rgba(0, 0, 0, 0.8),
+        0 0 0 1px var(--frame-border),
+        inset 0 0 0 3px rgba(255, 255, 255, 0.1),
+        0 0 40px var(--accent-glow);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Phone Side Buttons */
+    .phone-device::before {
+      content: '';
+      position: absolute;
+      left: -4px;
+      top: 140px;
+      width: 4px;
+      height: 50px;
+      background: #475569;
+      border-radius: 4px 0 0 4px;
+      box-shadow: inset 1px 0 2px rgba(255, 255, 255, 0.2);
+    }
+
+    .phone-device::after {
+      content: '';
+      position: absolute;
+      right: -4px;
+      top: 180px;
+      width: 4px;
+      height: 75px;
+      background: #475569;
+      border-radius: 0 4px 4px 0;
+      box-shadow: inset -1px 0 2px rgba(255, 255, 255, 0.2);
+    }
+
+    /* Phone Screen Container */
+    .screen-container {
+      width: 100%;
+      height: 100%;
+      background: #0f172a;
+      border-radius: 40px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Top Notch / Dynamic Island */
+    .notch {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 28px;
+      background: #000000;
+      border-radius: 20px;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    .camera-lens {
+      width: 10px;
+      height: 10px;
+      background: #090d16;
+      border-radius: 50%;
+      box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.3);
+    }
+
+    .speaker-grille {
+      width: 40px;
+      height: 4px;
+      background: #1e293b;
+      border-radius: 2px;
+    }
+
+    /* Status Bar Overlay */
+    .status-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 44px;
+      padding: 10px 24px 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 40;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #ffffff;
+      pointer-events: none;
+    }
+
+    .status-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Live WebView iframe */
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #0f172a;
+    }
+
+    /* Bottom Home Indicator Bar */
+    .home-bar {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 130px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 2px;
+      z-index: 50;
+      pointer-events: none;
+    }
+
+    /* Side Info & Specs Panel */
+    .side-info {
+      width: 360px;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      padding: 1.5rem;
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .info-header h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .info-header p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .badge-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .badge {
+      background: rgba(249, 115, 22, 0.15);
+      color: #f97316;
+      border: 1px solid rgba(249, 115, 22, 0.3);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-green {
+      background: rgba(132, 204, 22, 0.15);
+      color: #84cc16;
+      border-color: rgba(132, 204, 22, 0.3);
+    }
+
+    .spec-card {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 14px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .spec-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+    }
+
+    .spec-row .label {
+      color: var(--text-muted);
+    }
+
+    .spec-row .val {
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    .download-card {
+      background: linear-gradient(135deg, rgba(249, 115, 22, 0.2), rgba(132, 204, 22, 0.15));
+      border: 1px solid rgba(249, 115, 22, 0.3);
+      border-radius: 16px;
+      padding: 1.2rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .download-card h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .download-card p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .download-btn {
+      background: #f97316;
+      color: white;
+      text-decoration: none;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+
+    .download-btn:hover {
+      background: #ea580c;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Studio Navigation Bar -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">🐔</div>
+      <div class="brand-title">
+        <h1>ChronoFocus Mobile Simulator</h1>
+        <p>Vibe Coding Studio Mode • Live Preview</p>
+      </div>
+    </div>
+
+    <!-- Toolbar Controls -->
+    <div class="toolbar-controls">
+      <!-- Frame Color Switcher -->
+      <div class="control-group">
+        <button class="btn-tool active" onclick="setFrameColor('#1e293b', this)">Midnight</button>
+        <button class="btn-tool" onclick="setFrameColor('#475569', this)">Titanium</button>
+        <button class="btn-tool" onclick="setFrameColor('#78350f', this)">Bronze</button>
+      </div>
+
+      <!-- Orientation Toggle -->
+      <div class="control-group">
+        <button class="btn-tool active" onclick="setOrientation('portrait', this)">Portrait 📱</button>
+        <button class="btn-tool" onclick="setOrientation('landscape', this)">Landscape 📲</button>
+      </div>
+
+      <!-- Refresh App -->
+      <button class="btn-action" onclick="refreshApp()">🔄 Reload App</button>
+    </div>
+  </header>
+
+  <!-- Main Simulator Stage -->
+  <main>
+    <div class="simulator-stage">
+      
+      <!-- Virtual Smartphone Device Container -->
+      <div class="phone-wrapper" id="phoneWrapper">
+        <div class="phone-device" id="phoneDevice">
+          <div class="screen-container">
+            
+            <!-- Top Status Bar -->
+            <div class="status-bar">
+              <span id="liveClock">09:41</span>
+              <div class="status-right">
+                <span>5G</span>
+                <span>📶</span>
+                <span>🔋 99%</span>
+              </div>
+            </div>
+
+            <!-- Dynamic Island Notch -->
+            <div class="notch">
+              <div class="speaker-grille"></div>
+              <div class="camera-lens"></div>
+            </div>
+
+            <!-- Embedded Live App iframe -->
+            <iframe id="appFrame" src="focus-timer/index.html"></iframe>
+
+            <!-- Bottom Home Indicator -->
+            <div class="home-bar"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Side Information & Device Stats -->
+      <div class="side-info">
+        <div class="info-header">
+          <h2>Virtual Phone Inspection</h2>
+          <p>Running ChronoFocus Standalone Preview</p>
+        </div>
+
+        <div class="badge-list">
+          <span class="badge badge-green">● Live DevServer Active</span>
+          <span class="badge">React Native WebView</span>
+          <span class="badge">Expo SDK 52</span>
+        </div>
+
+        <div class="spec-card">
+          <div class="spec-row">
+            <span class="label">Screen Specs</span>
+            <span class="val">390 x 820 px (OLED)</span>
+          </div>
+          <div class="spec-row">
+            <span class="label">App Engine</span>
+            <span class="val">ChronoFocus v1.0</span>
+          </div>
+          <div class="spec-row">
+            <span class="label">Language Tag</span>
+            <span class="val">Multi (EN, XH, HE, ES)</span>
+          </div>
+          <div class="spec-row">
+            <span class="label">Mascot Voice</span>
+            <span class="val">ChronoCluck AI</span>
+          </div>
+        </div>
+
+        <div class="download-card">
+          <h3>📱 Standalone Android APK</h3>
+          <p>Want to run this app natively on your actual phone?</p>
+          <a class="download-btn" href="https://expo.dev/artifacts/eas/Sn8K3t0pq6xeowgX7WynWWvIiei1mGQ_fEA9N1KVGtY.apk" target="_blank">
+            ⬇️ Download APK (expo.dev)
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // Live Clock Update
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('liveClock').textContent = `${hours}:${minutes}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Reload iframe
+    function refreshApp() {
+      const frame = document.getElementById('appFrame');
+      frame.src = frame.src;
+    }
+
+    // Set Frame Color
+    function setFrameColor(color, btn) {
+      document.getElementById('phoneDevice').style.setProperty('--frame-color', color);
+      const group = btn.parentElement;
+      group.querySelectorAll('.btn-tool').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    // Set Orientation
+    function setOrientation(orientation, btn) {
+      const wrapper = document.getElementById('phoneWrapper');
+      const device = document.getElementById('phoneDevice');
+      if (orientation === 'landscape') {
+        wrapper.style.transform = 'rotate(-90deg) scale(0.85)';
+      } else {
+        wrapper.style.transform = 'rotate(0deg) scale(1)';
+      }
+      const group = btn.parentElement;
+      group.querySelectorAll('.btn-tool').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+  </script>
+</body>
+</html>
