@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "ChronoFocus",
+    "slug": "chronofocus",
+    "version": "1.0.0",
+    "sdkVersion": "52.0.0",
+    "owner": "elyhwolf-personal",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0f172a",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.chronofocus.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0f172a",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "a5722777-33a7-4e29-85c7-38fa2566c365"
+      }
+    }
+  }
+}
