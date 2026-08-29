@@ -412,3 +412,25 @@ As part of today's code review, I compared the actual development time against t
 - **Invalid API Key HTTP 400**: Running with mock key credentials returned HTTP bad request failures.
   * **Fix**: Ensured the fallback agent prints descriptive connection error logs when credentials are invalid, allowing quick diagnosing and on-the-fly testing.
 
+---
+
+# 📓 Developer Journal - August 28, 2026
+
+## 🛠️ What did I build today?
+- **Expo React Native Mobile Port**: Initialized blank Expo SDK 52 application in `expo-chronofocus` and integrated `react-native-webview` with full-screen rendering of ChronoFocus and dark status bar styling.
+- **EAS Cloud APK Compilation**: Configured `app.json` (`sdkVersion: "52.0.0"`, `owner: "elyhwolf-personal"`, package `com.chronofocus.app`) and `eas.json` (`buildType: "apk"`). Triggered Android Gradle cloud build via EAS CLI (`npx eas-cli build --platform android --profile preview`) signed with keystore credentials.
+- **APK Distribution & QR Code**: Produced direct download link and generated an on-screen scannable QR Code image (`apk_qr_code.png`) allowing instant sideloading to physical Android phones.
+- **Virtual Device Simulator (`phone.html`)**: Built an interactive front-facing 2D smartphone simulator featuring Midnight Black, Titanium, and Bronze metallic frames, live status bar clock, and orientation controls.
+- **Zero-Cutoff Mobile Responsiveness**: Added `@media (max-width: 480px)` responsive rules in `focus-timer/index.html`, fixing horizontal/vertical cutoffs so language flags (`EN`, `ES`, `HE`, `XH`), 170px timer ring, side-by-side duration inputs (`Focus`, `Short`, `Long`), task list, and floating chatbot button fit 100% inside mobile viewports.
+
+## 🤖 What AI prompt worked?
+- Designing an auto-fitting viewport frame using CSS `aspect-ratio: 9 / 18.5` and `max-height: calc(100vh - 80px)` to dynamically scale the virtual device preview to fit any computer screen height without vertical scrolling or cutoff.
+- Restructuring mobile flex layouts into responsive grid groups so all language options and duration input controls adjust dynamically on narrow screens.
+
+## 🔍 What broke and how did I fix it?
+- **SDK Version Missing Warning in EAS**: Building without specifying `sdkVersion` in `app.json` defaulted to legacy Expo SDK versions and aborted during Gradle compilation.
+  * **Fix**: Updated `app.json` with explicit `"sdkVersion": "52.0.0"` and `"owner": "elyhwolf-personal"`.
+- **App Layout Cutoff in Virtual Phone**: Small phone viewport sizes (390px width) caused language flags, duration inputs, and task list headers to overflow the right edge of the screen.
+  * **Fix**: Added `@media (max-width: 480px)` styling in `focus-timer/index.html` with flex wrapping, scaled timer ring size (170px), and compact button padding.
+
+
