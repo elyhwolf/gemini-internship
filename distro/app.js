@@ -329,6 +329,16 @@ async function runAICopilot(promptType) {
   }, 1000);
 }
 
+// 1-Click Connect YouTube Channel (Google OAuth)
+function connectGoogleYouTube() {
+  const scope = encodeURIComponent("https://www.googleapis.com/auth/youtube.upload");
+  const playgroundUrl = "https://developers.google.com/oauthplayground/";
+  
+  // Prompt user or open Google OAuth Playground with pre-selected YouTube scope
+  alert("🔑 Opening Google OAuth Playground!\n\nStep 1: Click 'Authorize APIs' with YouTube Data API v3 selected.\nStep 2: Copy the generated Access Token into SoundDrop!");
+  window.open(`${playgroundUrl}?scopes=${scope}`, '_blank');
+}
+
 // Royalty Payout Simulation
 function requestRoyaltyPayout() {
   const currentTotal = appState.totalEarnings;

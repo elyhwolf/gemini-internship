@@ -163,9 +163,17 @@
               <span style="font-size: 0.7rem; color: #84cc16; font-weight: 600;">● Active Publisher Engine</span>
             </div>
             <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.35;">
-              Want your song uploaded LIVE to YouTube right now? Enter your Google OAuth Access Token below for instant channel upload, or click publish to generate your live audio video link:
+              Want your song uploaded LIVE to your personal YouTube Channel? Connect your channel in 1-click or paste an OAuth token below:
             </p>
-            <input type="text" id="youtubeOAuthTokenInput" placeholder="Optional Google OAuth Token (for direct personal channel upload)" style="background: rgba(0,0,0,0.4); border: 1px solid var(--panel-border); border-radius: 6px; padding: 6px 10px; font-size: 0.78rem; color: var(--text-main); font-family: 'JetBrains Mono', monospace;">
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+              <button type="button" onclick="connectGoogleYouTube()" style="background: linear-gradient(135deg, #ff0000, #cc0000); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 10px rgba(255, 0, 0, 0.4);">
+                🔴 Connect YouTube Channel (Google Login)
+              </button>
+              <a href="https://developers.google.com/oauthplayground/" target="_blank" style="font-size: 0.72rem; color: var(--accent-cyan); text-decoration: underline;">
+                Google OAuth Playground ↗
+              </a>
+            </div>
+            <input type="text" id="youtubeOAuthTokenInput" placeholder="Paste Google OAuth Token here (or click Connect YouTube above)" style="background: rgba(0,0,0,0.4); border: 1px solid var(--panel-border); border-radius: 6px; padding: 6px 10px; font-size: 0.78rem; color: var(--text-main); font-family: 'JetBrains Mono', monospace;">
           </div>
 
           <button class="submit-btn" onclick="launchDistribution()">
