@@ -93,14 +93,20 @@ header {
   box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
 }
 
-.brand-text h1 {
-  font-family: 'Outfit', sans-serif;
-  font-size: 1.4rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  background: linear-gradient(to right, #ffffff, #cbd5e1);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.brand-text h1.sounddrop-logo {
+  font-family: 'Inter', 'Outfit', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.sounddrop-logo .logo-sound {
+  color: #9d7bbd;
+}
+
+.sounddrop-logo .logo-drop {
+  color: #d9f99d;
 }
 
 .brand-text p {
