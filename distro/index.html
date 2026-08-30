@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SoundDrop — Free Music Distribution Platform</title>
+  <meta name="description" content="Publish your music to Spotify, Apple Music, YouTube Music, Tidal, TikTok, and Amazon Music for free with SoundDrop AI. Keep 100% of your royalties.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- App Header -->
+    <header>
+      <div class="brand">
+        <div class="brand-logo">🎵</div>
+        <div class="brand-text">
+          <h1>SoundDrop</h1>
+          <p>Free Music Distribution • Sponsored by Ely's Hot Chicken</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs" role="tablist">
+        <button class="nav-tab active" data-tab="release" role="tab">🎵 Release Builder</button>
+        <button class="nav-tab" data-tab="copilot" role="tab">🤖 AI Release Assistant</button>
+        <button class="nav-tab" data-tab="pipeline" role="tab">📡 Store Pipeline</button>
+        <button class="nav-tab" data-tab="analytics" role="tab">📊 Royalties & Analytics</button>
+      </nav>
+
+      <div class="free-guarantee-badge">
+        <span>✨ 100% Free • Keep 100% Royalties</span>
+      </div>
+    </header>
+
+    <!-- Tab 1: Release Builder (Upload & Metadata) -->
+    <section id="view-release" class="tab-view active">
+      <div class="grid-2col">
+        
+        <!-- Left: Upload & Song Metadata Form -->
+        <div class="card builder-section">
+          <div class="section-title">
+            <span>1. Track Audio & Metadata</span>
+            <span class="isrc-display" id="isrcCodeDisplay">US-SD9-26-00001</span>
+          </div>
+
+          <!-- Drag & Drop Zone -->
+          <div class="upload-dropzone" id="uploadDropzone">
+            <div class="upload-icon">📁</div>
+            <h3>Drag & Drop Your Song Audio File</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Supports WAV, MP3, or FLAC (Up to 100MB)</p>
+            <input type="file" id="audioFileInput" accept="audio/*" style="display: none;">
+          </div>
+
+          <!-- Web Audio Waveform Card (Hidden until upload) -->
+          <div class="waveform-card" id="waveformCard">
+            <div class="waveform-header">
+              <div class="track-info-badge">
+                <button class="play-btn" id="playPauseBtn" onclick="toggleAudioPlay()">▶</button>
+                <div>
+                  <h4 id="fileNameDisplay" style="font-size: 0.95rem; font-weight: 700;">Nashville_Dreams_Master.wav</h4>
+                  <p style="font-size: 0.75rem; color: var(--accent-cyan);">Web Audio API Spectrum Spectrum Loaded</p>
+                </div>
+              </div>
+              <span style="font-size: 0.78rem; font-weight: 600; color: var(--accent-lime);">● Audio Ready</span>
+            </div>
+            <canvas id="waveformCanvas"></canvas>
+          </div>
+
+          <!-- Metadata Form -->
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="inputTrackTitle">Song / Track Title</label>
+              <input type="text" id="inputTrackTitle" value="Nashville Dreams" placeholder="e.g. Nashville Dreams">
+            </div>
+
+            <div class="form-group">
+              <label for="inputArtistName">Artist Name</label>
+              <input type="text" id="inputArtistName" value="Ely & The Cluckers" placeholder="e.g. Ely & The Cluckers">
+            </div>
+
+            <div class="form-group">
+              <label for="selectGenre">Primary Genre</label>
+              <select id="selectGenre">
+                <option value="Hip-Hop / Rap">Hip-Hop / Rap</option>
+                <option value="R&B / Soul">R&B / Soul</option>
+                <option value="Afrobeat">Afrobeat</option>
+                <option value="Pop">Pop</option>
+                <option value="Lo-Fi / Instrumental">Lo-Fi / Instrumental</option>
+                <option value="Alternative / Rock">Alternative / Rock</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="selectExplicit">Explicit Content Tag</label>
+              <select id="selectExplicit">
+                <option value="clean">Clean (No Explicit Words)</option>
+                <option value="explicit">Explicit (18+ Warning)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Target Store Selection -->
+          <div style="margin-top: 1rem;">
+            <label style="margin-bottom: 8px; display: block;">Select Target DSP Streaming Stores (100% Free)</label>
+            <div class="store-grid">
+              <div class="store-checkbox-card store-spotify selected" data-store="spotify">
+                <div class="store-icon">🟢</div>
+                <div>
+                  <h4 style="font-size: 0.85rem; font-weight: 700;">Spotify</h4>
+                  <p style="font-size: 0.7rem; opacity: 0.8;">Global Streams</p>
+                </div>
+              </div>
+
+              <div class="store-checkbox-card store-apple selected" data-store="apple">
+                <div class="store-icon">🍎</div>
+                <div>
+                  <h4 style="font-size: 0.85rem; font-weight: 700;">Apple Music</h4>
+                  <p style="font-size: 0.7rem; opacity: 0.8;">Lossless Audio</p>
+                </div>
+              </div>
+
+              <div class="store-checkbox-card store-youtube selected" data-store="youtube">
+                <div class="store-icon">▶️</div>
+                <div>
+                  <h4 style="font-size: 0.85rem; font-weight: 700;">YouTube Music</h4>
+                  <p style="font-size: 0.7rem; opacity: 0.8;">Official Audio</p>
+                </div>
+              </div>
+
+              <div class="store-checkbox-card store-tidal selected" data-store="tidal">
+                <div class="store-icon">🌊</div>
+                <div>
+                  <h4 style="font-size: 0.85rem; font-weight: 700;">Tidal</h4>
+                  <p style="font-size: 0.7rem; opacity: 0.8;">Hi-Fi Quality</p>
+                </div>
+              </div>
+
+              <div class="store-checkbox-card store-tiktok selected" data-store="tiktok">
+                <div class="store-icon">🎵</div>
+                <div>
+                  <h4 style="font-size: 0.85rem; font-weight: 700;">TikTok Sounds</h4>
+                  <p style="font-size: 0.7rem; opacity: 0.8;">Viral Audio Clips</p>
+                </div>
+              </div>
+
+              <div class="store-checkbox-card store-amazon selected" data-store="amazon">
+                <div class="store-icon">📦</div>
+                <div>
+                  <h4 style="font-size: 0.85rem; font-weight: 700;">Amazon Music</h4>
+                  <p style="font-size: 0.7rem; opacity: 0.8;">HD Streaming</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button class="submit-btn" onclick="launchDistribution()">
+            🚀 Distribute Song Worldwide for Free
+          </button>
+        </div>
+
+        <!-- Right Side: AI Release Assistant Quick Panel -->
+        <div class="card ai-copilot-card">
+          <div class="ai-header">
+            <div class="ai-avatar">🤖</div>
+            <div>
+              <h3 style="font-size: 1rem; font-weight: 700;">SoundDrop AI Copilot</h3>
+              <p style="font-size: 0.75rem; color: var(--text-muted);">Gemini AI Release Strategist</p>
+            </div>
+          </div>
+
+          <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">
+            Generate professional Electronic Press Kits (EPK), Spotify artist bios, and playlist pitching text automatically using Gemini AI:
+          </p>
+
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <button class="ai-prompt-btn" onclick="runAICopilot('press_release')">✍️ Generate EPK Press Release</button>
+            <button class="ai-prompt-btn" onclick="runAICopilot('spotify_bio')">🎧 Build Spotify Artist Bio</button>
+            <button class="ai-prompt-btn" onclick="runAICopilot('playlist_pitch')">🎯 Create Playlist Pitch Form</button>
+          </div>
+
+          <div class="ai-response-box" id="aiResponseBox">
+            Click any AI button above to generate promotional copy for your song...
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Tab 2: AI Release Assistant Standalone View -->
+    <section id="view-copilot" class="tab-view">
+      <div class="card" style="max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.25rem;">
+        <div class="ai-header">
+          <div class="ai-avatar" style="width: 48px; height: 48px; font-size: 1.5rem;">🤖</div>
+          <div>
+            <h2 style="font-size: 1.25rem; font-weight: 700;">SoundDrop Gemini Release Strategist</h2>
+            <p style="font-size: 0.8rem; color: var(--accent-cyan);">Powered by Google Antigravity & Gemini AI</p>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <button class="ai-prompt-btn" style="flex: 1;" onclick="runAICopilot('press_release')">✍️ Generate EPK Press Release</button>
+          <button class="ai-prompt-btn" style="flex: 1;" onclick="runAICopilot('spotify_bio')">🎧 Build Spotify Artist Bio</button>
+          <button class="ai-prompt-btn" style="flex: 1;" onclick="runAICopilot('playlist_pitch')">🎯 Create Playlist Pitch Form</button>
+        </div>
+
+        <div class="ai-response-box" style="min-height: 300px;" id="aiResponseBoxStandalone">
+          SoundDrop AI assistant is ready to help you craft your promotional campaign!
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 3: Distribution Pipeline View -->
+    <section id="view-pipeline" class="tab-view">
+      <div class="card pipeline-card">
+        <div class="section-title">
+          <span>📡 Live Distribution Pipeline Progress</span>
+          <span style="font-size: 0.8rem; color: var(--accent-lime);" id="pipelineStatusText">Ready for Submission</span>
+        </div>
+
+        <!-- Animated Progress Bar -->
+        <div class="progress-track">
+          <div class="progress-fill" id="pipelineProgressFill"></div>
+        </div>
+
+        <!-- Pipeline Steps -->
+        <div class="pipeline-steps">
+          <div class="step-card active" id="stepCard1">
+            <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--accent-purple);">1. Audio Upload</h4>
+            <p style="font-size: 0.75rem; color: var(--text-muted);">Audio file verified & saved</p>
+          </div>
+
+          <div class="step-card" id="stepCard2">
+            <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--accent-purple);">2. ISRC Barcode</h4>
+            <p style="font-size: 0.75rem; color: var(--text-muted);">Assigned barcode metadata</p>
+          </div>
+
+          <div class="step-card" id="stepCard3">
+            <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--accent-purple);">3. DSP Transcoding</h4>
+            <p style="font-size: 0.75rem; color: var(--text-muted);">Encoded for Lossless Audio</p>
+          </div>
+
+          <div class="step-card" id="stepCard4">
+            <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--accent-lime);">4. Store Delivery</h4>
+            <p style="font-size: 0.75rem; color: var(--text-muted);">Live on 6 Global Stores</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 4: Royalty & Analytics Dashboard View -->
+    <section id="view-analytics" class="tab-view">
+      <div class="card" style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div class="section-title">
+          <span>📊 Streaming Analytics & Royalty Dashboard</span>
+          <span style="font-size: 0.8rem; color: var(--accent-lime);">100% Royalty Ownership Active</span>
+        </div>
+
+        <!-- 4 Metric Cards -->
+        <div class="analytics-grid">
+          <div class="stat-metric-card">
+            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">TOTAL STREAMS</span>
+            <span class="metric-val metric-purple">148,200</span>
+            <span style="font-size: 0.7rem; color: var(--accent-lime);">+18.4% this week</span>
+          </div>
+
+          <div class="stat-metric-card">
+            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">TOTAL EARNINGS</span>
+            <span class="metric-val metric-lime" id="totalEarningsVal">$592.80</span>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">$0.004 avg per stream</span>
+          </div>
+
+          <div class="stat-metric-card">
+            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">ACTIVE DSP STORES</span>
+            <span class="metric-val metric-cyan">6 / 6</span>
+            <span style="font-size: 0.7rem; color: var(--accent-cyan);">Spotify, Apple, YT +3</span>
+          </div>
+
+          <div class="stat-metric-card">
+            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">TOP LISTENER CITY</span>
+            <span class="metric-val metric-orange" style="font-size: 1.3rem;">Nashville, TN</span>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">42,100 streams</span>
+          </div>
+        </div>
+
+        <button class="payout-btn" onclick="requestRoyaltyPayout()">
+          💵 Withdraw Earnings to Direct Deposit ($592.80)
+        </button>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
