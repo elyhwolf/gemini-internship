@@ -90,9 +90,16 @@ function initAudioUploader() {
 }
 
 function handleAudioFile(file) {
+  const cleanTitle = file.name.replace(/\.[^/.]+$/, "").replace(/_/g, " ");
   document.getElementById('fileNameDisplay').textContent = file.name;
   document.getElementById('uploadDropzone').style.display = 'none';
   document.getElementById('waveformCard').style.display = 'flex';
+
+  const titleInput = document.getElementById('inputTrackTitle');
+  if (titleInput && (!titleInput.value || titleInput.value === 'Nashville Dreams')) {
+    titleInput.value = cleanTitle;
+    appState.trackTitle = cleanTitle;
+  }
 
   // Read Audio Data for Web Audio API Waveform
   const reader = new FileReader();
@@ -243,8 +250,11 @@ function initFormListeners() {
 
 // Trigger Distribution Pipeline Simulation
 function launchDistribution() {
-  appState.trackTitle = document.getElementById('inputTrackTitle').value || 'Nashville Dreams';
-  appState.artistName = document.getElementById('inputArtistName').value || 'Ely & The Cluckers';
+  const trackVal = document.getElementById('inputTrackTitle') ? document.getElementById('inputTrackTitle').value.trim() : '';
+  const artistVal = document.getElementById('inputArtistName') ? document.getElementById('inputArtistName').value.trim() : '';
+
+  appState.trackTitle = trackVal || 'My New Release';
+  appState.artistName = artistVal || 'Ely Wolf';
 
   // Switch to Pipeline Tab
   const pipelineTab = document.querySelector('[data-tab="pipeline"]');
@@ -298,13 +308,37 @@ function launchDistribution() {
       .then(data => {
         const ytUrl = data.youtube_url || `https://www.youtube.com/results?search_query=${encodeURIComponent(appState.artistName + ' ' + appState.trackTitle)}`;
         statusText.innerHTML = `🎉 <strong>RELEASE IS LIVE!</strong> "${appState.trackTitle}" by ${appState.artistName} is now published on YouTube Music!<br><br><a href="${ytUrl}" target="_blank" style="color: #ff4d4d; font-weight: 700; text-decoration: underline; font-size: 0.95rem;">👉 Click here to listen to your Published Track LIVE on YouTube!</a>`;
+        showReleaseSuccessModal(ytUrl);
       })
       .catch(() => {
         const fallbackYtUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(appState.artistName + ' ' + appState.trackTitle)}`;
         statusText.innerHTML = `🎉 <strong>RELEASE IS LIVE!</strong> "${appState.trackTitle}" by ${appState.artistName} is now published on YouTube Music!<br><br><a href="${fallbackYtUrl}" target="_blank" style="color: #ff4d4d; font-weight: 700; text-decoration: underline; font-size: 0.95rem;">👉 Click here to listen to your Published Track LIVE on YouTube!</a>`;
+        showReleaseSuccessModal(fallbackYtUrl);
       });
     }
   }, 1200);
+}
+
+function showReleaseSuccessModal(ytUrl) {
+  const modal = document.getElementById('releaseSuccessModal');
+  const subtext = document.getElementById('modalReleaseSubtext');
+  const trackTitle = document.getElementById('modalTrackTitle');
+  const artistName = document.getElementById('modalArtistName');
+  const isrc = document.getElementById('modalISRC');
+  const ytBtn = document.getElementById('modalYouTubeBtn');
+
+  if (subtext) subtext.innerHTML = `"${appState.trackTitle}" by ${appState.artistName} has been delivered to YouTube Music, Spotify, and Apple Music!`;
+  if (trackTitle) trackTitle.textContent = appState.trackTitle;
+  if (artistName) artistName.textContent = appState.artistName;
+  if (isrc) isrc.textContent = appState.isrc;
+  if (ytBtn) ytBtn.href = ytUrl;
+
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeReleaseModal() {
+  const modal = document.getElementById('releaseSuccessModal');
+  if (modal) modal.style.display = 'none';
 }
 
 // Gemini AI Copilot Generator

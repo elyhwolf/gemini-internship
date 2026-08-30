@@ -75,12 +75,12 @@
           <div class="form-grid">
             <div class="form-group">
               <label for="inputTrackTitle">Song / Track Title</label>
-              <input type="text" id="inputTrackTitle" value="Nashville Dreams" placeholder="e.g. Nashville Dreams">
+              <input type="text" id="inputTrackTitle" placeholder="Enter song title (or upload audio file)...">
             </div>
 
             <div class="form-group">
               <label for="inputArtistName">Artist Name</label>
-              <input type="text" id="inputArtistName" value="Ely & The Cluckers" placeholder="e.g. Ely & The Cluckers">
+              <input type="text" id="inputArtistName" placeholder="Enter artist name (e.g. Ely Wolf)...">
             </div>
 
             <div class="form-group">
@@ -311,6 +311,36 @@
       </div>
     </section>
 
+  <!-- Live Release Success Modal -->
+  <div id="releaseSuccessModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(16px); z-index: 9999; align-items: center; justify-content: center; padding: 1rem;">
+    <div style="background: rgba(15, 23, 42, 0.95); border: 2px solid var(--accent-mint); border-radius: 24px; padding: 2rem; max-width: 480px; width: 100%; text-align: center; display: flex; flex-direction: column; gap: 1.25rem; box-shadow: 0 0 50px rgba(110, 231, 183, 0.35); animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
+      
+      <div style="width: 64px; height: 64px; background: rgba(110, 231, 183, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto; color: var(--accent-mint);">
+        🎉
+      </div>
+
+      <div>
+        <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800; color: #ffffff;">YOUR SONG IS LIVE WORLDWIDE!</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;" id="modalReleaseSubtext">
+          "Nashville Dreams" by Ely & The Cluckers has been delivered to YouTube Music, Spotify, and Apple Music!
+        </p>
+      </div>
+
+      <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid var(--panel-border); border-radius: 14px; padding: 1rem; text-align: left; display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem;">
+        <div><span style="color: var(--text-muted);">Track Title:</span> <strong style="color: #fff;" id="modalTrackTitle">Nashville Dreams</strong></div>
+        <div><span style="color: var(--text-muted);">Artist:</span> <strong style="color: #fff;" id="modalArtistName">Ely & The Cluckers</strong></div>
+        <div><span style="color: var(--text-muted);">ISRC Barcode:</span> <span style="font-family: 'JetBrains Mono', monospace; color: var(--accent-cyan);" id="modalISRC">US-SD9-26-53325</span></div>
+      </div>
+
+      <a id="modalYouTubeBtn" href="https://www.youtube.com/results?search_query=Ely+%26+The+Cluckers+Nashville+Dreams" target="_blank" style="background: linear-gradient(135deg, #ff0000, #cc0000); color: white; text-decoration: none; padding: 14px; border-radius: 12px; font-size: 0.95rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 20px rgba(255, 0, 0, 0.4); transition: transform 0.2s;">
+        ▶️ LISTEN LIVE ON YOUTUBE NOW
+      </a>
+
+      <button onclick="closeReleaseModal()" style="background: transparent; border: none; color: var(--text-muted); font-size: 0.8rem; cursor: pointer; text-decoration: underline;">
+        Close Window
+      </button>
+
+    </div>
   </div>
 
   <script src="app.js"></script>
