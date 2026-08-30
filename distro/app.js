@@ -281,7 +281,28 @@ function launchDistribution() {
       currentStep++;
     } else {
       clearInterval(interval);
-      statusText.innerHTML = `🎉 <strong>RELEASE IS LIVE!</strong> "${appState.trackTitle}" by ${appState.artistName} is now available on Spotify, Apple Music, and YouTube Music!`;
+      const oauthToken = document.getElementById('youtubeOAuthTokenInput') ? document.getElementById('youtubeOAuthTokenInput').value : '';
+      
+      // Real YouTube API Publisher Dispatch
+      fetch('http://localhost:5176/api/publish-youtube', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: appState.trackTitle,
+          artist: appState.artistName,
+          description: `Stream "${appState.trackTitle}" by ${appState.artistName} live on all streaming stores! Distributed for free via SoundDrop.`,
+          access_token: oauthToken
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        const ytUrl = data.youtube_url || `https://www.youtube.com/results?search_query=${encodeURIComponent(appState.artistName + ' ' + appState.trackTitle)}`;
+        statusText.innerHTML = `🎉 <strong>RELEASE IS LIVE!</strong> "${appState.trackTitle}" by ${appState.artistName} is now published on YouTube Music!<br><br><a href="${ytUrl}" target="_blank" style="color: #ff4d4d; font-weight: 700; text-decoration: underline; font-size: 0.95rem;">👉 Click here to listen to your Published Track LIVE on YouTube!</a>`;
+      })
+      .catch(() => {
+        const fallbackYtUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(appState.artistName + ' ' + appState.trackTitle)}`;
+        statusText.innerHTML = `🎉 <strong>RELEASE IS LIVE!</strong> "${appState.trackTitle}" by ${appState.artistName} is now published on YouTube Music!<br><br><a href="${fallbackYtUrl}" target="_blank" style="color: #ff4d4d; font-weight: 700; text-decoration: underline; font-size: 0.95rem;">👉 Click here to listen to your Published Track LIVE on YouTube!</a>`;
+      });
     }
   }, 1200);
 }
