@@ -293,7 +293,7 @@ function launchDistribution() {
       clearInterval(interval);
       const oauthToken = document.getElementById('youtubeOAuthTokenInput') ? document.getElementById('youtubeOAuthTokenInput').value : '';
       
-      // Real YouTube API Publisher Dispatch
+      // Real YouTube API Multipart Publisher Dispatch
       fetch('http://localhost:5176/api/publish-youtube', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -301,19 +301,23 @@ function launchDistribution() {
           title: appState.trackTitle,
           artist: appState.artistName,
           description: `Stream "${appState.trackTitle}" by ${appState.artistName} live on all streaming stores! Distributed for free via SoundDrop.`,
-          access_token: oauthToken
+          access_token: oauthToken,
+          video_base64: window.currentRecordedVideoBase64 || ''
         })
       })
       .then(res => res.json())
       .then(data => {
-        const ytUrl = data.youtube_url || `https://www.youtube.com/results?search_query=${encodeURIComponent(appState.artistName + ' ' + appState.trackTitle)}`;
-        statusText.innerHTML = `🎉 <strong>RELEASE IS LIVE!</strong> "${appState.trackTitle}" by ${appState.artistName} is now published on YouTube Music!<br><br><a href="${ytUrl}" target="_blank" style="color: #ff4d4d; font-weight: 700; text-decoration: underline; font-size: 0.95rem;">👉 Click here to listen to your Published Track LIVE on YouTube!</a>`;
-        showReleaseSuccessModal(ytUrl);
+        if (data.live_published && data.youtube_url) {
+          statusText.innerHTML = `🎉 <strong>RELEASE IS LIVE!</strong> "${appState.trackTitle}" by ${appState.artistName} is now published on YouTube!<br><br><a href="${data.youtube_url}" target="_blank" style="color: #ff4d4d; font-weight: 700; text-decoration: underline; font-size: 0.95rem;">👉 Click here to watch your track LIVE on YouTube!</a>`;
+          showReleaseSuccessModal(data.youtube_url);
+        } else {
+          statusText.innerHTML = `🔑 <strong>Google OAuth Token Required for Personal Channel Upload</strong><br><span style="font-size:0.8rem; color:#f87171;">${data.message || 'YouTube requires authorization to post videos directly to your channel.'}</span>`;
+          showReleaseAuthRequiredModal(data.message);
+        }
       })
-      .catch(() => {
-        const fallbackYtUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(appState.artistName + ' ' + appState.trackTitle)}`;
-        statusText.innerHTML = `🎉 <strong>RELEASE IS LIVE!</strong> "${appState.trackTitle}" by ${appState.artistName} is now published on YouTube Music!<br><br><a href="${fallbackYtUrl}" target="_blank" style="color: #ff4d4d; font-weight: 700; text-decoration: underline; font-size: 0.95rem;">👉 Click here to listen to your Published Track LIVE on YouTube!</a>`;
-        showReleaseSuccessModal(fallbackYtUrl);
+      .catch((err) => {
+        statusText.innerHTML = `🔑 <strong>Google OAuth Token Required for Personal Channel Upload</strong><br><span style="font-size:0.8rem; color:#f87171;">YouTube requires authorization to post videos directly to your channel.</span>`;
+        showReleaseAuthRequiredModal("YouTube API requires an OAuth Access Token to upload videos to your channel.");
       });
     }
   }, 1200);
@@ -327,11 +331,34 @@ function showReleaseSuccessModal(ytUrl) {
   const isrc = document.getElementById('modalISRC');
   const ytBtn = document.getElementById('modalYouTubeBtn');
 
-  if (subtext) subtext.innerHTML = `"${appState.trackTitle}" by ${appState.artistName} has been delivered to YouTube Music, Spotify, and Apple Music!`;
+  if (subtext) subtext.innerHTML = `"${appState.trackTitle}" by ${appState.artistName} is now LIVE on YouTube!`;
   if (trackTitle) trackTitle.textContent = appState.trackTitle;
   if (artistName) artistName.textContent = appState.artistName;
   if (isrc) isrc.textContent = appState.isrc;
-  if (ytBtn) ytBtn.href = ytUrl;
+  if (ytBtn) {
+    ytBtn.href = ytUrl;
+    ytBtn.textContent = '▶️ WATCH YOUR SONG LIVE ON YOUTUBE NOW';
+  }
+
+  if (modal) modal.style.display = 'flex';
+}
+
+function showReleaseAuthRequiredModal(msg) {
+  const modal = document.getElementById('releaseSuccessModal');
+  const subtext = document.getElementById('modalReleaseSubtext');
+  const trackTitle = document.getElementById('modalTrackTitle');
+  const artistName = document.getElementById('modalArtistName');
+  const isrc = document.getElementById('modalISRC');
+  const ytBtn = document.getElementById('modalYouTubeBtn');
+
+  if (subtext) subtext.innerHTML = `<span style="color:#f87171; font-weight:700;">⚠️ YouTube Authorization Required</span><br>YouTube blocks direct video uploads to your channel unless authorized. Paste your Google OAuth Access Token or click Connect YouTube below!`;
+  if (trackTitle) trackTitle.textContent = appState.trackTitle;
+  if (artistName) artistName.textContent = appState.artistName;
+  if (isrc) isrc.textContent = appState.isrc;
+  if (ytBtn) {
+    ytBtn.href = 'https://developers.google.com/oauthplayground/';
+    ytBtn.textContent = '🔑 Get Google OAuth Access Token ↗';
+  }
 
   if (modal) modal.style.display = 'flex';
 }
