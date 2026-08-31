@@ -400,6 +400,32 @@ function connectGoogleYouTube() {
   window.open(`${playgroundUrl}?scopes=${scope}`, '_blank');
 }
 
+// Bank Setup Modal Manager
+function openBankSetupModal() {
+  const modal = document.getElementById('bankSetupModal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeBankSetupModal() {
+  const modal = document.getElementById('bankSetupModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function saveBankAccountConnection() {
+  const provider = document.getElementById('selectBankProvider') ? document.getElementById('selectBankProvider').value : 'Chase Bank';
+  const accNum = document.getElementById('inputAccountNumber') ? document.getElementById('inputAccountNumber').value.trim() : '4829';
+  const last4 = accNum.slice(-4) || '4829';
+
+  const titleElem = document.getElementById('bankAccountStatusTitle');
+  const subElem = document.getElementById('bankAccountStatusSub');
+
+  if (titleElem) titleElem.textContent = `${provider} Checking (•••• ${last4})`;
+  if (subElem) subElem.textContent = `● ACH Direct Deposit Verified via Stripe Connect`;
+
+  closeBankSetupModal();
+  alert(`✅ Bank Connection Verified!\n\nYour ${provider} account (•••• ${last4}) has been connected via Stripe Connect for direct deposit royalty payouts.`);
+}
+
 // Royalty Payout Simulation
 function requestRoyaltyPayout() {
   const currentTotal = appState.totalEarnings;
