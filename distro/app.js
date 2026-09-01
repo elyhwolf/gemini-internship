@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initStoreSelectors();
   initAudioUploader();
   generateBarcodes();
+  initYouTubeAutoLogin();
 });
 
 // Tab Switcher
@@ -396,9 +397,66 @@ function connectGoogleYouTube() {
   const scope = encodeURIComponent("https://www.googleapis.com/auth/youtube.upload");
   const playgroundUrl = "https://developers.google.com/oauthplayground/";
   
-  // Prompt user or open Google OAuth Playground with pre-selected YouTube scope
-  alert("🔑 Opening Google OAuth Playground!\n\nStep 1: Click 'Authorize APIs' with YouTube Data API v3 selected.\nStep 2: Copy the generated Access Token into SoundDrop!");
+  alert("🔑 Opening Google OAuth Login!\n\nStep 1: Click 'Authorize APIs' with YouTube Data API v3 selected.\nStep 2: Copy your Access Token into SoundDrop — SoundDrop will auto-save it forever!");
   window.open(`${playgroundUrl}?scopes=${scope}`, '_blank');
+}
+
+// Persistent YouTube Auto-Login Session Manager
+function initYouTubeAutoLogin() {
+  const tokenInput = document.getElementById('youtubeOAuthTokenInput');
+  const badge = document.getElementById('ytLoginStatusBadge');
+  const statusText = document.getElementById('ytLoginStatusText');
+  
+  const savedToken = localStorage.getItem('sounddrop_yt_token');
+  if (savedToken) {
+    if (tokenInput) tokenInput.value = savedToken;
+    if (badge) {
+      badge.textContent = '🟢 YouTube Session Active (Auto-Saved)';
+      badge.style.color = '#84cc16';
+    }
+    if (statusText) {
+      statusText.textContent = 'Active YouTube Channel session detected! Uploaded songs automatically publish live without having to log in every time.';
+    }
+  } else {
+    if (badge) {
+      badge.textContent = '⚪ Login Required for Live Channel Upload';
+      badge.style.color = '#94a3b8';
+    }
+  }
+
+  if (tokenInput) {
+    tokenInput.addEventListener('input', (e) => {
+      const val = e.target.value.trim();
+      if (val) {
+        localStorage.setItem('sounddrop_yt_token', val);
+        if (badge) {
+          badge.textContent = '🟢 YouTube Session Saved';
+          badge.style.color = '#84cc16';
+        }
+      } else {
+        localStorage.removeItem('sounddrop_yt_token');
+        if (badge) {
+          badge.textContent = '⚪ Login Required for Live Channel Upload';
+          badge.style.color = '#94a3b8';
+        }
+      }
+    });
+  }
+}
+
+function clearYouTubeSession() {
+  localStorage.removeItem('sounddrop_yt_token');
+  const tokenInput = document.getElementById('youtubeOAuthTokenInput');
+  const badge = document.getElementById('ytLoginStatusBadge');
+  const statusText = document.getElementById('ytLoginStatusText');
+  if (tokenInput) tokenInput.value = '';
+  if (badge) {
+    badge.textContent = '⚪ Session Logged Out';
+    badge.style.color = '#f87171';
+  }
+  if (statusText) {
+    statusText.textContent = 'Logged out of YouTube session. Click Connect YouTube Account to log in again.';
+  }
 }
 
 // Bank Setup Modal Manager
