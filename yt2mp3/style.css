@@ -44,44 +44,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Background Streetwear Watermark Overlay */
-.bg-watermarks {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  z-index: 0;
-  overflow: hidden;
-}
 
-.watermark {
-  position: absolute;
-  opacity: 0.14;
-  transition: opacity 0.5s ease;
-}
-
-.watermark-hellstar {
-  top: 8%;
-  left: 6%;
-  width: 250px;
-  transform: rotate(-10deg);
-}
-
-.watermark-ee {
-  bottom: 10%;
-  right: 6%;
-  width: 240px;
-  transform: rotate(10deg);
-}
-
-.watermark-essentials {
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotate(-5deg);
-  width: 540px;
-}
 
 .container {
   position: relative;
