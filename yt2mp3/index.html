@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SoundRip — YouTube to MP3 Converter</title>
+  <meta name="description" content="Convert any YouTube video URL into a high-quality 320kbps MP3 audio file instantly.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Outfit:wght@800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    
+    <header>
+      <div class="logo-badge">⚡ SoundRip Studio</div>
+      <h1>YouTube to MP3 Converter</h1>
+      <p class="subtitle">Extract high-quality 320kbps MP3 audio from any YouTube video URL instantly.</p>
+    </header>
+
+    <div class="card">
+      
+      <div class="input-group">
+        <input type="text" id="ytUrlInput" placeholder="Paste YouTube Video URL (e.g. https://www.youtube.com/watch?v=...)...">
+        <button class="convert-btn" onclick="convertYouTubeToMp3()">⚡ Convert to MP3</button>
+      </div>
+
+      <!-- Loading State -->
+      <div class="loader-box" id="loaderBox">
+        <div class="spinner"></div>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">Extracting audio stream & generating MP3 file...</p>
+      </div>
+
+      <!-- Result Card -->
+      <div class="result-box" id="resultBox">
+        <div class="track-preview">
+          <img src="" alt="Thumbnail" class="track-thumb" id="trackThumb">
+          <div class="track-info">
+            <h3 class="track-title" id="trackTitle">Audio Track</h3>
+            <p class="track-meta" id="trackUploader">Channel: YouTube</p>
+            <span style="font-size: 0.72rem; color: var(--accent-lime); font-weight: 700;">● 320kbps MP3 Audio Ready</span>
+          </div>
+        </div>
+
+        <!-- Built-in Audio Player Preview -->
+        <audio controls id="audioPlayer" style="width: 100%; border-radius: 8px; margin-top: 6px;"></audio>
+
+        <a href="" id="downloadBtn" download class="download-btn">
+          ⬇️ Download MP3 Audio File
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
