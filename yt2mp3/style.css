@@ -1,7 +1,7 @@
-/* SoundRip — Minimalist Dark Forest Sage Design System */
+/* DripSwitch Studio — Minimalist Dark Forest Sage Design System */
 :root {
   --bg-main: #092328;
-  --panel-bg: rgba(18, 84, 79, 0.25);
+  --panel-bg: rgba(18, 84, 79, 0.28);
   --panel-border: rgba(139, 187, 146, 0.18);
   --panel-border-glow: rgba(139, 187, 146, 0.4);
 
@@ -41,9 +41,52 @@ body {
   align-items: center;
   justify-content: center;
   padding: 2rem 1rem;
+  overflow-x: hidden;
+}
+
+/* Background Streetwear Watermark Overlay */
+.bg-watermarks {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.watermark {
+  position: absolute;
+  opacity: 0.055;
+  filter: contrast(140%);
+  transition: opacity 0.5s ease;
+}
+
+.watermark-hellstar {
+  top: 8%;
+  left: 6%;
+  width: 240px;
+  transform: rotate(-12deg);
+}
+
+.watermark-ee {
+  bottom: 10%;
+  right: 6%;
+  width: 220px;
+  transform: rotate(15deg);
+}
+
+.watermark-essentials {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-5deg);
+  width: 540px;
 }
 
 .container {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 580px;
   display: flex;
@@ -65,7 +108,7 @@ header {
   gap: 6px;
   background: rgba(139, 187, 146, 0.1);
   border: 1px solid rgba(139, 187, 146, 0.25);
-  padding: 4px 12px;
+  padding: 4px 14px;
   border-radius: 100px;
   font-size: 0.75rem;
   font-weight: 600;
@@ -148,6 +191,9 @@ button.convert-btn {
   box-shadow: 0 4px 16px rgba(42, 131, 95, 0.35);
   transition: var(--transition);
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 button.convert-btn:hover {

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Hellstar Flaming Star Motif -->
+  <path d="M100 10 L115 70 L175 40 L130 90 L190 115 L125 125 L145 185 L100 140 L55 185 L75 125 L10 115 L70 90 L25 40 L85 70 Z" fill="rgba(139, 187, 146, 0.15)" stroke="#8BBB92" opacity="0.8" />
+  <circle cx="100" cy="100" r="18" fill="#8BBB92" />
+</svg>
