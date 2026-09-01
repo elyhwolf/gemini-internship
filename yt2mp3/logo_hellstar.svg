@@ -1,5 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
-  <!-- Hellstar Flaming Star Motif -->
-  <path d="M100 10 L115 70 L175 40 L130 90 L190 115 L125 125 L145 185 L100 140 L55 185 L75 125 L10 115 L70 90 L25 40 L85 70 Z" fill="rgba(139, 187, 146, 0.15)" stroke="#8BBB92" opacity="0.8" />
-  <circle cx="100" cy="100" r="18" fill="#8BBB92" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none">
+  <!-- Official Hellstar Circle Frame -->
+  <circle cx="200" cy="200" r="175" stroke="#8BBB92" stroke-width="20" fill="none" opacity="0.85" />
+  
+  <!-- Star at top-left inside circle -->
+  <path d="M 155 125 L 163 148 L 188 148 L 168 163 L 175 186 L 155 171 L 135 186 L 142 163 L 122 148 L 147 148 Z" fill="#8BBB92" opacity="0.85" />
+  
+  <!-- Hellstar Flaming Profile Face -->
+  <path d="M 175 185 C 160 195 155 210 160 225 C 165 240 160 250 165 255 C 168 258 178 260 185 258 C 195 255 205 248 215 255 C 225 262 235 268 250 262 C 265 256 270 240 260 228 C 250 216 265 205 260 195 C 255 185 240 180 230 190 C 220 200 210 195 205 188 Z" fill="#8BBB92" opacity="0.85" />
+  
+  <!-- Image Fallback Overlay for 100% Exact Match -->
+  <image href="hellstar_official.png" x="0" y="0" width="400" height="400" style="filter: invert(75%) sepia(30%) saturate(400%) hue-rotate(85deg); mix-blend-mode: screen;" />
 </svg>

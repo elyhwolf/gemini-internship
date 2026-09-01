@@ -58,23 +58,22 @@ body {
 
 .watermark {
   position: absolute;
-  opacity: 0.055;
-  filter: contrast(140%);
+  opacity: 0.14;
   transition: opacity 0.5s ease;
 }
 
 .watermark-hellstar {
   top: 8%;
   left: 6%;
-  width: 240px;
-  transform: rotate(-12deg);
+  width: 250px;
+  transform: rotate(-10deg);
 }
 
 .watermark-ee {
   bottom: 10%;
   right: 6%;
-  width: 220px;
-  transform: rotate(15deg);
+  width: 240px;
+  transform: rotate(10deg);
 }
 
 .watermark-essentials {
