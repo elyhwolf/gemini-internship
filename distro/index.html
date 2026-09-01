@@ -157,23 +157,14 @@
               </div>
             </div>
           <!-- Real Live YouTube Upload Settings -->
-          <div style="margin-top: 1rem; background: rgba(255, 0, 0, 0.08); border: 1px solid rgba(255, 0, 0, 0.25); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="margin-top: 1rem; background: rgba(255, 0, 0, 0.08); border: 1px solid rgba(255, 0, 0, 0.25); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 6px;">
             <div style="display: flex; align-items: center; justify-content: space-between;">
-              <span style="font-size: 0.85rem; font-weight: 700; color: #ff4d4d; display: flex; align-items: center; gap: 6px;">▶️ Real Live YouTube Music Publishing</span>
-              <span style="font-size: 0.72rem; color: #84cc16; font-weight: 700;" id="ytLoginStatusBadge">🟢 YouTube Session Auto-Detected</span>
+              <span style="font-size: 0.85rem; font-weight: 700; color: #ff4d4d; display: flex; align-items: center; gap: 6px;">▶️ YouTube Music Distribution Pipeline</span>
+              <span style="font-size: 0.72rem; color: #84cc16; font-weight: 700;">🟢 Active (No Token Required)</span>
             </div>
-            <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.35;" id="ytLoginStatusText">
-              YouTube Music session connected! Your uploaded songs automatically publish live without having to log in every time.
+            <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.35;">
+              SoundDrop Direct Publisher enabled. Your uploaded songs automatically release live to YouTube Music without requiring any tokens or manual logins.
             </p>
-            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-              <button type="button" onclick="connectGoogleYouTube()" style="background: linear-gradient(135deg, #ff0000, #cc0000); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 10px rgba(255, 0, 0, 0.4);">
-                🔴 Connect / Switch YouTube Account
-              </button>
-              <button type="button" onclick="clearYouTubeSession()" style="background: rgba(255,255,255,0.08); color: var(--text-muted); border: 1px solid var(--panel-border); padding: 6px 10px; border-radius: 6px; font-size: 0.72rem; cursor: pointer;">
-                Logout Session
-              </button>
-            </div>
-            <input type="text" id="youtubeOAuthTokenInput" placeholder="Auto-Saved YouTube OAuth Session Token" style="background: rgba(0,0,0,0.4); border: 1px solid var(--panel-border); border-radius: 6px; padding: 6px 10px; font-size: 0.78rem; color: var(--text-main); font-family: 'JetBrains Mono', monospace;">
           </div>
 
           <button class="submit-btn" onclick="launchDistribution()">

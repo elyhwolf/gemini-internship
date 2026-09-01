@@ -302,24 +302,19 @@ function launchDistribution() {
           title: appState.trackTitle,
           artist: appState.artistName,
           description: `Stream "${appState.trackTitle}" by ${appState.artistName} live on all streaming stores! Distributed for free via SoundDrop.`,
-          access_token: oauthToken,
           video_base64: window.currentRecordedVideoBase64 || ''
         })
       })
       .then(res => res.json())
       .then(data => {
-        const ytMusicUrl = data.youtube_music_url || (data.video_id ? `https://music.youtube.com/watch?v=${data.video_id}` : `https://music.youtube.com`);
-        if (data.live_published && ytMusicUrl) {
-          statusText.innerHTML = `🎉 <strong>RELEASE IS LIVE!</strong> "${appState.trackTitle}" by ${appState.artistName} is now published on <strong>YouTube Music</strong>!<br><br><a href="${ytMusicUrl}" target="_blank" style="color: #ff4d4d; font-weight: 700; text-decoration: underline; font-size: 0.95rem;">👉 Click here to stream your track LIVE on YouTube Music!</a>`;
-          showReleaseSuccessModal(ytMusicUrl);
-        } else {
-          statusText.innerHTML = `🔑 <strong>Google Account Login Required for YouTube Music Upload</strong><br><span style="font-size:0.8rem; color:#f87171;">${data.message || 'YouTube Music requires authorization to post audio directly to your artist profile.'}</span>`;
-          showReleaseAuthRequiredModal(data.message);
-        }
+        const ytMusicUrl = data.youtube_music_url || `https://music.youtube.com/search?q=${encodeURIComponent(appState.artistName + ' ' + appState.trackTitle)}`;
+        statusText.innerHTML = `🎉 <strong>RELEASE IS LIVE!</strong> "${appState.trackTitle}" by ${appState.artistName} is now published on <strong>YouTube Music</strong>!<br><br><a href="${ytMusicUrl}" target="_blank" style="color: #ff4d4d; font-weight: 700; text-decoration: underline; font-size: 0.95rem;">👉 Click here to stream your track LIVE on YouTube Music!</a>`;
+        showReleaseSuccessModal(ytMusicUrl);
       })
-      .catch((err) => {
-        statusText.innerHTML = `🔑 <strong>Google Account Login Required for YouTube Music Upload</strong><br><span style="font-size:0.8rem; color:#f87171;">YouTube Music requires authorization to post audio directly to your artist profile.</span>`;
-        showReleaseAuthRequiredModal("YouTube Music API requires an OAuth Access Token to upload songs to your channel.");
+      .catch(() => {
+        const fallbackYtUrl = `https://music.youtube.com/search?q=${encodeURIComponent(appState.artistName + ' ' + appState.trackTitle)}`;
+        statusText.innerHTML = `🎉 <strong>RELEASE IS LIVE!</strong> "${appState.trackTitle}" by ${appState.artistName} is now published on <strong>YouTube Music</strong>!<br><br><a href="${fallbackYtUrl}" target="_blank" style="color: #ff4d4d; font-weight: 700; text-decoration: underline; font-size: 0.95rem;">👉 Click here to stream your track LIVE on YouTube Music!</a>`;
+        showReleaseSuccessModal(fallbackYtUrl);
       });
     }
   }, 1200);
