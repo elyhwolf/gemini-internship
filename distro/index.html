@@ -67,8 +67,28 @@
                 </div>
               </div>
               <span style="font-size: 0.78rem; font-weight: 600; color: var(--accent-lime);">● Audio Ready</span>
-            </div>
             <canvas id="waveformCanvas"></canvas>
+          </div>
+
+          <!-- Album Cover Artwork Section -->
+          <div style="margin-top: 1rem; background: rgba(255, 255, 255, 0.03); border: 1px dashed var(--panel-border); border-radius: 12px; padding: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div id="coverArtPreview" style="width: 54px; height: 54px; border-radius: 8px; background: linear-gradient(135deg, #12544F, #092328); border: 1px solid var(--panel-border); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; overflow: hidden; position: relative;">
+                🖼️
+              </div>
+              <div>
+                <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">Album Cover Artwork (Optional)</h4>
+                <p style="font-size: 0.73rem; color: var(--text-muted);" id="coverStatusText">
+                  No cover art? SoundDrop automatically generates custom 3000x3000px artwork!
+                </p>
+              </div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button type="button" onclick="document.getElementById('coverArtInput').click()" style="background: rgba(255,255,255,0.08); color: var(--text-main); border: 1px solid var(--panel-border); padding: 6px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer;">
+                📁 Choose File
+              </button>
+              <input type="file" id="coverArtInput" accept="image/*" style="display: none;" onchange="handleCoverArtUpload(event)">
+            </div>
           </div>
 
           <!-- Metadata Form -->

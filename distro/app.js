@@ -454,6 +454,23 @@ function clearYouTubeSession() {
   }
 }
 
+// Cover Art Upload Handler
+function handleCoverArtUpload(event) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const preview = document.getElementById('coverArtPreview');
+      const statusText = document.getElementById('coverStatusText');
+      if (preview) {
+        preview.innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover;" />`;
+      }
+      if (statusText) {
+        statusText.innerHTML = `<span style="color:#84cc16; font-weight:700;">🟢 Custom Cover Art Uploaded (${file.name})</span>`;
+      }
+      appState.coverArtUrl = e.target.result;
+    };
+    reader.readAsDataURL(file);
 // Bank Setup Modal Manager
 function openBankSetupModal() {
   const modal = document.getElementById('bankSetupModal');
