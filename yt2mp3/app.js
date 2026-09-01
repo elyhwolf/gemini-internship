@@ -1,15 +1,18 @@
-// SoundRip — YouTube to MP3 Converter JS
+// SoundRip — YouTube & YouTube Music to MP3 Converter JS
 
 async function convertYouTubeToMp3() {
   const urlInput = document.getElementById('ytUrlInput');
   const loader = document.getElementById('loaderBox');
   const resultBox = document.getElementById('resultBox');
   
-  const url = urlInput.value.trim();
+  let url = urlInput.value.trim();
   if (!url) {
-    alert("Please paste a valid YouTube video URL!");
+    alert("Please paste a valid YouTube or YouTube Music URL!");
     return;
   }
+
+  // Sanitize YouTube Music URLs (music.youtube.com -> www.youtube.com)
+  url = url.replace('music.youtube.com', 'www.youtube.com');
 
   // UI Loading State
   loader.style.display = 'flex';
@@ -26,8 +29,8 @@ async function convertYouTubeToMp3() {
     loader.style.display = 'none';
 
     if (data.success) {
-      document.getElementById('trackTitle').textContent = data.title || 'YouTube Audio Track';
-      document.getElementById('trackUploader').textContent = `Channel: ${data.uploader || 'YouTube'}`;
+      document.getElementById('trackTitle').textContent = data.title || 'Audio Track';
+      document.getElementById('trackUploader').textContent = `Creator: ${data.uploader || 'YouTube Music'}`;
       document.getElementById('trackThumb').src = data.thumbnail || 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg';
       
       const audioPlayer = document.getElementById('audioPlayer');
@@ -41,7 +44,7 @@ async function convertYouTubeToMp3() {
 
       resultBox.style.display = 'flex';
     } else {
-      alert(`Conversion Error: ${data.message || 'Could not extract audio from this YouTube URL.'}`);
+      alert(`Conversion Error: ${data.message || 'Could not extract audio from this URL.'}`);
     }
   } catch (err) {
     loader.style.display = 'none';

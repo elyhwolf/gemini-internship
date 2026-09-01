@@ -42,6 +42,7 @@ class SoundRipHandler(http.server.SimpleHTTPRequestHandler):
                 post_data = self.rfile.read(content_length)
                 payload = json.loads(post_data.decode('utf-8'))
                 yt_url = payload.get('url', '').strip()
+                yt_url = yt_url.replace('music.youtube.com', 'www.youtube.com')
 
                 if not yt_url:
                     self.send_error_res("Please provide a valid YouTube URL.")

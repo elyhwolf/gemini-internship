@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SoundRip — YouTube to MP3 Converter</title>
-  <meta name="description" content="Convert any YouTube video URL into a high-quality 320kbps MP3 audio file instantly.">
+  <title>SoundRip — YouTube & YouTube Music to MP3</title>
+  <meta name="description" content="Extract high-quality 320kbps MP3 audio from any YouTube or YouTube Music URL instantly.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
@@ -15,16 +15,21 @@
   <div class="container">
     
     <header>
-      <div class="logo-badge">⚡ SoundRip Studio</div>
-      <h1>YouTube to MP3 Converter</h1>
-      <p class="subtitle">Extract high-quality 320kbps MP3 audio from any YouTube video URL instantly.</p>
+      <div style="width: 56px; height: 56px; margin-bottom: 2px;">
+        <img src="logo.svg" alt="SoundRip Logo" style="width: 100%; height: 100%;" />
+      </div>
+      <div class="logo-badge">SoundRip Studio</div>
+      <h1>YouTube & YouTube Music to MP3</h1>
+      <p class="subtitle">Extract high-quality 320kbps MP3 audio from any YouTube or YouTube Music link instantly.</p>
     </header>
 
     <div class="card">
       
       <div class="input-group">
-        <input type="text" id="ytUrlInput" placeholder="Paste YouTube Video URL (e.g. https://www.youtube.com/watch?v=...)...">
-        <button class="convert-btn" onclick="convertYouTubeToMp3()">⚡ Convert to MP3</button>
+        <input type="text" id="ytUrlInput" placeholder="Paste YouTube or YouTube Music URL (music.youtube.com)...">
+        <button class="convert-btn" onclick="convertYouTubeToMp3()">
+          <img src="icon_convert.svg" alt="" style="width: 16px; height: 16px; filter: brightness(10);" /> Convert to MP3
+        </button>
       </div>
 
       <!-- Loading State -->
@@ -39,8 +44,8 @@
           <img src="" alt="Thumbnail" class="track-thumb" id="trackThumb">
           <div class="track-info">
             <h3 class="track-title" id="trackTitle">Audio Track</h3>
-            <p class="track-meta" id="trackUploader">Channel: YouTube</p>
-            <span style="font-size: 0.72rem; color: var(--accent-lime); font-weight: 700;">● 320kbps MP3 Audio Ready</span>
+            <p class="track-meta" id="trackUploader">Creator: YouTube Music</p>
+            <span style="font-size: 0.72rem; color: var(--color-sage); font-weight: 700;">● 320kbps MP3 Audio Ready</span>
           </div>
         </div>
 
@@ -48,7 +53,7 @@
         <audio controls id="audioPlayer" style="width: 100%; border-radius: 8px; margin-top: 6px;"></audio>
 
         <a href="" id="downloadBtn" download class="download-btn">
-          ⬇️ Download MP3 Audio File
+          <img src="icon_download.svg" alt="" style="width: 18px; height: 18px;" /> Download MP3 Audio File
         </a>
       </div>
 
