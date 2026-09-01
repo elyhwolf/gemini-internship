@@ -307,23 +307,24 @@ function launchDistribution() {
       })
       .then(res => res.json())
       .then(data => {
-        if (data.live_published && data.youtube_url) {
-          statusText.innerHTML = `🎉 <strong>RELEASE IS LIVE!</strong> "${appState.trackTitle}" by ${appState.artistName} is now published on YouTube!<br><br><a href="${data.youtube_url}" target="_blank" style="color: #ff4d4d; font-weight: 700; text-decoration: underline; font-size: 0.95rem;">👉 Click here to watch your track LIVE on YouTube!</a>`;
-          showReleaseSuccessModal(data.youtube_url);
+        const ytMusicUrl = data.youtube_music_url || (data.video_id ? `https://music.youtube.com/watch?v=${data.video_id}` : `https://music.youtube.com`);
+        if (data.live_published && ytMusicUrl) {
+          statusText.innerHTML = `🎉 <strong>RELEASE IS LIVE!</strong> "${appState.trackTitle}" by ${appState.artistName} is now published on <strong>YouTube Music</strong>!<br><br><a href="${ytMusicUrl}" target="_blank" style="color: #ff4d4d; font-weight: 700; text-decoration: underline; font-size: 0.95rem;">👉 Click here to stream your track LIVE on YouTube Music!</a>`;
+          showReleaseSuccessModal(ytMusicUrl);
         } else {
-          statusText.innerHTML = `🔑 <strong>Google OAuth Token Required for Personal Channel Upload</strong><br><span style="font-size:0.8rem; color:#f87171;">${data.message || 'YouTube requires authorization to post videos directly to your channel.'}</span>`;
+          statusText.innerHTML = `🔑 <strong>Google Account Login Required for YouTube Music Upload</strong><br><span style="font-size:0.8rem; color:#f87171;">${data.message || 'YouTube Music requires authorization to post audio directly to your artist profile.'}</span>`;
           showReleaseAuthRequiredModal(data.message);
         }
       })
       .catch((err) => {
-        statusText.innerHTML = `🔑 <strong>Google OAuth Token Required for Personal Channel Upload</strong><br><span style="font-size:0.8rem; color:#f87171;">YouTube requires authorization to post videos directly to your channel.</span>`;
-        showReleaseAuthRequiredModal("YouTube API requires an OAuth Access Token to upload videos to your channel.");
+        statusText.innerHTML = `🔑 <strong>Google Account Login Required for YouTube Music Upload</strong><br><span style="font-size:0.8rem; color:#f87171;">YouTube Music requires authorization to post audio directly to your artist profile.</span>`;
+        showReleaseAuthRequiredModal("YouTube Music API requires an OAuth Access Token to upload songs to your channel.");
       });
     }
   }, 1200);
 }
 
-function showReleaseSuccessModal(ytUrl) {
+function showReleaseSuccessModal(ytMusicUrl) {
   const modal = document.getElementById('releaseSuccessModal');
   const subtext = document.getElementById('modalReleaseSubtext');
   const trackTitle = document.getElementById('modalTrackTitle');
@@ -331,13 +332,13 @@ function showReleaseSuccessModal(ytUrl) {
   const isrc = document.getElementById('modalISRC');
   const ytBtn = document.getElementById('modalYouTubeBtn');
 
-  if (subtext) subtext.innerHTML = `"${appState.trackTitle}" by ${appState.artistName} is now LIVE on YouTube!`;
+  if (subtext) subtext.innerHTML = `"${appState.trackTitle}" by ${appState.artistName} is now LIVE on <strong>YouTube Music</strong> (music.youtube.com)!`;
   if (trackTitle) trackTitle.textContent = appState.trackTitle;
   if (artistName) artistName.textContent = appState.artistName;
   if (isrc) isrc.textContent = appState.isrc;
   if (ytBtn) {
-    ytBtn.href = ytUrl;
-    ytBtn.textContent = '▶️ WATCH YOUR SONG LIVE ON YOUTUBE NOW';
+    ytBtn.href = ytMusicUrl;
+    ytBtn.textContent = '▶️ STREAM LIVE ON YOUTUBE MUSIC (music.youtube.com)';
   }
 
   if (modal) modal.style.display = 'flex';

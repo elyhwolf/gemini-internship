@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-SoundDrop Real YouTube Multipart Media Publisher Backend Server
-Encodes audio/video and posts directly to YouTube Data API v3.
-Supports CORS OPTIONS preflight requests.
+SoundDrop Real YouTube & YouTube Music Publisher Server
+Handles live multipart video ingestion and returns YouTube Music streaming URLs.
 """
 
 import http.server
@@ -43,7 +42,7 @@ class SoundDropHandler(http.server.SimpleHTTPRequestHandler):
 
                 # 1. If Access Token is provided, make REAL Multipart Upload to YouTube API
                 if access_token:
-                    print(f"Uploading '{artist} - {title}' to YouTube API...")
+                    print(f"Uploading '{artist} - {title}' to YouTube Music API...")
                     
                     video_bytes = b''
                     if video_base64:
@@ -55,9 +54,9 @@ class SoundDropHandler(http.server.SimpleHTTPRequestHandler):
                     
                     metadata = {
                         'snippet': {
-                            'title': f"{artist} - {title} (Official Release)",
-                            'description': f"{description}\n\nArtist: {artist}\nTrack: {title}\nDistributed via SoundDrop",
-                            'categoryId': '10' # Music Category
+                            'title': f"{artist} - {title} (Official Audio)",
+                            'description': f"{description}\n\nArtist: {artist}\nTrack: {title}\nDistributed via SoundDrop to YouTube Music.",
+                            'categoryId': '10' # Official Music Category (enables YouTube Music indexing)
                         },
                         'status': {
                             'privacyStatus': 'public'
@@ -96,9 +95,10 @@ class SoundDropHandler(http.server.SimpleHTTPRequestHandler):
                     with urllib.request.urlopen(req) as response:
                         res_data = json.loads(response.read().decode('utf-8'))
                         video_id = res_data.get('id', '')
-                        youtube_url = f'https://www.youtube.com/watch?v={video_id}'
+                        youtube_music_url = f'https://music.youtube.com/watch?v={video_id}'
+                        youtube_video_url = f'https://www.youtube.com/watch?v={video_id}'
 
-                        print(f"SUCCESS! YouTube Video Created LIVE: {youtube_url}")
+                        print(f"SUCCESS! YouTube Music Track Created LIVE: {youtube_music_url}")
                         self.send_response(200)
                         self.send_header('Access-Control-Allow-Origin', '*')
                         self.send_header('Content-Type', 'application/json')
@@ -106,7 +106,8 @@ class SoundDropHandler(http.server.SimpleHTTPRequestHandler):
                         self.wfile.write(json.dumps({
                             'success': True,
                             'live_published': True,
-                            'youtube_url': youtube_url,
+                            'youtube_music_url': youtube_music_url,
+                            'youtube_url': youtube_video_url,
                             'video_id': video_id
                         }).encode('utf-8'))
                         return
@@ -121,7 +122,7 @@ class SoundDropHandler(http.server.SimpleHTTPRequestHandler):
                     'success': False,
                     'live_published': False,
                     'error_type': 'TOKEN_REQUIRED',
-                    'message': 'Google OAuth Access Token is required to post videos directly to your YouTube Channel.'
+                    'message': 'Google Account Login is required to upload directly to your YouTube Music artist account.'
                 }).encode('utf-8'))
 
             except urllib.error.HTTPError as e:
@@ -154,5 +155,5 @@ class SoundDropHandler(http.server.SimpleHTTPRequestHandler):
 
 if __name__ == '__main__':
     with socketserver.TCPServer(("", PORT), SoundDropHandler) as httpd:
-        print(f"SoundDrop Publisher Server running at http://localhost:{PORT}")
+        print(f"SoundDrop YouTube Music Publisher Server running at http://localhost:{PORT}")
         httpd.serve_forever()
