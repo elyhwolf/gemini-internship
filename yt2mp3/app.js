@@ -360,7 +360,7 @@ function togglePlayPause() {
   if (!audioPlayer) audioPlayer = document.getElementById('audioPlayer');
   const playIcon = document.getElementById('playIcon');
 
-  if (audioPlayer && audioPlayer.src && audioPlayer.src.length > 5) {
+  if (audioPlayer && audioPlayer.src && audioPlayer.src.length > 5 && !audioPlayer.src.includes('about:blank')) {
     if (audioPlayer.paused) {
       audioPlayer.play().then(() => {
         if (playIcon) playIcon.textContent = '❚❚';
@@ -467,15 +467,28 @@ async function convertYouTubeToMp3() {
   resultBox.style.display = 'none';
 
   try {
-    const apiBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    let apiBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
       ? 'http://localhost:5177'
       : window.location.origin;
 
-    const response = await fetch(`${apiBase}/api/convert`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: url })
-    });
+    let response;
+    try {
+      response = await fetch(`${apiBase}/api/convert`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url })
+      });
+    } catch (e) {
+      if (apiBase !== 'http://localhost:5177') {
+        response = await fetch('http://localhost:5177/api/convert', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: url })
+        });
+      } else {
+        throw e;
+      }
+    }
 
     const data = await response.json();
     loader.style.display = 'none';
@@ -495,15 +508,16 @@ async function convertYouTubeToMp3() {
       audioPlayer = document.getElementById('audioPlayer');
       const downloadBtn = document.getElementById('downloadBtn');
 
-      // Direct MP3 Download link (forces MP3 file download)
-      const downloadUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-        ? data.download_url
-        : `/api/download?id=${currentVideoId}&title=${encodeURIComponent(data.title || 'track')}`;
+      // Use direct local download URL when available from local Python server
+      let downloadUrl = data.download_url;
+      if (!downloadUrl || !downloadUrl.startsWith('http://localhost')) {
+        downloadUrl = `/api/download?id=${currentVideoId}&title=${encodeURIComponent(data.title || 'track')}`;
+      }
 
-      // Direct MP3 Stream link (forces audio playback)
-      const streamUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-        ? data.download_url
-        : `/api/stream?id=${currentVideoId}`;
+      let streamUrl = data.download_url;
+      if (!streamUrl || !streamUrl.startsWith('http://localhost')) {
+        streamUrl = `/api/stream?id=${currentVideoId}`;
+      }
 
       audioPlayer.src = streamUrl;
       audioPlayer.load();

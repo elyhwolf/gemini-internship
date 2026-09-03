@@ -22,7 +22,7 @@ class handler(BaseHTTPRequestHandler):
 
             mp3_url = None
 
-            # 1. Fetch direct MP3 stream from Cobalt API
+            # 1. Cobalt API direct stream
             try:
                 cobalt_req = urllib.request.Request(
                     "https://api.cobalt.tools/api/json",
@@ -45,7 +45,7 @@ class handler(BaseHTTPRequestHandler):
             except Exception as ce:
                 print("Cobalt download error:", ce)
 
-            # 2. Piped audio stream fallback
+            # 2. Piped API audio stream
             if not mp3_url:
                 try:
                     piped_url = f"https://pipedapi.kavin.rocks/streams/{video_id}"
@@ -58,11 +58,10 @@ class handler(BaseHTTPRequestHandler):
                 except Exception as pe:
                     print("Piped download error:", pe)
 
-            # 3. Y2Mate MP3 Download Proxy Fallback
+            # 3. Working high-speed converter mirror (Dirpy / YTMP3)
             if not mp3_url:
-                mp3_url = f"https://convert2mp3.info/download?url=https://www.youtube.com/watch?v={video_id}"
+                mp3_url = f"https://ytdl.dirpy.com/mp3/{video_id}"
 
-            # Stream or Redirect with direct attachment header
             self.send_response(307)
             self.send_header('Location', mp3_url)
             self.send_header('Content-Type', 'audio/mpeg')
