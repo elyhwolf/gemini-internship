@@ -68,7 +68,7 @@ function verifySecretCode() {
     closeSecretModal();
     launchHackerTerminal();
   } else {
-    if (error) error.textContent = '❌ INVALID ACCESS CODE. HINT: ElyIsGreat';
+    if (error) error.textContent = '❌ INVALID ACCESS CODE. HINT: What is Ely? (Adjective)';
     if (input) input.style.borderColor = '#ff3366';
   }
 }
