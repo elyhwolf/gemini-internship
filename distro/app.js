@@ -471,6 +471,9 @@ function handleCoverArtUpload(event) {
       appState.coverArtUrl = e.target.result;
     };
     reader.readAsDataURL(file);
+  }
+}
+
 // Bank Setup Modal Manager
 function openBankSetupModal() {
   const modal = document.getElementById('bankSetupModal');
