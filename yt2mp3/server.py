@@ -27,6 +27,9 @@ os.makedirs(DOWNLOADS_DIR, exist_ok=True)
 
 FFMPEG_PATH = imageio_ffmpeg.get_ffmpeg_exe()
 
+class ReuseTCPServer(socketserver.TCPServer):
+    allow_reuse_address = True
+
 class DripSwitchHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=DIRECTORY, **kwargs)
@@ -39,6 +42,12 @@ class DripSwitchHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        # Strip optional /yt2mp3 prefix for seamless URL routing
+        if self.path.startswith('/yt2mp3'):
+            self.path = self.path[7:]
+            if not self.path:
+                self.path = '/'
+
         # HTTP 206 Byte Range Seeking Handler for MP3 audio files
         if self.path.startswith('/downloads/'):
             filename = os.path.basename(urllib.parse.unquote(self.path))
@@ -93,7 +102,7 @@ class DripSwitchHandler(http.server.SimpleHTTPRequestHandler):
         super().do_GET()
 
     def do_POST(self):
-        if self.path == '/api/convert':
+        if self.path == '/api/convert' or self.path == '/yt2mp3/api/convert':
             try:
                 content_length = int(self.headers.get('Content-Length', 0))
                 post_data = self.rfile.read(content_length)
@@ -175,6 +184,6 @@ class DripSwitchHandler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(json.dumps({'success': False, 'message': msg}).encode('utf-8'))
 
 if __name__ == '__main__':
-    with socketserver.TCPServer(("", PORT), DripSwitchHandler) as httpd:
+    with ReuseTCPServer(("", PORT), DripSwitchHandler) as httpd:
         print(f"DripSwitch Studio HTTP 206 Seeking Server running at http://localhost:{PORT}")
         httpd.serve_forever()
