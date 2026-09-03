@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "public": true,
+  "rewrites": [
+    { "source": "/api/convert", "destination": "/api/convert.py" },
+    { "source": "/api/publish-youtube", "destination": "/api/publish-youtube.py" },
+    { "source": "/sounddrop", "destination": "/distro/index.html" },
+    { "source": "/distro", "destination": "/distro/index.html" },
+    { "source": "/distro/(.*)", "destination": "/distro/$1" },
+    { "source": "/", "destination": "/yt2mp3/index.html" },
+    { "source": "/(.*)", "destination": "/yt2mp3/$1" }
+  ]
+}

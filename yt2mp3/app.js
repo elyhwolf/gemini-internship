@@ -113,7 +113,11 @@ async function convertYouTubeToMp3() {
   resultBox.style.display = 'none';
 
   try {
-    const response = await fetch('http://localhost:5177/api/convert', {
+    const apiBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? 'http://localhost:5177'
+      : window.location.origin;
+
+    const response = await fetch(`${apiBase}/api/convert`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url: url })

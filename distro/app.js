@@ -294,8 +294,12 @@ function launchDistribution() {
       clearInterval(interval);
       const oauthToken = document.getElementById('youtubeOAuthTokenInput') ? document.getElementById('youtubeOAuthTokenInput').value : '';
       
+      const apiBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:5176'
+        : window.location.origin;
+
       // Real YouTube API Multipart Publisher Dispatch
-      fetch('http://localhost:5176/api/publish-youtube', {
+      fetch(`${apiBase}/api/publish-youtube`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
