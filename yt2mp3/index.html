@@ -7,7 +7,7 @@
   <meta name="description" content="Extract high-quality 320kbps MP3 audio from any YouTube or YouTube Music URL instantly.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@600;700;800;900&family=VT323&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/yt2mp3/style.css">
 </head>
 <body>
@@ -15,8 +15,8 @@
   <div class="container">
     
     <header>
-      <div style="width: 56px; height: 56px; margin-bottom: 2px;">
-        <img src="/yt2mp3/logo.svg" alt="DripSwitch Logo" style="width: 100%; height: 100%;" />
+      <div style="width: 56px; height: 56px; margin-bottom: 2px; cursor: pointer;" title="Triple click for secret mode...">
+        <img id="dripswitchLogo" src="/yt2mp3/logo.svg" alt="DripSwitch Logo" style="width: 100%; height: 100%; transition: transform 0.2s;" onclick="handleLogoClick()" />
       </div>
       <div class="logo-badge">DripSwitch Studio</div>
       <h1>YouTube & YouTube Music to MP3</h1>
@@ -75,6 +75,75 @@
 
     </div>
 
+  </div>
+
+  <!-- Secret Passcode Entry Modal -->
+  <div class="secret-modal-overlay" id="secretCodeModal">
+    <div class="secret-modal-card">
+      <div class="secret-header">
+        <span class="secret-icon">🔒</span>
+        <h3>SECRET ACCESS DETECTED</h3>
+        <p>Triple-click passcode authorization required.</p>
+      </div>
+
+      <div class="secret-input-group">
+        <input type="password" id="secretPasscodeInput" placeholder="Enter Access Code..." onkeypress="handlePasscodeKeyPress(event)">
+        <button class="secret-submit-btn" onclick="verifySecretCode()">AUTHENTICATE</button>
+      </div>
+      <p id="secretErrorMsg" class="secret-error"></p>
+      
+      <button class="secret-close-btn" onclick="closeSecretModal()">CANCEL</button>
+    </div>
+  </div>
+
+  <!-- Hacker Terminal & Flappy Bird Easter Egg Screen -->
+  <div class="hacker-terminal-screen" id="hackerTerminalScreen">
+    <canvas id="matrixCanvas"></canvas>
+    
+    <div class="terminal-container">
+      
+      <header class="terminal-header">
+        <div class="terminal-title">
+          <span class="pulse-dot"></span>
+          <span>ELY_HACKER_OS v4.2 // SECURITY CLEARANCE ACCEPTED</span>
+        </div>
+        <button class="terminal-exit-btn" onclick="exitHackerTerminal()">[ EXIT TERMINAL ]</button>
+      </header>
+
+      <div class="terminal-body">
+        
+        <div class="terminal-console">
+          <p class="log-line green">> ACCESS_GRANTED: Passcode 'ElyIsGreat' Verified.</p>
+          <p class="log-line cyan">> INITIALIZING RETRO HACKER FLAPPY BIRD ENGINE...</p>
+          <p class="log-line yellow">> CONTROLS: Press [SPACEBAR] or Click/Tap screen to FLAP!</p>
+          <p class="log-line magenta">> AVOID MATRIX CYBER PIPES AND SET A HIGH SCORE!</p>
+        </div>
+
+        <div class="game-wrapper">
+          <div class="game-scoreboard">
+            <div class="score-card">
+              <span>SCORE</span>
+              <h2 id="flappyScore">0</h2>
+            </div>
+            <div class="score-card highlight">
+              <span>BEST</span>
+              <h2 id="flappyHighScore">0</h2>
+            </div>
+          </div>
+
+          <div class="canvas-container">
+            <canvas id="flappyCanvas" width="400" height="520"></canvas>
+            <div class="game-over-overlay" id="flappyGameOverBox">
+              <h2>GAME OVER</h2>
+              <p>SYSTEM BREACH DETECTED</p>
+              <button class="restart-btn" onclick="resetFlappyGame()">PRESS SPACE OR CLICK TO REPLAY</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
   </div>
 
   <script src="/yt2mp3/app.js"></script>
