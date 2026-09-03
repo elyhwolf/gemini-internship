@@ -3,6 +3,8 @@ import json
 import urllib.request
 import urllib.parse
 import re
+import subprocess
+import os
 
 class handler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
@@ -38,7 +40,7 @@ class handler(BaseHTTPRequestHandler):
             title = "YouTube Audio Track"
             author = "YouTube Music"
             thumbnail = f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
-            duration = 169  # Default fallback duration (2:49)
+            duration = 169  # Default duration (2:49)
 
             try:
                 req = urllib.request.Request(oembed_url, headers={'User-Agent': 'Mozilla/5.0'})
@@ -65,7 +67,7 @@ class handler(BaseHTTPRequestHandler):
             clean_title = re.sub(r'[^\w\s-]', '', title).strip()
             filename = f"{clean_title}.mp3"
             
-            # High-fidelity audio stream API
+            # Fetch direct high-speed audio stream URL via Cobalt API
             mp3_stream_url = None
             try:
                 cobalt_req = urllib.request.Request(
@@ -89,8 +91,21 @@ class handler(BaseHTTPRequestHandler):
             except Exception as ce:
                 print("Cobalt API exception:", ce)
 
+            # Invidious / Piped audio stream fallback
             if not mp3_stream_url:
-                mp3_stream_url = f"https://y2mate.is/download?url=https://www.youtube.com/watch?v={video_id}"
+                try:
+                    piped_url = f"https://pipedapi.kavin.rocks/streams/{video_id}"
+                    preq = urllib.request.Request(piped_url, headers={'User-Agent': 'Mozilla/5.0'})
+                    with urllib.request.urlopen(preq) as pres:
+                        pdata = json.loads(pres.read().decode('utf-8'))
+                        audio_streams = pdata.get('audioStreams', [])
+                        if audio_streams:
+                            mp3_stream_url = audio_streams[0].get('url')
+                except Exception as pe:
+                    print("Piped API fallback error:", pe)
+
+            if not mp3_stream_url:
+                mp3_stream_url = f"https://www.youtube.com/watch?v={video_id}"
 
             self.send_response(200)
             self.send_header('Access-Control-Allow-Origin', '*')

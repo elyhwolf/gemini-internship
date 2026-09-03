@@ -441,8 +441,8 @@ async function convertYouTubeToMp3() {
       const downloadBtn = document.getElementById('downloadBtn');
 
       if (data.download_url) {
-        // Stream URL or fallback to stream proxy
-        const audioSrc = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        // Use direct stream URL if available, else route through stream proxy
+        const audioSrc = (data.download_url && data.download_url.startsWith('http') && !data.download_url.includes('youtube.com/watch'))
           ? data.download_url
           : `/api/stream?id=${data.video_id}`;
 
