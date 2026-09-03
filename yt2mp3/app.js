@@ -1,5 +1,5 @@
 // DripSwitch Studio — YouTube & YouTube Music to MP3 Converter JS (Optimized 60FPS)
-// Includes Triple-Click Secret Easter Egg & Flappy Bird Hacker Engine!
+// Includes Triple-Click Secret Easter Egg, Flappy Bird Hacker Engine & Custom BGM Audio Looper!
 
 let audioPlayer = null;
 let isSeeking = false;
@@ -7,6 +7,12 @@ let rafId = null;
 
 // Logo Triple Click Tracker
 let logoClickTimestamps = [];
+
+// BGM Custom Audio Engine
+let bgmAudio = new Audio();
+bgmAudio.loop = true;
+let isBgmMuted = false;
+let currentBgmName = "Cyber Retro Chiptune BGM";
 
 document.addEventListener('DOMContentLoaded', () => {
   initAudioDeck();
@@ -16,7 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
 function handleLogoClick() {
   const now = Date.now();
   
-  // Filter out clicks older than 2000ms
   logoClickTimestamps = logoClickTimestamps.filter(ts => now - ts <= 2000);
   logoClickTimestamps.push(now);
 
@@ -69,6 +74,58 @@ function verifySecretCode() {
 }
 
 /* ====================================================== */
+/* CUSTOM BGM AUDIO FILE UPLOADER & LOOPER */
+/* ====================================================== */
+
+function handleBgmUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const objectUrl = URL.createObjectURL(file);
+  bgmAudio.src = objectUrl;
+  bgmAudio.loop = true;
+  bgmAudio.volume = document.getElementById('bgmVolumeSlider') ? parseFloat(document.getElementById('bgmVolumeSlider').value) : 0.5;
+
+  currentBgmName = file.name;
+  const statusElem = document.getElementById('bgmTrackTitle');
+  if (statusElem) {
+    statusElem.textContent = `Looping: ${file.name}`;
+    statusElem.style.color = '#00ff66';
+  }
+
+  if (!isBgmMuted && document.getElementById('hackerTerminalScreen').style.display === 'block') {
+    bgmAudio.play().catch(err => console.log("BGM autoplay blocked:", err));
+  }
+}
+
+function toggleBgmMute() {
+  isBgmMuted = !isBgmMuted;
+  const btn = document.getElementById('bgmToggleBtn');
+
+  if (isBgmMuted) {
+    bgmAudio.pause();
+    if (btn) {
+      btn.textContent = '🔇 BGM OFF';
+      btn.style.borderColor = '#ff3366';
+      btn.style.color = '#ff3366';
+    }
+  } else {
+    if (bgmAudio.src) {
+      bgmAudio.play().catch(err => console.log("BGM play error:", err));
+    }
+    if (btn) {
+      btn.textContent = '🔊 BGM ON';
+      btn.style.borderColor = '#00e5ff';
+      btn.style.color = '#00e5ff';
+    }
+  }
+}
+
+function setBgmVolume(val) {
+  bgmAudio.volume = parseFloat(val);
+}
+
+/* ====================================================== */
 /* HACKER TERMINAL MATRIX RAIN & FLAPPY BIRD GAME ENGINE */
 /* ====================================================== */
 
@@ -81,6 +138,11 @@ function launchHackerTerminal() {
     screen.style.display = 'block';
     startMatrixRain();
     initFlappyBirdGame();
+
+    // Start background music loop
+    if (bgmAudio.src && !isBgmMuted) {
+      bgmAudio.play().catch(err => console.log("BGM playback blocked:", err));
+    }
   }
 }
 
@@ -89,6 +151,7 @@ function exitHackerTerminal() {
   if (screen) screen.style.display = 'none';
   if (matrixInterval) clearInterval(matrixInterval);
   if (flappyAnimationId) cancelAnimationFrame(flappyAnimationId);
+  bgmAudio.pause();
 }
 
 // Matrix Rain Animation
@@ -143,7 +206,6 @@ function initFlappyBirdGame() {
 
   resetFlappyGame();
 
-  // Controls: Spacebar, Click, Touch
   window.removeEventListener('keydown', handleFlappyInput);
   window.addEventListener('keydown', handleFlappyInput);
 
@@ -198,21 +260,17 @@ function gameLoop() {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
 
-  // Clear Canvas
   ctx.fillStyle = '#001207';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   if (isGameStarted && !isGameOver) {
-    // Update Bird
     bird.velocity += bird.gravity;
     bird.y += bird.velocity;
 
-    // Boundary Check
     if (bird.y + bird.radius >= canvas.height || bird.y - bird.radius <= 0) {
       triggerGameOver();
     }
 
-    // Spawn Pipes
     frameCount++;
     if (frameCount % 90 === 0) {
       const gap = 120;
@@ -228,22 +286,18 @@ function gameLoop() {
       });
     }
 
-    // Update & Draw Pipes
     for (let i = pipes.length - 1; i >= 0; i--) {
       const p = pipes[i];
       p.x -= 2.2;
 
-      // Draw Top Pipe
       ctx.fillStyle = '#00ff66';
       ctx.fillRect(p.x, 0, 45, p.top);
       ctx.strokeStyle = '#003311';
       ctx.strokeRect(p.x, 0, 45, p.top);
 
-      // Draw Bottom Pipe
       ctx.fillRect(p.x, canvas.height - p.bottom, 45, p.bottom);
       ctx.strokeRect(p.x, canvas.height - p.bottom, 45, p.bottom);
 
-      // Check Score
       if (!p.passed && p.x + 45 < bird.x) {
         p.passed = true;
         score++;
@@ -255,7 +309,6 @@ function gameLoop() {
         }
       }
 
-      // Check Collision
       if (
         bird.x + bird.radius > p.x &&
         bird.x - bird.radius < p.x + 45 &&
@@ -264,14 +317,12 @@ function gameLoop() {
         triggerGameOver();
       }
 
-      // Remove Offscreen Pipes
       if (p.x + 45 < 0) {
         pipes.splice(i, 1);
       }
     }
   }
 
-  // Draw Cyber Bird (Neon Flashing Emerald Circle / Logo Icon)
   ctx.beginPath();
   ctx.arc(bird.x, bird.y, bird.radius, 0, Math.PI * 2);
   ctx.fillStyle = '#00e5ff';
@@ -280,7 +331,6 @@ function gameLoop() {
   ctx.fill();
   ctx.shadowBlur = 0;
 
-  // Draw Wing Detail
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(bird.x - 4, bird.y - 2, 6, 4);
 
