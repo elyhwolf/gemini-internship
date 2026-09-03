@@ -1,9 +1,9 @@
-/* DripSwitch Studio — Minimalist Dark Forest Sage Design System */
+/* DripSwitch Studio — Lightning-Fast Minimalist Forest Sage Design System */
 :root {
   --bg-main: #092328;
-  --panel-bg: rgba(18, 84, 79, 0.28);
-  --panel-border: rgba(139, 187, 146, 0.18);
-  --panel-border-glow: rgba(139, 187, 146, 0.4);
+  --panel-bg: rgba(14, 52, 50, 0.92);
+  --panel-border: rgba(139, 187, 146, 0.22);
+  --panel-border-glow: rgba(139, 187, 146, 0.45);
 
   --color-dark: #092328;
   --color-deep-teal: #12544F;
@@ -18,7 +18,7 @@
   --radius-xl: 20px;
   --radius-lg: 14px;
   --radius-md: 10px;
-  --transition: 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition: 0.15s ease-out;
 }
 
 * {
@@ -30,10 +30,7 @@
 body {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   background-color: var(--bg-main);
-  background-image: 
-    radial-gradient(at 20% 15%, rgba(18, 84, 79, 0.5) 0px, transparent 60%),
-    radial-gradient(at 80% 85%, rgba(42, 131, 95, 0.35) 0px, transparent 60%);
-  background-attachment: fixed;
+  background-image: radial-gradient(circle at 50% 30%, rgba(18, 84, 79, 0.4) 0%, rgba(9, 35, 40, 1) 70%);
   color: var(--text-main);
   min-height: 100vh;
   display: flex;
@@ -43,8 +40,6 @@ body {
   padding: 2rem 1rem;
   overflow-x: hidden;
 }
-
-
 
 .container {
   position: relative;
@@ -68,7 +63,7 @@ header {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(139, 187, 146, 0.1);
+  background: rgba(139, 187, 146, 0.12);
   border: 1px solid rgba(139, 187, 146, 0.25);
   padding: 4px 14px;
   border-radius: 100px;
@@ -97,16 +92,15 @@ p.subtitle {
 
 .card {
   background: var(--panel-bg);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--panel-border);
   border-radius: var(--radius-xl);
   padding: 1.75rem;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
   transition: border-color var(--transition);
+  transform: translateZ(0);
 }
 
 .card:focus-within {
@@ -120,7 +114,7 @@ p.subtitle {
 
 input[type="text"] {
   flex: 1;
-  background: rgba(9, 35, 40, 0.7);
+  background: rgba(9, 35, 40, 0.85);
   border: 1px solid var(--panel-border);
   border-radius: var(--radius-lg);
   padding: 12px 16px;
@@ -128,7 +122,7 @@ input[type="text"] {
   font-family: inherit;
   color: var(--text-main);
   outline: none;
-  transition: var(--transition);
+  transition: border-color var(--transition);
 }
 
 input[type="text"]::placeholder {
@@ -151,7 +145,7 @@ button.convert-btn {
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 4px 16px rgba(42, 131, 95, 0.35);
-  transition: var(--transition);
+  transition: background var(--transition), transform var(--transition);
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
@@ -161,7 +155,6 @@ button.convert-btn {
 button.convert-btn:hover {
   background: #32966e;
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(42, 131, 95, 0.5);
 }
 
 button.convert-btn:active {
@@ -171,13 +164,13 @@ button.convert-btn:active {
 /* Result Box */
 .result-box {
   display: none;
-  background: rgba(9, 35, 40, 0.6);
+  background: rgba(9, 35, 40, 0.8);
   border: 1px solid var(--panel-border);
   border-radius: var(--radius-lg);
   padding: 1.25rem;
   flex-direction: column;
   gap: 1rem;
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.2s ease-out;
 }
 
 .track-preview {
@@ -215,6 +208,79 @@ button.convert-btn:active {
   color: var(--text-dim);
 }
 
+/* Interactive Audio Player Deck */
+.player-deck {
+  background: rgba(18, 84, 79, 0.35);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+}
+
+.player-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.play-pause-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-sage);
+  color: var(--color-dark);
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(139, 187, 146, 0.3);
+  transition: background var(--transition), transform var(--transition);
+  flex-shrink: 0;
+}
+
+.play-pause-btn:hover {
+  background: var(--color-sage-light);
+  transform: scale(1.05);
+}
+
+.scrubber-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.audio-scrubber {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+.audio-scrubber::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-sage);
+  box-shadow: 0 0 8px rgba(139, 187, 146, 0.8);
+  cursor: pointer;
+}
+
+.time-display {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-dim);
+}
+
 .download-btn {
   background: var(--color-sage);
   color: var(--color-dark);
@@ -230,13 +296,12 @@ button.convert-btn:active {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  transition: var(--transition);
+  transition: background var(--transition), transform var(--transition);
 }
 
 .download-btn:hover {
   background: var(--color-sage-light);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(139, 187, 146, 0.4);
 }
 
 /* Loader */
@@ -263,6 +328,6 @@ button.convert-btn:active {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
