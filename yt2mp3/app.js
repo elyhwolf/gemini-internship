@@ -356,10 +356,26 @@ function initAudioDeck() {
 
 function togglePlayPause() {
   if (!audioPlayer) audioPlayer = document.getElementById('audioPlayer');
+  if (!audioPlayer) return;
+
+  const playIcon = document.getElementById('playIcon');
+
   if (audioPlayer.paused) {
-    audioPlayer.play();
+    const playPromise = audioPlayer.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        if (playIcon) playIcon.textContent = '❚❚';
+      }).catch(err => {
+        console.log("Audio play error, retrying...", err);
+        audioPlayer.currentTime = 0;
+        audioPlayer.play().then(() => {
+          if (playIcon) playIcon.textContent = '❚❚';
+        }).catch(e => console.error("Playback failed:", e));
+      });
+    }
   } else {
     audioPlayer.pause();
+    if (playIcon) playIcon.textContent = '▶';
   }
 }
 
@@ -425,7 +441,12 @@ async function convertYouTubeToMp3() {
       const downloadBtn = document.getElementById('downloadBtn');
 
       if (data.download_url) {
-        audioPlayer.src = data.download_url;
+        // Stream URL or fallback to stream proxy
+        const audioSrc = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+          ? data.download_url
+          : `/api/stream?id=${data.video_id}`;
+
+        audioPlayer.src = audioSrc;
         audioPlayer.load();
         downloadBtn.href = data.download_url;
         if (data.filename) downloadBtn.setAttribute('download', data.filename);
