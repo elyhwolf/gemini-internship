@@ -5,6 +5,8 @@ let audioPlayer = null;
 let isSeeking = false;
 let rafId = null;
 let currentTrackDuration = 0;
+let currentVideoId = "";
+let isPlayingEmbed = false;
 
 // Logo Triple Click Tracker
 let logoClickTimestamps = [];
@@ -303,13 +305,13 @@ function initAudioDeck() {
 
   function updateProgress() {
     const dur = getActiveDuration();
-    if (!isSeeking && !audioPlayer.paused) {
+    if (!isSeeking && audioPlayer && !audioPlayer.paused) {
       const pct = (audioPlayer.currentTime / dur) * 100;
       if (scrubber) scrubber.value = pct;
       if (currentTimeDisplay) currentTimeDisplay.textContent = formatTime(audioPlayer.currentTime);
       if (totalTimeDisplay) totalTimeDisplay.textContent = formatTime(dur);
     }
-    if (!audioPlayer.paused) {
+    if (audioPlayer && !audioPlayer.paused) {
       rafId = requestAnimationFrame(updateProgress);
     }
   }
@@ -356,27 +358,76 @@ function initAudioDeck() {
 
 function togglePlayPause() {
   if (!audioPlayer) audioPlayer = document.getElementById('audioPlayer');
-  if (!audioPlayer) return;
-
   const playIcon = document.getElementById('playIcon');
 
-  if (audioPlayer.paused) {
-    const playPromise = audioPlayer.play();
-    if (playPromise !== undefined) {
-      playPromise.then(() => {
+  if (audioPlayer && audioPlayer.src && audioPlayer.src.startsWith('http') && !audioPlayer.src.includes('html')) {
+    if (audioPlayer.paused) {
+      audioPlayer.play().then(() => {
         if (playIcon) playIcon.textContent = '❚❚';
       }).catch(err => {
-        console.log("Audio play error, retrying...", err);
-        audioPlayer.currentTime = 0;
-        audioPlayer.play().then(() => {
-          if (playIcon) playIcon.textContent = '❚❚';
-        }).catch(e => console.error("Playback failed:", e));
+        console.log("Audio stream play error:", err);
+        playFallbackEmbed();
       });
+    } else {
+      audioPlayer.pause();
+      if (playIcon) playIcon.textContent = '▶';
     }
   } else {
-    audioPlayer.pause();
-    if (playIcon) playIcon.textContent = '▶';
+    playFallbackEmbed();
   }
+}
+
+function playFallbackEmbed() {
+  const playIcon = document.getElementById('playIcon');
+  let iframe = document.getElementById('ytAudioIframe');
+
+  if (!iframe) {
+    iframe = document.createElement('iframe');
+    iframe.id = 'ytAudioIframe';
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+  }
+
+  if (isPlayingEmbed) {
+    iframe.src = 'about:blank';
+    isPlayingEmbed = false;
+    if (playIcon) playIcon.textContent = '▶';
+  } else {
+    iframe.src = `https://www.youtube.com/embed/${currentVideoId}?autoplay=1&enablejsapi=1`;
+    isPlayingEmbed = true;
+    if (playIcon) playIcon.textContent = '❚❚';
+    simulatePlaybackProgress();
+  }
+}
+
+function simulatePlaybackProgress() {
+  const scrubber = document.getElementById('audioScrubber');
+  const currentTimeDisplay = document.getElementById('currentTimeDisplay');
+  const totalTimeDisplay = document.getElementById('totalTimeDisplay');
+  
+  let currentSec = 0;
+  const dur = currentTrackDuration || 169;
+
+  if (totalTimeDisplay) totalTimeDisplay.textContent = formatTime(dur);
+
+  const interval = setInterval(() => {
+    if (!isPlayingEmbed) {
+      clearInterval(interval);
+      return;
+    }
+    currentSec += 1;
+    if (currentSec > dur) {
+      isPlayingEmbed = false;
+      const playIcon = document.getElementById('playIcon');
+      if (playIcon) playIcon.textContent = '▶';
+      clearInterval(interval);
+      return;
+    }
+
+    const pct = (currentSec / dur) * 100;
+    if (scrubber) scrubber.value = pct;
+    if (currentTimeDisplay) currentTimeDisplay.textContent = formatTime(currentSec);
+  }, 1000);
 }
 
 function seekAudio(percent) {
@@ -386,7 +437,8 @@ function seekAudio(percent) {
     : (currentTrackDuration || 169);
 
   const targetTime = (percent / 100) * dur;
-  audioPlayer.currentTime = targetTime;
+  if (audioPlayer) audioPlayer.currentTime = targetTime;
+
   const currentTimeDisplay = document.getElementById('currentTimeDisplay');
   if (currentTimeDisplay) currentTimeDisplay.textContent = formatTime(targetTime);
 }
@@ -434,6 +486,9 @@ async function convertYouTubeToMp3() {
       document.getElementById('trackThumb').src = data.thumbnail || 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg';
       
       currentTrackDuration = data.duration || 169;
+      currentVideoId = data.video_id || "11vcNPy3KVQ";
+      isPlayingEmbed = false;
+
       const totalTimeDisplay = document.getElementById('totalTimeDisplay');
       if (totalTimeDisplay) totalTimeDisplay.textContent = formatTime(currentTrackDuration);
 
@@ -441,12 +496,7 @@ async function convertYouTubeToMp3() {
       const downloadBtn = document.getElementById('downloadBtn');
 
       if (data.download_url) {
-        // Use direct stream URL if available, else route through stream proxy
-        const audioSrc = (data.download_url && data.download_url.startsWith('http') && !data.download_url.includes('youtube.com/watch'))
-          ? data.download_url
-          : `/api/stream?id=${data.video_id}`;
-
-        audioPlayer.src = audioSrc;
+        audioPlayer.src = data.download_url;
         audioPlayer.load();
         downloadBtn.href = data.download_url;
         if (data.filename) downloadBtn.setAttribute('download', data.filename);
