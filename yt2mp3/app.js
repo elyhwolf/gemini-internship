@@ -1,5 +1,5 @@
 // DripSwitch Studio — YouTube & YouTube Music to MP3 Converter JS (Optimized 60FPS)
-// Includes Triple-Click Secret Easter Egg, Flappy Bird Hacker Engine & Custom BGM Audio Looper!
+// Includes Triple-Click Secret Easter Egg & Flappy Bird Hacker Engine!
 
 let audioPlayer = null;
 let isSeeking = false;
@@ -7,12 +7,6 @@ let rafId = null;
 
 // Logo Triple Click Tracker
 let logoClickTimestamps = [];
-
-// BGM Custom Audio Engine
-let bgmAudio = new Audio();
-bgmAudio.loop = true;
-let isBgmMuted = false;
-let currentBgmName = "Cyber Retro Chiptune BGM";
 
 document.addEventListener('DOMContentLoaded', () => {
   initAudioDeck();
@@ -74,58 +68,6 @@ function verifySecretCode() {
 }
 
 /* ====================================================== */
-/* CUSTOM BGM AUDIO FILE UPLOADER & LOOPER */
-/* ====================================================== */
-
-function handleBgmUpload(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const objectUrl = URL.createObjectURL(file);
-  bgmAudio.src = objectUrl;
-  bgmAudio.loop = true;
-  bgmAudio.volume = document.getElementById('bgmVolumeSlider') ? parseFloat(document.getElementById('bgmVolumeSlider').value) : 0.5;
-
-  currentBgmName = file.name;
-  const statusElem = document.getElementById('bgmTrackTitle');
-  if (statusElem) {
-    statusElem.textContent = `Looping: ${file.name}`;
-    statusElem.style.color = '#00ff66';
-  }
-
-  if (!isBgmMuted && document.getElementById('hackerTerminalScreen').style.display === 'block') {
-    bgmAudio.play().catch(err => console.log("BGM autoplay blocked:", err));
-  }
-}
-
-function toggleBgmMute() {
-  isBgmMuted = !isBgmMuted;
-  const btn = document.getElementById('bgmToggleBtn');
-
-  if (isBgmMuted) {
-    bgmAudio.pause();
-    if (btn) {
-      btn.textContent = '🔇 BGM OFF';
-      btn.style.borderColor = '#ff3366';
-      btn.style.color = '#ff3366';
-    }
-  } else {
-    if (bgmAudio.src) {
-      bgmAudio.play().catch(err => console.log("BGM play error:", err));
-    }
-    if (btn) {
-      btn.textContent = '🔊 BGM ON';
-      btn.style.borderColor = '#00e5ff';
-      btn.style.color = '#00e5ff';
-    }
-  }
-}
-
-function setBgmVolume(val) {
-  bgmAudio.volume = parseFloat(val);
-}
-
-/* ====================================================== */
 /* HACKER TERMINAL MATRIX RAIN & FLAPPY BIRD GAME ENGINE */
 /* ====================================================== */
 
@@ -138,11 +80,6 @@ function launchHackerTerminal() {
     screen.style.display = 'block';
     startMatrixRain();
     initFlappyBirdGame();
-
-    // Start background music loop
-    if (bgmAudio.src && !isBgmMuted) {
-      bgmAudio.play().catch(err => console.log("BGM playback blocked:", err));
-    }
   }
 }
 
@@ -151,7 +88,6 @@ function exitHackerTerminal() {
   if (screen) screen.style.display = 'none';
   if (matrixInterval) clearInterval(matrixInterval);
   if (flappyAnimationId) cancelAnimationFrame(flappyAnimationId);
-  bgmAudio.pause();
 }
 
 // Matrix Rain Animation

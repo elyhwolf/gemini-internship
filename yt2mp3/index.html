@@ -116,24 +116,7 @@
           <p class="log-line green">> ACCESS_GRANTED: Passcode 'ElyIsGreat' Verified.</p>
           <p class="log-line cyan">> INITIALIZING RETRO HACKER FLAPPY BIRD ENGINE...</p>
           <p class="log-line yellow">> CONTROLS: Press [SPACEBAR] or Click/Tap screen to FLAP!</p>
-          <p class="log-line magenta">> ATTACH CUSTOM BGM: Use the button below to upload any MP3/WAV music loop!</p>
-        </div>
-
-        <!-- BGM Music Control Deck -->
-        <div class="bgm-control-bar">
-          <input type="file" id="bgmFileInput" accept="audio/*,.mp3,.wav,.flac,.m4a" style="display: none;" onchange="handleBgmUpload(event)">
-          <button class="bgm-upload-btn" onclick="document.getElementById('bgmFileInput').click()">
-            🎵 UPLOAD BGM AUDIO LOOP
-          </button>
-          
-          <button class="bgm-toggle-btn" id="bgmToggleBtn" onclick="toggleBgmMute()">🔊 BGM ON</button>
-          
-          <div class="bgm-volume-group">
-            <span>VOL</span>
-            <input type="range" id="bgmVolumeSlider" min="0" max="1" step="0.05" value="0.5" oninput="setBgmVolume(this.value)">
-          </div>
-
-          <span id="bgmTrackTitle" class="bgm-track-status">Looping: Cyber Retro Chiptune BGM</span>
+          <p class="log-line magenta">> AVOID MATRIX CYBER PIPES AND SET A HIGH SCORE!</p>
         </div>
 
         <div class="game-wrapper">
