@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 DripSwitch Studio — Real YouTube to MP3 Converter Backend Server
-Extracts exact audio from YouTube URLs using yt-dlp + ffmpeg and serves actual .mp3 binary files.
+Supports HTTP 206 Partial Content Byte-Range requests for 100% smooth audio seeking/scrubbing.
 """
 
 import http.server
@@ -35,29 +35,60 @@ class DripSwitchHandler(http.server.SimpleHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Range')
         self.end_headers()
 
     def do_GET(self):
+        # HTTP 206 Byte Range Seeking Handler for MP3 audio files
         if self.path.startswith('/downloads/'):
             filename = os.path.basename(urllib.parse.unquote(self.path))
             file_path = os.path.join(DOWNLOADS_DIR, filename)
 
-            if os.path.exists(file_path):
-                self.send_response(200)
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.send_header('Content-Type', 'audio/mpeg')
-                self.send_header('Content-Disposition', f'attachment; filename="{filename}"')
-                self.send_header('Content-Length', str(os.path.getsize(file_path)))
-                self.end_headers()
-
-                with open(file_path, 'rb') as f:
-                    self.wfile.write(f.read())
-                return
-            else:
+            if not os.path.exists(file_path):
                 self.send_response(404)
                 self.end_headers()
                 return
+
+            file_size = os.path.getsize(file_path)
+            range_header = self.headers.get('Range', '')
+
+            if range_header:
+                # Parse Range: bytes=start-end
+                range_match = re.match(r'bytes=(\d+)-(\d+)?', range_header)
+                if range_match:
+                    start = int(range_match.group(1))
+                    end = int(range_match.group(2)) if range_match.group(2) else file_size - 1
+                    if end >= file_size:
+                        end = file_size - 1
+
+                    length = end - start + 1
+
+                    self.send_response(206)
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.send_header('Content-Type', 'audio/mpeg')
+                    self.send_header('Accept-Ranges', 'bytes')
+                    self.send_header('Content-Range', f'bytes {start}-{end}/{file_size}')
+                    self.send_header('Content-Length', str(length))
+                    self.send_header('Content-Disposition', f'inline; filename="{filename}"')
+                    self.end_headers()
+
+                    with open(file_path, 'rb') as f:
+                        f.seek(start)
+                        self.wfile.write(f.read(length))
+                    return
+
+            # Default full HTTP 200 response
+            self.send_response(200)
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Content-Type', 'audio/mpeg')
+            self.send_header('Accept-Ranges', 'bytes')
+            self.send_header('Content-Disposition', f'attachment; filename="{filename}"')
+            self.send_header('Content-Length', str(file_size))
+            self.end_headers()
+
+            with open(file_path, 'rb') as f:
+                self.wfile.write(f.read())
+            return
         
         super().do_GET()
 
@@ -109,7 +140,7 @@ class DripSwitchHandler(http.server.SimpleHTTPRequestHandler):
 
                     download_link = f"http://localhost:{PORT}/downloads/{urllib.parse.quote(mp3_filename)}"
 
-                    print(f"SUCCESS! Real MP3 Created: '{raw_title}' -> {download_link}")
+                    print(f"SUCCESS! Seeking-Enabled MP3 Created: '{raw_title}' -> {download_link}")
                     self.send_json({
                         'success': True,
                         'title': raw_title,
@@ -145,5 +176,5 @@ class DripSwitchHandler(http.server.SimpleHTTPRequestHandler):
 
 if __name__ == '__main__':
     with socketserver.TCPServer(("", PORT), DripSwitchHandler) as httpd:
-        print(f"DripSwitch Studio Real MP3 Converter Server running at http://localhost:{PORT}")
+        print(f"DripSwitch Studio HTTP 206 Seeking Server running at http://localhost:{PORT}")
         httpd.serve_forever()

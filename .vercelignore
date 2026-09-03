@@ -1,0 +1,7 @@
+node_modules/
+yt2mp3/downloads/
+.git/
+.tempmediaStorage/
+*.mp3
+*.wav
+*.m4a

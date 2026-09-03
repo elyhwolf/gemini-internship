@@ -1,15 +1,13 @@
 <?xml version="1.0"?>
-<plist version="1.0" gjver="2.0">
-    <dict>
-        <k>k2</k>
-        <s>Chicken Run</s>
-        <k>k3</k>
-        <s>TWFzY290IGNoYWxsZW5nZTogRXNjYXBlIHRoZSBkZWVwIGZyeWVyIQ==</s>
-        <k>k4</k>
-        <s>H4sIAKZCWmoC_22WTZqsIAxFN-QACEng61GvoRfgAnr_8yc_zzLHngRvvFLxQEl-f6Qd-azpzGcuesWiepYzp-vqbOkKIyE75pJ2rDNT9_WIOjO6r0e0mXlGf8X2iv0Vc3oPx-93liONQddga6hzWMJXyo88hjbUj_SZLDOuGeaN7_VgP2Q-k9czaZmXr1yWr3GjHD0dcmTd6nrZIDXKFmTJUdYoPUhJUUqUFmWsqsaqaqyqxqo0VqWxKv1U1e6aJW25fkhSmMrjVB6nuqWlKCVKi7IH6eWW7X62zzJEhqGttygrNZbNPpYh53zXbgr6s3CpxPs78TAoDVj61GiI2HPOMOQMQ6WhwuA0ODcnDCXBIDQIDEaDwdBpAEkhSQFJIUkBSSFJAclKkhUkK0lWkKwkWZ3_axgUJJUkFSSVJBUklSQVJI0kDSSNJA0kjSQNJJ0kHSSdJB0knSTd-UmEoYFkI8kGko0kG0g2kmwg2Umyg2QnyQ6SnSQ7PvUJJHfiYag04DhIToPzNIEhJxiEBoHBaDAYOg2RZCkguRMPg9KgMDQaQFJIUkBSSFJAUkhS_K9PUIV2fpES_zfGRMdyV-j7xPq_HdYBVebJKuGEKhVrUYFeQVoBVsHRgM1AyZztCDQ2j6M-R30N9TXU11BfR30d9fVXfwSNDimhRUqxPkHrJujd5NG8tQ-Pu_XZPB7abi32eYG7OXr_QNx1WzsLunbdP9hI2x2sCwAA</s>
-        <k>k5</k>
-        <s>ChronoCluck</s>
-        <k>k16</k>
-        <i>22</i>
-    </dict>
-</plist>
+<d>
+    <k>k2</k>
+    <s>Chicken Run</s>
+    <k>k3</k>
+    <s>TWFzY290IGNoYWxsZW5nZTogRXNjYXBlIHRoZSBkZWVwIGZyeWVyIQ==</s>
+    <k>k4</k>
+    <s>H4sIAMVAWmoC_22WTZqsIAxFN-QACEng61GvoRfgAnr_8yc_zzLHngRvvFLxQEl-f6Qd-azpzGcuesWiepYzp-vqbOkKIyE75pJ2rDNT9_WIOjO6r0e0mXlGf8X2iv0Vc3oPx-93liONQddga6hzWMJXyo88hjbUj_SZLDOuGeaN7_VgP2Q-k9czaZmXr1yWr3GjHD0dcmTd6nrZIDXKFmTJUdYoPUhJUUqUFmWsqsaqaqyqxqo0VqWxKv1U1e6aJW25fkhSmMrjVB6nuqWlKCVKi7IH6eWW7X62zzJEhqGttygrNZbNPpYh53zXbgr6s3CpxPs78TAoDVj61GiI2HPOMOQMQ6WhwuA0ODcnDCXBIDQIDEaDwdBpAEkhSQFJIUkBSSFJAclKkhUkK0lWkKwkWZ3_axgUJJUkFSSVJBUklSQVJI0kDSSNJA0kjSQNJJ0kHSSdJB0knSTd-UmEoYFkI8kGko0kG0g2kmwg2Umyg2QnyQ6SnSQ7PvUJJHfiYag04DhIToPzNIEhJxiEBoHBaDAYOg2RZCkguRMPg9KgMDQaQFJIUkBSSFJAUkhS_K9PUIV2fpES_zfGRMdyV-j7xPq_HdYBVebJKuGEKhVrUYFeQVoBVsHRgM1AyZztCDQ2j6M-R30N9TXU11BfR30d9fVXfwSNDimhRUqxPkHrJujd5NG8tQ-Pu_XZPB7abi32eYG7OXr_QNx1WzsLunbdP9hI2x2sCwAA</s>
+    <k>k5</k>
+    <s>ChronoCluck</s>
+    <k>k16</k>
+    <i>22</i>
+</d>
