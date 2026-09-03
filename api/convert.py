@@ -3,8 +3,6 @@ import json
 import urllib.request
 import urllib.parse
 import re
-import subprocess
-import os
 
 class handler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
@@ -37,7 +35,7 @@ class handler(BaseHTTPRequestHandler):
 
             # Query YouTube oEmbed metadata for title & thumbnail
             oembed_url = f"https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v={video_id}&format=json"
-            title = "YouTube Audio Track"
+            title = "Audio Track"
             author = "YouTube Music"
             thumbnail = f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
             duration = 169  # Default duration (2:49)
@@ -67,45 +65,9 @@ class handler(BaseHTTPRequestHandler):
             clean_title = re.sub(r'[^\w\s-]', '', title).strip()
             filename = f"{clean_title}.mp3"
             
-            # Fetch direct high-speed audio stream URL via Cobalt API
-            mp3_stream_url = None
-            try:
-                cobalt_req = urllib.request.Request(
-                    "https://api.cobalt.tools/api/json",
-                    data=json.dumps({
-                        "url": f"https://www.youtube.com/watch?v={video_id}",
-                        "isAudioOnly": True,
-                        "aFormat": "mp3",
-                        "audioBitrate": "320"
-                    }).encode('utf-8'),
-                    headers={
-                        "Content-Type": "application/json",
-                        "Accept": "application/json",
-                        "User-Agent": "Mozilla/5.0"
-                    }
-                )
-                with urllib.request.urlopen(cobalt_req) as c_res:
-                    c_data = json.loads(c_res.read().decode('utf-8'))
-                    if c_data.get('url'):
-                        mp3_stream_url = c_data.get('url')
-            except Exception as ce:
-                print("Cobalt API exception:", ce)
-
-            # Invidious / Piped audio stream fallback
-            if not mp3_stream_url:
-                try:
-                    piped_url = f"https://pipedapi.kavin.rocks/streams/{video_id}"
-                    preq = urllib.request.Request(piped_url, headers={'User-Agent': 'Mozilla/5.0'})
-                    with urllib.request.urlopen(preq) as pres:
-                        pdata = json.loads(pres.read().decode('utf-8'))
-                        audio_streams = pdata.get('audioStreams', [])
-                        if audio_streams:
-                            mp3_stream_url = audio_streams[0].get('url')
-                except Exception as pe:
-                    print("Piped API fallback error:", pe)
-
-            if not mp3_stream_url:
-                mp3_stream_url = f"https://www.youtube.com/watch?v={video_id}"
+            # Direct MP3 Download Endpoint and Audio Stream Endpoint
+            download_url = f"/api/download?id={video_id}&title={urllib.parse.quote(clean_title)}"
+            stream_url = f"/api/stream?id={video_id}"
 
             self.send_response(200)
             self.send_header('Access-Control-Allow-Origin', '*')
@@ -117,7 +79,8 @@ class handler(BaseHTTPRequestHandler):
                 'uploader': author,
                 'duration': duration,
                 'thumbnail': thumbnail,
-                'download_url': mp3_stream_url,
+                'download_url': download_url,
+                'stream_url': stream_url,
                 'filename': filename,
                 'video_id': video_id
             }).encode('utf-8'))
