@@ -4,6 +4,7 @@
 let audioPlayer = null;
 let isSeeking = false;
 let rafId = null;
+let currentTrackDuration = 0;
 
 // Logo Triple Click Tracker
 let logoClickTimestamps = [];
@@ -293,12 +294,20 @@ function initAudioDeck() {
 
   if (!audioPlayer) return;
 
+  function getActiveDuration() {
+    if (audioPlayer && audioPlayer.duration && !isNaN(audioPlayer.duration) && audioPlayer.duration > 0) {
+      return audioPlayer.duration;
+    }
+    return currentTrackDuration || 169;
+  }
+
   function updateProgress() {
-    if (audioPlayer && audioPlayer.duration && !isSeeking && !audioPlayer.paused) {
-      const pct = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+    const dur = getActiveDuration();
+    if (!isSeeking && !audioPlayer.paused) {
+      const pct = (audioPlayer.currentTime / dur) * 100;
       if (scrubber) scrubber.value = pct;
       if (currentTimeDisplay) currentTimeDisplay.textContent = formatTime(audioPlayer.currentTime);
-      if (totalTimeDisplay) totalTimeDisplay.textContent = formatTime(audioPlayer.duration);
+      if (totalTimeDisplay) totalTimeDisplay.textContent = formatTime(dur);
     }
     if (!audioPlayer.paused) {
       rafId = requestAnimationFrame(updateProgress);
@@ -306,18 +315,18 @@ function initAudioDeck() {
   }
 
   audioPlayer.addEventListener('timeupdate', () => {
+    const dur = getActiveDuration();
     if (audioPlayer.paused) {
-      if (audioPlayer.duration) {
-        const pct = (audioPlayer.currentTime / audioPlayer.duration) * 100;
-        if (scrubber) scrubber.value = pct;
-        if (currentTimeDisplay) currentTimeDisplay.textContent = formatTime(audioPlayer.currentTime);
-        if (totalTimeDisplay) totalTimeDisplay.textContent = formatTime(audioPlayer.duration);
-      }
+      const pct = (audioPlayer.currentTime / dur) * 100;
+      if (scrubber) scrubber.value = pct;
+      if (currentTimeDisplay) currentTimeDisplay.textContent = formatTime(audioPlayer.currentTime);
+      if (totalTimeDisplay) totalTimeDisplay.textContent = formatTime(dur);
     }
   });
 
   audioPlayer.addEventListener('loadedmetadata', () => {
-    if (totalTimeDisplay) totalTimeDisplay.textContent = formatTime(audioPlayer.duration);
+    const dur = getActiveDuration();
+    if (totalTimeDisplay) totalTimeDisplay.textContent = formatTime(dur);
   });
 
   audioPlayer.addEventListener('play', () => {
@@ -356,16 +365,18 @@ function togglePlayPause() {
 
 function seekAudio(percent) {
   if (!audioPlayer) audioPlayer = document.getElementById('audioPlayer');
-  if (audioPlayer && audioPlayer.duration) {
-    const targetTime = (percent / 100) * audioPlayer.duration;
-    audioPlayer.currentTime = targetTime;
-    const currentTimeDisplay = document.getElementById('currentTimeDisplay');
-    if (currentTimeDisplay) currentTimeDisplay.textContent = formatTime(targetTime);
-  }
+  const dur = (audioPlayer && audioPlayer.duration && !isNaN(audioPlayer.duration) && audioPlayer.duration > 0)
+    ? audioPlayer.duration
+    : (currentTrackDuration || 169);
+
+  const targetTime = (percent / 100) * dur;
+  audioPlayer.currentTime = targetTime;
+  const currentTimeDisplay = document.getElementById('currentTimeDisplay');
+  if (currentTimeDisplay) currentTimeDisplay.textContent = formatTime(targetTime);
 }
 
 function formatTime(secs) {
-  if (isNaN(secs)) return '0:00';
+  if (isNaN(secs) || secs <= 0) return '0:00';
   const m = Math.floor(secs / 60);
   const s = Math.floor(secs % 60);
   return `${m}:${s < 10 ? '0' : ''}${s}`;
@@ -406,6 +417,10 @@ async function convertYouTubeToMp3() {
       document.getElementById('trackUploader').textContent = `Creator: ${data.uploader || 'YouTube Music'}`;
       document.getElementById('trackThumb').src = data.thumbnail || 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg';
       
+      currentTrackDuration = data.duration || 169;
+      const totalTimeDisplay = document.getElementById('totalTimeDisplay');
+      if (totalTimeDisplay) totalTimeDisplay.textContent = formatTime(currentTrackDuration);
+
       audioPlayer = document.getElementById('audioPlayer');
       const downloadBtn = document.getElementById('downloadBtn');
 

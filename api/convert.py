@@ -38,6 +38,7 @@ class handler(BaseHTTPRequestHandler):
             title = "YouTube Audio Track"
             author = "YouTube Music"
             thumbnail = f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
+            duration = 169  # Default fallback duration (2:49)
 
             try:
                 req = urllib.request.Request(oembed_url, headers={'User-Agent': 'Mozilla/5.0'})
@@ -48,14 +49,23 @@ class handler(BaseHTTPRequestHandler):
             except Exception as oe:
                 print("Oembed fetch error:", oe)
 
+            # Fetch YouTube video page to parse exact duration in seconds
+            try:
+                page_url = f"https://www.youtube.com/watch?v={video_id}"
+                preq = urllib.request.Request(page_url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+                with urllib.request.urlopen(preq) as pres:
+                    html = pres.read().decode('utf-8', errors='ignore')
+                    dur_match = re.search(r'"approxDurationMs"\s*:\s*"(\d+)"', html) or re.search(r'"lengthSeconds"\s*:\s*"(\d+)"', html)
+                    if dur_match:
+                        ms_or_sec = int(dur_match.group(1))
+                        duration = ms_or_sec // 1000 if ms_or_sec > 10000 else ms_or_sec
+            except Exception as de:
+                print("Duration parse error:", de)
+
             clean_title = re.sub(r'[^\w\s-]', '', title).strip()
             filename = f"{clean_title}.mp3"
             
-            # High-fidelity audio stream converter endpoints for Vercel production
-            download_url = f"https://api.cobalt.tools/api/json"
-            direct_mp3_url = f"https://co.wuk.sh/api/json"
-
-            # Try cobalt high-speed audio converter API for direct 320kbps MP3 stream
+            # High-fidelity audio stream API
             mp3_stream_url = None
             try:
                 cobalt_req = urllib.request.Request(
@@ -80,7 +90,6 @@ class handler(BaseHTTPRequestHandler):
                 print("Cobalt API exception:", ce)
 
             if not mp3_stream_url:
-                # Direct high-quality fallback MP3 download stream link
                 mp3_stream_url = f"https://y2mate.is/download?url=https://www.youtube.com/watch?v={video_id}"
 
             self.send_response(200)
@@ -91,6 +100,7 @@ class handler(BaseHTTPRequestHandler):
                 'success': True,
                 'title': title,
                 'uploader': author,
+                'duration': duration,
                 'thumbnail': thumbnail,
                 'download_url': mp3_stream_url,
                 'filename': filename,
