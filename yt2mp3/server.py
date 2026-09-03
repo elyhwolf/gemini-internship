@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-SoundRip — YouTube to MP3 Converter Backend Server
-Extracts high-quality audio streams from YouTube URLs using yt-dlp.
+DripSwitch Studio — Real YouTube to MP3 Converter Backend Server
+Extracts exact audio from YouTube URLs using yt-dlp + ffmpeg and serves actual .mp3 binary files.
 """
 
 import http.server
@@ -11,20 +11,23 @@ import json
 import urllib.request
 import urllib.parse
 import sys
+import re
 
-# Ensure yt-dlp is in python path
 user_python_path = "/Users/elywolf/Library/Python/3.9/lib/python/site-packages"
 if user_python_path not in sys.path:
     sys.path.append(user_python_path)
 
 import yt_dlp
+import imageio_ffmpeg
 
 PORT = 5177
 DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 DOWNLOADS_DIR = os.path.join(DIRECTORY, 'downloads')
 os.makedirs(DOWNLOADS_DIR, exist_ok=True)
 
-class SoundRipHandler(http.server.SimpleHTTPRequestHandler):
+FFMPEG_PATH = imageio_ffmpeg.get_ffmpeg_exe()
+
+class DripSwitchHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=DIRECTORY, **kwargs)
 
@@ -35,12 +38,36 @@ class SoundRipHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         self.end_headers()
 
+    def do_GET(self):
+        if self.path.startswith('/downloads/'):
+            filename = os.path.basename(urllib.parse.unquote(self.path))
+            file_path = os.path.join(DOWNLOADS_DIR, filename)
+
+            if os.path.exists(file_path):
+                self.send_response(200)
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.send_header('Content-Type', 'audio/mpeg')
+                self.send_header('Content-Disposition', f'attachment; filename="{filename}"')
+                self.send_header('Content-Length', str(os.path.getsize(file_path)))
+                self.end_headers()
+
+                with open(file_path, 'rb') as f:
+                    self.wfile.write(f.read())
+                return
+            else:
+                self.send_response(404)
+                self.end_headers()
+                return
+        
+        super().do_GET()
+
     def do_POST(self):
         if self.path == '/api/convert':
             try:
                 content_length = int(self.headers.get('Content-Length', 0))
                 post_data = self.rfile.read(content_length)
                 payload = json.loads(post_data.decode('utf-8'))
+                
                 yt_url = payload.get('url', '').strip()
                 yt_url = yt_url.replace('music.youtube.com', 'www.youtube.com')
 
@@ -48,12 +75,13 @@ class SoundRipHandler(http.server.SimpleHTTPRequestHandler):
                     self.send_error_res("Please provide a valid YouTube URL.")
                     return
 
-                print(f"Extracting audio for URL: {yt_url}")
+                print(f"Extracting audio for exact URL: {yt_url}")
 
-                # Configure yt-dlp options for MP3 extraction
                 ydl_opts = {
+                    'ffmpeg_location': FFMPEG_PATH,
                     'format': 'bestaudio/best',
                     'outtmpl': os.path.join(DOWNLOADS_DIR, '%(id)s.%(ext)s'),
+                    'extractor_args': {'youtube': {'player_client': ['android', 'mweb']}},
                     'postprocessors': [{
                         'key': 'FFmpegExtractAudio',
                         'preferredcodec': 'mp3',
@@ -63,32 +91,28 @@ class SoundRipHandler(http.server.SimpleHTTPRequestHandler):
                     'no_warnings': True,
                 }
 
-                # Extract video info & audio
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                     info = ydl.extract_info(yt_url, download=True)
                     video_id = info.get('id', 'audio')
-                    title = info.get('title', 'YouTube Audio Track')
-                    duration = info.get('duration', 0)
+                    raw_title = info.get('title', 'YouTube Audio Track')
+                    uploader = info.get('uploader', 'YouTube Creator')
                     thumbnail = info.get('thumbnail', '')
-                    uploader = info.get('uploader', 'YouTube')
+                    duration = info.get('duration', 0)
 
-                    # Check output file path
-                    mp3_filename = f"{video_id}.mp3"
-                    mp3_path = os.path.join(DOWNLOADS_DIR, mp3_filename)
+                    clean_title = re.sub(r'[^\w\s-]', '', raw_title).strip()
+                    mp3_filename = f"{clean_title}.mp3"
+                    raw_mp3_path = os.path.join(DOWNLOADS_DIR, f"{video_id}.mp3")
+                    target_mp3_path = os.path.join(DOWNLOADS_DIR, mp3_filename)
 
-                    # If ffmpeg wasn't present to convert webm to mp3, fall back to extracted audio file
-                    if not os.path.exists(mp3_path):
-                        ext = info.get('ext', 'm4a')
-                        actual_file = os.path.join(DOWNLOADS_DIR, f"{video_id}.{ext}")
-                        if os.path.exists(actual_file):
-                            mp3_filename = f"{video_id}.{ext}"
+                    if os.path.exists(raw_mp3_path):
+                        os.rename(raw_mp3_path, target_mp3_path)
 
-                    download_link = f"http://localhost:{PORT}/downloads/{mp3_filename}"
+                    download_link = f"http://localhost:{PORT}/downloads/{urllib.parse.quote(mp3_filename)}"
 
-                    print(f"SUCCESS! Created Audio File: {download_link}")
+                    print(f"SUCCESS! Real MP3 Created: '{raw_title}' -> {download_link}")
                     self.send_json({
                         'success': True,
-                        'title': title,
+                        'title': raw_title,
                         'uploader': uploader,
                         'duration': duration,
                         'thumbnail': thumbnail,
@@ -98,15 +122,9 @@ class SoundRipHandler(http.server.SimpleHTTPRequestHandler):
 
             except Exception as e:
                 print("Extraction error:", e)
-                # Fallback extraction info generator if direct download has restriction
                 self.send_json({
-                    'success': True,
-                    'title': 'YouTube Audio Track',
-                    'uploader': 'YouTube Creator',
-                    'duration': 180,
-                    'thumbnail': 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
-                    'download_url': yt_url,
-                    'note': str(e)
+                    'success': False,
+                    'message': f"Extraction error: {str(e)}"
                 })
         else:
             super().do_GET()
@@ -126,6 +144,6 @@ class SoundRipHandler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(json.dumps({'success': False, 'message': msg}).encode('utf-8'))
 
 if __name__ == '__main__':
-    with socketserver.TCPServer(("", PORT), SoundRipHandler) as httpd:
-        print(f"SoundRip YouTube to MP3 Server running at http://localhost:{PORT}")
+    with socketserver.TCPServer(("", PORT), DripSwitchHandler) as httpd:
+        print(f"DripSwitch Studio Real MP3 Converter Server running at http://localhost:{PORT}")
         httpd.serve_forever()
