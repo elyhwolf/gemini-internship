@@ -79,6 +79,7 @@ let flappyAnimationId = null;
 
 // Cloud Boss Mode Variables
 let isCloudBossMode = false;
+let cloudModeGraceTurnRemaining = 0; // 1-turn grace period after score 25+ crash
 let cloudBgX = 0;
 
 function launchHackerTerminal() {
@@ -95,6 +96,7 @@ function exitHackerTerminal() {
   if (screen) screen.style.display = 'none';
   document.body.classList.remove('cloud-theme');
   isCloudBossMode = false;
+  cloudModeGraceTurnRemaining = 0;
   if (matrixInterval) clearInterval(matrixInterval);
   if (flappyAnimationId) cancelAnimationFrame(flappyAnimationId);
 }
@@ -193,7 +195,16 @@ function resetFlappyGame() {
   document.getElementById('flappyGameOverBox').style.display = 'none';
 
   const cloudBtn = document.getElementById('cloudModeBtn');
-  if (cloudBtn && !isCloudBossMode) cloudBtn.style.display = 'none';
+  if (cloudBtn) {
+    if (isCloudBossMode) {
+      cloudBtn.style.display = 'none';
+    } else if (cloudModeGraceTurnRemaining > 0) {
+      cloudBtn.style.display = 'block';
+      cloudModeGraceTurnRemaining--;
+    } else {
+      cloudBtn.style.display = 'none';
+    }
+  }
 
   if (flappyAnimationId) cancelAnimationFrame(flappyAnimationId);
   gameLoop();
@@ -215,6 +226,7 @@ function enterCloudMode() {
   const fadeOverlay = document.getElementById('whiteFadeOverlay');
   const cloudBtn = document.getElementById('cloudModeBtn');
   
+  cloudModeGraceTurnRemaining = 0;
   if (cloudBtn) cloudBtn.style.display = 'none';
   if (fadeOverlay) fadeOverlay.classList.add('active');
 
@@ -352,6 +364,7 @@ function gameLoop() {
 
         // Unlock Cloud Mode Button when Score reaches 25!
         if (score >= 25 && !isCloudBossMode) {
+          cloudModeGraceTurnRemaining = 2; // Active for current turn + 1 grace turn after crash!
           const cloudBtn = document.getElementById('cloudModeBtn');
           if (cloudBtn) cloudBtn.style.display = 'block';
         }
@@ -448,6 +461,12 @@ function drawCloud(ctx, x, y, size) {
 function triggerGameOver() {
   isGameOver = true;
   document.getElementById('flappyGameOverBox').style.display = 'flex';
+
+  // Keep Cloud Mode button visible on Game Over screen if unlocked for grace turn!
+  const cloudBtn = document.getElementById('cloudModeBtn');
+  if (cloudBtn && cloudModeGraceTurnRemaining > 0 && !isCloudBossMode) {
+    cloudBtn.style.display = 'block';
+  }
 }
 
 /* ====================================================== */

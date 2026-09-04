@@ -635,7 +635,7 @@ button.convert-btn:hover {
   position: absolute;
   bottom: 16px;
   right: 16px;
-  z-index: 15;
+  z-index: 30; /* Float above game-over-overlay (z-index 20) */
   background: linear-gradient(135deg, #00e5ff 0%, #ffffff 50%, #b388ff 100%);
   color: #050515;
   border: 2px solid #ffffff;
