@@ -508,7 +508,6 @@ async function convertYouTubeToMp3() {
       audioPlayer = document.getElementById('audioPlayer');
       const downloadBtn = document.getElementById('downloadBtn');
 
-      // Use direct local download URL when available from local Python server
       let downloadUrl = data.download_url;
       if (!downloadUrl || !downloadUrl.startsWith('http://localhost')) {
         downloadUrl = `/api/download?id=${currentVideoId}&title=${encodeURIComponent(data.title || 'track')}`;
