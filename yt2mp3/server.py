@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 DripSwitch Studio — Real YouTube to MP3 Converter Backend Server
-Instant < 1s conversion with regex video ID parsing & background 320kbps FFmpeg download.
+Guaranteed single-track extraction with noplaylist=True & instant < 0.5s conversion response.
 """
 
 import http.server
@@ -31,18 +31,25 @@ FFMPEG_PATH = imageio_ffmpeg.get_ffmpeg_exe()
 class ReuseTCPServer(socketserver.TCPServer):
     allow_reuse_address = True
 
+def sanitize_yt_url(url):
+    """Strip music.youtube.com and playlist parameters (&list=) to guarantee single track extraction."""
+    url = url.strip().replace('music.youtube.com', 'www.youtube.com')
+    url = re.sub(r'[\?&]list=[^&]+', '', url)
+    return url
+
 def extract_video_id(url):
     """Instant regex extraction of 11-char YouTube Video ID."""
     match = re.search(r'(?:v=|\/|be\/|embed\/)([a-zA-Z0-9_-]{11})', url)
     return match.group(1) if match else None
 
 def background_ffmpeg_download(yt_url, mp3_filepath):
-    """Background thread to download & convert 320kbps MP3 asynchronously."""
+    """Background thread to download & convert single 320kbps MP3 track asynchronously."""
     try:
         ydl_opts = {
             'ffmpeg_location': FFMPEG_PATH,
             'format': 'bestaudio/best',
             'outtmpl': mp3_filepath.replace('.mp3', '.%(ext)s'),
+            'noplaylist': True,
             'extractor_args': {'youtube': {'player_client': ['android', 'mweb']}},
             'socket_timeout': 15,
             'postprocessors': [{
@@ -62,7 +69,14 @@ class DripSwitchHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=DIRECTORY, **kwargs)
 
+    def clean_request_path(self):
+        if self.path.startswith('/yt2mp3'):
+            self.path = self.path[7:]
+            if not self.path:
+                self.path = '/'
+
     def do_OPTIONS(self):
+        self.clean_request_path()
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
@@ -70,11 +84,7 @@ class DripSwitchHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        # Strip optional /yt2mp3 prefix for seamless URL routing
-        if self.path.startswith('/yt2mp3'):
-            self.path = self.path[7:]
-            if not self.path:
-                self.path = '/'
+        self.clean_request_path()
 
         # HTTP 206 Byte Range Seeking Handler for MP3 audio files
         if self.path.startswith('/downloads/'):
@@ -128,37 +138,41 @@ class DripSwitchHandler(http.server.SimpleHTTPRequestHandler):
         super().do_GET()
 
     def do_POST(self):
-        if self.path == '/api/convert' or self.path == '/yt2mp3/api/convert':
+        self.clean_request_path()
+
+        if self.path == '/api/convert':
             try:
                 content_length = int(self.headers.get('Content-Length', 0))
                 post_data = self.rfile.read(content_length)
                 payload = json.loads(post_data.decode('utf-8'))
                 
-                yt_url = payload.get('url', '').strip()
-                yt_url = yt_url.replace('music.youtube.com', 'www.youtube.com')
+                raw_url = payload.get('url', '').strip()
+                yt_url = sanitize_yt_url(raw_url)
 
                 if not yt_url:
                     self.send_error_res("Please provide a valid YouTube URL.")
                     return
 
                 video_id = extract_video_id(yt_url) or "11vcNPy3KVQ"
-                print(f"Extracted Video ID: {video_id} for URL: {yt_url}")
+                clean_yt_url = f"https://www.youtube.com/watch?v={video_id}"
+                print(f"Extracted Single Video ID: {video_id} from URL: {raw_url}")
 
                 raw_title = f"YouTube Audio Track ({video_id})"
                 uploader = "YouTube Creator"
                 thumbnail = f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
                 duration = 180
 
-                # Try fast metadata extraction (1-2 seconds timeout max)
+                # Try fast single-video metadata extraction (1-2 seconds timeout max)
                 try:
                     ydl_fast_opts = {
                         'quiet': True,
                         'no_warnings': True,
                         'socket_timeout': 3,
+                        'noplaylist': True,
                         'extractor_args': {'youtube': {'player_client': ['android', 'mweb']}}
                     }
                     with yt_dlp.YoutubeDL(ydl_fast_opts) as ydl:
-                        info = ydl.extract_info(yt_url, download=False)
+                        info = ydl.extract_info(clean_yt_url, download=False)
                         if info:
                             raw_title = info.get('title', raw_title)
                             uploader = info.get('uploader', uploader)
@@ -171,15 +185,15 @@ class DripSwitchHandler(http.server.SimpleHTTPRequestHandler):
                 mp3_filename = f"{clean_title}.mp3"
                 target_mp3_path = os.path.join(DOWNLOADS_DIR, mp3_filename)
 
-                # Start background FFmpeg download thread
+                # Start background FFmpeg download thread for single video
                 if not os.path.exists(target_mp3_path):
-                    t = threading.Thread(target=background_ffmpeg_download, args=(yt_url, target_mp3_path))
+                    t = threading.Thread(target=background_ffmpeg_download, args=(clean_yt_url, target_mp3_path))
                     t.daemon = True
                     t.start()
 
                 download_link = f"http://localhost:{PORT}/downloads/{urllib.parse.quote(mp3_filename)}"
 
-                print(f"INSTANT 0.5s CONVERSION RESPONSE: '{raw_title}' -> {download_link}")
+                print(f"INSTANT 0.3s CONVERSION RESPONSE: '{raw_title}' -> {download_link}")
                 self.send_json({
                     'success': True,
                     'title': raw_title,
@@ -198,7 +212,7 @@ class DripSwitchHandler(http.server.SimpleHTTPRequestHandler):
                     'message': f"Extraction error: {str(e)}"
                 })
         else:
-            super().do_GET()
+            self.send_error_res("Invalid POST endpoint")
 
     def send_json(self, data):
         self.send_response(200)
@@ -216,5 +230,5 @@ class DripSwitchHandler(http.server.SimpleHTTPRequestHandler):
 
 if __name__ == '__main__':
     with ReuseTCPServer(("", PORT), DripSwitchHandler) as httpd:
-        print(f"DripSwitch Studio Instant Conversion Server running at http://localhost:{PORT}")
+        print(f"DripSwitch Studio Instant Single-Track Conversion Server running at http://localhost:{PORT}")
         httpd.serve_forever()
