@@ -61,7 +61,7 @@
           
           <div class="player-controls">
             <button type="button" class="play-pause-btn" id="playPauseBtn" onclick="togglePlayPause()">
-              <span id="playIcon">▶</span>
+              <span id="playIcon" style="display: flex; align-items: center; justify-content: center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
             </button>
 
             <div class="scrubber-wrapper">
@@ -87,7 +87,9 @@
   <div class="secret-modal-overlay" id="secretCodeModal">
     <div class="secret-modal-card">
       <div class="secret-header">
-        <span class="secret-icon">🔒</span>
+        <span class="secret-icon-badge">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00ff66" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        </span>
         <h3>SECRET ACCESS DETECTED</h3>
         <p>Triple-click passcode authorization required.</p>
       </div>
@@ -164,11 +166,11 @@
     
     <div class="cutscene-dialogue-card">
       <div class="cutscene-speaker">
-        <span class="monster-badge">👑 CASTLE MONSTER LORD (1500 ELO)</span>
+        <span class="monster-badge">[ CASTLE MONSTER LORD — 1500 ELO ]</span>
       </div>
       <p class="dialogue-text" id="monsterDialogueText">MORTAL... YOU DARED SOAR THROUGH MY CLOUDS.</p>
       <button class="challenge-btn" id="challengeBtn" onclick="startChessGame()">
-        PLAY CHESS AGAINST THE MONSTER ⚔️
+        PLAY CHESS AGAINST THE MONSTER
       </button>
     </div>
   </div>
@@ -178,7 +180,9 @@
     <div class="chess-container">
       <header class="chess-header">
         <div class="boss-profile">
-          <div class="boss-avatar">👑</div>
+          <div class="boss-avatar">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffaa00" stroke-width="2.2"><path d="M2 4l3 12h14l3-12-6 7-4-5-4 5-6-7z"></path><path d="M5 20h14"></path></svg>
+          </div>
           <div class="boss-details">
             <h2>CASTLE MONSTER LORD</h2>
             <span class="elo-badge">1500 ELO AI BOSS</span>

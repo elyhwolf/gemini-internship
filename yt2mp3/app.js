@@ -65,7 +65,7 @@ function verifySecretCode() {
     closeSecretModal();
     launchHackerTerminal();
   } else {
-    if (error) error.textContent = '❌ INVALID ACCESS CODE. HINT: What is Ely? (Adjective)';
+    if (error) error.textContent = '[ACCESS DENIED] INVALID ACCESS CODE. HINT: What is Ely? (Adjective)';
     if (input) input.style.borderColor = '#ff3366';
   }
 }
@@ -652,10 +652,24 @@ let validMoveTargets = [];
 let currentTurn = 'W'; // 'W' = Human White, 'B' = Monster Black
 let capturedWhite = [];
 let capturedBlack = [];
+let lastMove = null;
 
-const PIECE_UNICODE = {
-  'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙',
-  'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟'
+const CHESS_SVG_PIECES = {
+  // White Pieces (#FFFFFF fill, Gold accent glow, #000 stroke)
+  'K': `<svg viewBox="0 0 45 45" class="piece-svg white"><g fill="#ffffff" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M 22.5,11.63 C 22.5,11.63 21,14.63 21,14.63 L 15,14.63 L 15,17.63 L 17.5,17.63 L 17.5,21.63 C 15.5,21.63 12.5,23.13 12.5,26.63 C 12.5,28.63 14,30.13 16,30.13 L 29,30.13 C 31,30.13 32.5,28.63 32.5,26.63 C 32.5,23.13 29.5,21.63 27.5,21.63 L 27.5,17.63 L 30,17.63 L 30,14.63 L 24,14.63 L 24,11.63 Z"/><path d="M 22.5,6 L 22.5,11.63 M 20,8 L 25,8"/><path d="M 11.5,37 L 33.5,37 M 13,34 L 32,34 M 14.5,31 L 30.5,31"/></g></svg>`,
+  'Q': `<svg viewBox="0 0 45 45" class="piece-svg white"><g fill="#ffffff" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M 9,26 C 17.5,24.5 30,24.5 36,26 L 38.5,13.5 L 31,25 L 22.5,10 L 14,25 L 6.5,13.5 Z"/><path d="M 9,26 C 9,28 10.5,28 11.5,30 C 12.5,31.5 12.5,31 12,33.5 C 10.5,34.5 10.5,36 14,36 C 16,36 21,36 22.5,36 C 24,36 29,36 31,36 C 34.5,36 34.5,34.5 33,33.5 C 32.5,31 32.5,31.5 33.5,30 C 34.5,28 36,28 36,26 Z"/><path d="M 11.5,30 C 15,29 30,29 33.5,30"/><circle cx="6" cy="12" r="2" fill="#ffea00"/><circle cx="14" cy="9" r="2" fill="#ffea00"/><circle cx="22.5" cy="6" r="2" fill="#ffea00"/><circle cx="31" cy="9" r="2" fill="#ffea00"/><circle cx="39" cy="12" r="2" fill="#ffea00"/></g></svg>`,
+  'R': `<svg viewBox="0 0 45 45" class="piece-svg white"><g fill="#ffffff" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M 9,39 L 36,39 L 36,36 L 9,36 Z M 12,36 L 12,32 L 33,32 L 33,36 Z M 11,14 L 11,9 L 15,9 L 15,11 L 20,11 L 20,9 L 25,9 L 25,11 L 30,11 L 30,9 L 34,9 L 34,14 Z M 12,14 L 33,14 L 30,32 L 15,32 Z"/></g></svg>`,
+  'B': `<svg viewBox="0 0 45 45" class="piece-svg white"><g fill="#ffffff" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M 9,36 C 12.39,35 15,36 22.5,36 C 30,36 32.61,35 36,36 L 36,39 L 9,39 Z M 15,32 C 17.5,34.5 27.5,34.5 30,32 C 30.5,30.5 30,30 30,30 C 30,22 27.35,16.5 22.5,10 C 17.65,16.5 15,22 15,30 C 15,30 14.5,30.5 15,32 Z"/><circle cx="22.5" cy="8" r="2.5" fill="#ffea00"/><path d="M 17.5,26 L 27.5,26 M 22.5,21 L 22.5,31"/></g></svg>`,
+  'N': `<svg viewBox="0 0 45 45" class="piece-svg white"><g fill="#ffffff" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M 9.5,39 L 35.5,39 L 35.5,36 L 9.5,36 Z M 11.5,36 C 15,33 27,33 33.5,36 C 33.5,32 32.5,31 31.5,30 C 29.5,28 27.5,26 28.5,22 C 29.5,18 31.5,16.5 31.5,13.5 C 31.5,10.5 28.5,8 24.5,8 C 21,8 19,10 17.5,12 C 16,11 13,11 11.5,12.5 C 10,14 10.5,16 11,17.5 C 10,18.5 9,20.5 10,23 C 11,25.5 13,26 13,26 C 13,26 11.5,29.5 11.5,36 Z"/><circle cx="16" cy="14" r="1.5" fill="#ffea00"/></g></svg>`,
+  'P': `<svg viewBox="0 0 45 45" class="piece-svg white"><g fill="#ffffff" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M 22.5,9 A 4,4 0 1,1 22.5,17 A 4,4 0 1,1 22.5,9 Z"/><path d="M 15,32 C 17.5,34.5 27.5,34.5 30,32 C 30.5,30.5 30,30 30,30 C 30,25 26.5,22 22.5,20 C 18.5,22 15,25 15,30 C 15,30 14.5,30.5 15,32 Z"/><path d="M 11.5,37 L 33.5,37 L 33.5,34 L 11.5,34 Z"/></g></svg>`,
+
+  // Black Monster Pieces (#FF2A4B Neon Crimson fill, #FF0033 accent, #000 stroke)
+  'k': `<svg viewBox="0 0 45 45" class="piece-svg black"><g fill="#ff2a4b" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M 22.5,11.63 C 22.5,11.63 21,14.63 21,14.63 L 15,14.63 L 15,17.63 L 17.5,17.63 L 17.5,21.63 C 15.5,21.63 12.5,23.13 12.5,26.63 C 12.5,28.63 14,30.13 16,30.13 L 29,30.13 C 31,30.13 32.5,28.63 32.5,26.63 C 32.5,23.13 29.5,21.63 27.5,21.63 L 27.5,17.63 L 30,17.63 L 30,14.63 L 24,14.63 L 24,11.63 Z"/><path d="M 22.5,6 L 22.5,11.63 M 20,8 L 25,8"/><path d="M 11.5,37 L 33.5,37 M 13,34 L 32,34 M 14.5,31 L 30.5,31"/></g></svg>`,
+  'q': `<svg viewBox="0 0 45 45" class="piece-svg black"><g fill="#ff2a4b" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M 9,26 C 17.5,24.5 30,24.5 36,26 L 38.5,13.5 L 31,25 L 22.5,10 L 14,25 L 6.5,13.5 Z"/><path d="M 9,26 C 9,28 10.5,28 11.5,30 C 12.5,31.5 12.5,31 12,33.5 C 10.5,34.5 10.5,36 14,36 C 16,36 21,36 22.5,36 C 24,36 29,36 31,36 C 34.5,36 34.5,34.5 33,33.5 C 32.5,31 32.5,31.5 33.5,30 C 34.5,28 36,28 36,26 Z"/><path d="M 11.5,30 C 15,29 30,29 33.5,30"/><circle cx="6" cy="12" r="2" fill="#ff0033"/><circle cx="14" cy="9" r="2" fill="#ff0033"/><circle cx="22.5" cy="6" r="2" fill="#ff0033"/><circle cx="31" cy="9" r="2" fill="#ff0033"/><circle cx="39" cy="12" r="2" fill="#ff0033"/></g></svg>`,
+  'r': `<svg viewBox="0 0 45 45" class="piece-svg black"><g fill="#ff2a4b" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M 9,39 L 36,39 L 36,36 L 9,36 Z M 12,36 L 12,32 L 33,32 L 33,36 Z M 11,14 L 11,9 L 15,9 L 15,11 L 20,11 L 20,9 L 25,9 L 25,11 L 30,11 L 30,9 L 34,9 L 34,14 Z M 12,14 L 33,14 L 30,32 L 15,32 Z"/></g></svg>`,
+  'b': `<svg viewBox="0 0 45 45" class="piece-svg black"><g fill="#ff2a4b" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M 9,36 C 12.39,35 15,36 22.5,36 C 30,36 32.61,35 36,36 L 36,39 L 9,39 Z M 15,32 C 17.5,34.5 27.5,34.5 30,32 C 30.5,30.5 30,30 30,30 C 30,22 27.35,16.5 22.5,10 C 17.65,16.5 15,22 15,30 C 15,30 14.5,30.5 15,32 Z"/><circle cx="22.5" cy="8" r="2.5" fill="#ff0033"/><path d="M 17.5,26 L 27.5,26 M 22.5,21 L 22.5,31"/></g></svg>`,
+  'n': `<svg viewBox="0 0 45 45" class="piece-svg black"><g fill="#ff2a4b" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M 9.5,39 L 35.5,39 L 35.5,36 L 9.5,36 Z M 11.5,36 C 15,33 27,33 33.5,36 C 33.5,32 32.5,31 31.5,30 C 29.5,28 27.5,26 28.5,22 C 29.5,18 31.5,16.5 31.5,13.5 C 31.5,10.5 28.5,8 24.5,8 C 21,8 19,10 17.5,12 C 16,11 13,11 11.5,12.5 C 10,14 10.5,16 11,17.5 C 10,18.5 9,20.5 10,23 C 11,25.5 13,26 13,26 C 13,26 11.5,29.5 11.5,36 Z"/><circle cx="16" cy="14" r="1.5" fill="#ff0033"/></g></svg>`,
+  'p': `<svg viewBox="0 0 45 45" class="piece-svg black"><g fill="#ff2a4b" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M 22.5,9 A 4,4 0 1,1 22.5,17 A 4,4 0 1,1 22.5,9 Z"/><path d="M 15,32 C 17.5,34.5 27.5,34.5 30,32 C 30.5,30.5 30,30 30,30 C 30,25 26.5,22 22.5,20 C 18.5,22 15,25 15,30 C 15,30 14.5,30.5 15,32 Z"/><path d="M 11.5,37 L 33.5,37 L 33.5,34 L 11.5,34 Z"/></g></svg>`
 };
 
 const PIECE_VALUES = {
@@ -721,6 +735,7 @@ function resetChessBoard() {
   currentTurn = 'W';
   capturedWhite = [];
   capturedBlack = [];
+  lastMove = null;
 
   updateTurnUI("YOUR TURN (WHITE)");
   renderChessBoard();
@@ -734,8 +749,8 @@ function renderChessBoard() {
   if (!boardEl) return;
   boardEl.innerHTML = '';
 
-  if (blackCapEl) blackCapEl.innerHTML = capturedBlack.map(p => PIECE_UNICODE[p] || '').join(' ');
-  if (whiteCapEl) whiteCapEl.innerHTML = capturedWhite.map(p => PIECE_UNICODE[p] || '').join(' ');
+  if (blackCapEl) blackCapEl.innerHTML = capturedBlack.map(p => CHESS_SVG_PIECES[p] || '').join('');
+  if (whiteCapEl) whiteCapEl.innerHTML = capturedWhite.map(p => CHESS_SVG_PIECES[p] || '').join('');
 
   for (let r = 0; r < 8; r++) {
     for (let c = 0; c < 8; c++) {
@@ -745,7 +760,7 @@ function renderChessBoard() {
       
       const piece = chessBoardState[r][c];
       if (piece !== '.') {
-        sq.textContent = PIECE_UNICODE[piece] || piece;
+        sq.innerHTML = CHESS_SVG_PIECES[piece] || piece;
       }
 
       if (selectedSquare && selectedSquare.r === r && selectedSquare.c === c) {
@@ -754,6 +769,10 @@ function renderChessBoard() {
 
       if (validMoveTargets.some(m => m.r === r && m.c === c)) {
         sq.classList.add('valid-target');
+      }
+
+      if (lastMove && ((lastMove.fromR === r && lastMove.fromC === c) || (lastMove.toR === r && lastMove.toC === c))) {
+        sq.classList.add('last-move');
       }
 
       sq.onclick = () => handleSquareClick(r, c);
@@ -805,6 +824,8 @@ function makeMove(fromR, fromC, toR, toC) {
 
   chessBoardState[toR][toC] = p;
   chessBoardState[fromR][fromC] = '.';
+
+  lastMove = { fromR, fromC, toR, toC };
 
   // Pawn Promotion to Queen
   if (p === 'P' && toR === 0) chessBoardState[toR][toC] = 'Q';
@@ -1070,19 +1091,22 @@ function initAudioDeck() {
     if (totalTimeDisplay) totalTimeDisplay.textContent = formatTime(dur);
   });
 
+  const SVG_PLAY = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+  const SVG_PAUSE = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+
   audioPlayer.addEventListener('play', () => {
-    if (playIcon) playIcon.textContent = '❚❚';
+    if (playIcon) playIcon.innerHTML = SVG_PAUSE;
     cancelAnimationFrame(rafId);
     rafId = requestAnimationFrame(updateProgress);
   });
 
   audioPlayer.addEventListener('pause', () => {
-    if (playIcon) playIcon.textContent = '▶';
+    if (playIcon) playIcon.innerHTML = SVG_PLAY;
     cancelAnimationFrame(rafId);
   });
 
   audioPlayer.addEventListener('ended', () => {
-    if (playIcon) playIcon.textContent = '▶';
+    if (playIcon) playIcon.innerHTML = SVG_PLAY;
     if (scrubber) scrubber.value = 0;
     cancelAnimationFrame(rafId);
   });
@@ -1099,17 +1123,20 @@ function togglePlayPause() {
   if (!audioPlayer) audioPlayer = document.getElementById('audioPlayer');
   const playIcon = document.getElementById('playIcon');
 
+  const SVG_PLAY = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+  const SVG_PAUSE = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+
   if (audioPlayer && audioPlayer.src && audioPlayer.src.length > 5 && !audioPlayer.src.includes('about:blank')) {
     if (audioPlayer.paused) {
       audioPlayer.play().then(() => {
-        if (playIcon) playIcon.textContent = '❚❚';
+        if (playIcon) playIcon.innerHTML = SVG_PAUSE;
       }).catch(err => {
         console.log("Audio play error:", err);
         playFallbackEmbed();
       });
     } else {
       audioPlayer.pause();
-      if (playIcon) playIcon.textContent = '▶';
+      if (playIcon) playIcon.innerHTML = SVG_PLAY;
     }
   } else {
     playFallbackEmbed();
@@ -1119,6 +1146,9 @@ function togglePlayPause() {
 function playFallbackEmbed() {
   const playIcon = document.getElementById('playIcon');
   let iframe = document.getElementById('ytAudioIframe');
+
+  const SVG_PLAY = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+  const SVG_PAUSE = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
 
   if (!iframe) {
     iframe = document.createElement('iframe');
@@ -1130,11 +1160,11 @@ function playFallbackEmbed() {
   if (isPlayingEmbed) {
     iframe.src = 'about:blank';
     isPlayingEmbed = false;
-    if (playIcon) playIcon.textContent = '▶';
+    if (playIcon) playIcon.innerHTML = SVG_PLAY;
   } else {
     iframe.src = `https://www.youtube.com/embed/${currentVideoId}?autoplay=1&enablejsapi=1`;
     isPlayingEmbed = true;
-    if (playIcon) playIcon.textContent = '❚❚';
+    if (playIcon) playIcon.innerHTML = SVG_PAUSE;
     simulatePlaybackProgress();
   }
 }
