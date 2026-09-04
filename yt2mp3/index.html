@@ -12,6 +12,9 @@
 </head>
 <body>
 
+  <!-- Full-Screen White Fade Transition Overlay -->
+  <div id="whiteFadeOverlay" class="white-fade-overlay"></div>
+
   <div class="container">
     
     <header>
@@ -104,23 +107,23 @@
       
       <header class="terminal-header">
         <div class="terminal-title">
-          <span class="pulse-dot"></span>
-          <span>ELY_HACKER_OS v4.2 // FLAPPY BIRD ENGINE</span>
+          <span class="pulse-dot" id="terminalDot"></span>
+          <span id="terminalTitleText">ELY_HACKER_OS v4.2 // FLAPPY BIRD ENGINE</span>
         </div>
         <button class="terminal-exit-btn" onclick="exitHackerTerminal()">[ EXIT TERMINAL ]</button>
       </header>
 
       <div class="terminal-body">
         
-        <div class="terminal-console">
+        <div class="terminal-console" id="terminalConsoleBox">
           <p class="log-line green">> ACCESS_GRANTED: Passcode 'ElyIsGreat' Verified.</p>
           <p class="log-line cyan">> INITIALIZING RETRO HACKER FLAPPY BIRD ENGINE...</p>
           <p class="log-line yellow">> CONTROLS: Press [SPACEBAR] or Click/Tap screen to FLAP!</p>
-          <p class="log-line magenta">> AVOID MATRIX CYBER PIPES AND SET A HIGH SCORE!</p>
+          <p class="log-line magenta" id="terminalHintLine">> REACH SCORE 25 TO UNLOCK SECRET CLOUD MODE!</p>
         </div>
 
         <div class="game-wrapper">
-          <div class="game-scoreboard">
+          <div class="game-scoreboard" id="gameScoreboard">
             <div class="score-card">
               <span>SCORE</span>
               <h2 id="flappyScore">0</h2>
@@ -133,10 +136,16 @@
 
           <div class="canvas-container">
             <canvas id="flappyCanvas" width="400" height="520"></canvas>
+            
+            <!-- Special 8-Bit Retro Cloud Mode Button (Appears at Score >= 25) -->
+            <button id="cloudModeBtn" class="cloud-mode-btn" onclick="enterCloudMode()">
+              CLOUD MODE
+            </button>
+
             <div class="game-over-overlay" id="flappyGameOverBox">
-              <h2>GAME OVER</h2>
-              <p>SYSTEM BREACH DETECTED</p>
-              <button class="restart-btn" onclick="resetFlappyGame()">PRESS SPACE OR CLICK TO REPLAY</button>
+              <h2 id="gameOverTitle">GAME OVER</h2>
+              <p id="gameOverSub">SYSTEM BREACH DETECTED</p>
+              <button class="restart-btn" id="restartBtn" onclick="resetFlappyGame()">PRESS SPACE OR CLICK TO REPLAY</button>
             </div>
           </div>
         </div>

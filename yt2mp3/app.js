@@ -1,5 +1,5 @@
 // DripSwitch Studio — YouTube & YouTube Music to MP3 Converter JS (Optimized 60FPS)
-// Includes Triple-Click Secret Easter Egg & Flappy Bird Hacker Engine!
+// Includes Triple-Click Secret Easter Egg & Flappy Bird Hacker Engine with CLOUD BOSS MODE!
 
 let audioPlayer = null;
 let isSeeking = false;
@@ -77,6 +77,10 @@ function verifySecretCode() {
 let matrixInterval = null;
 let flappyAnimationId = null;
 
+// Cloud Boss Mode Variables
+let isCloudBossMode = false;
+let cloudBgX = 0;
+
 function launchHackerTerminal() {
   const screen = document.getElementById('hackerTerminalScreen');
   if (screen) {
@@ -89,6 +93,8 @@ function launchHackerTerminal() {
 function exitHackerTerminal() {
   const screen = document.getElementById('hackerTerminalScreen');
   if (screen) screen.style.display = 'none';
+  document.body.classList.remove('cloud-theme');
+  isCloudBossMode = false;
   if (matrixInterval) clearInterval(matrixInterval);
   if (flappyAnimationId) cancelAnimationFrame(flappyAnimationId);
 }
@@ -110,10 +116,10 @@ function startMatrixRain() {
   if (matrixInterval) clearInterval(matrixInterval);
 
   matrixInterval = setInterval(() => {
-    ctx.fillStyle = 'rgba(2, 10, 5, 0.1)';
+    ctx.fillStyle = isCloudBossMode ? 'rgba(224, 247, 250, 0.15)' : 'rgba(2, 10, 5, 0.1)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = '#00ff66';
+    ctx.fillStyle = isCloudBossMode ? '#00b0ff' : '#00ff66';
     ctx.font = `${fontSize}px VT323, monospace`;
 
     for (let i = 0; i < drops.length; i++) {
@@ -159,6 +165,10 @@ function initFlappyBirdGame() {
 
 function handleFlappyInput(e) {
   if (document.getElementById('hackerTerminalScreen').style.display === 'block') {
+    if (e.code === 'KeyC') {
+      enterCloudMode();
+      return;
+    }
     if (e.code === 'Space') {
       e.preventDefault();
       if (isGameOver) {
@@ -182,6 +192,9 @@ function resetFlappyGame() {
   document.getElementById('flappyScore').textContent = '0';
   document.getElementById('flappyGameOverBox').style.display = 'none';
 
+  const cloudBtn = document.getElementById('cloudModeBtn');
+  if (cloudBtn && !isCloudBossMode) cloudBtn.style.display = 'none';
+
   if (flappyAnimationId) cancelAnimationFrame(flappyAnimationId);
   gameLoop();
 }
@@ -194,14 +207,80 @@ function flapBird() {
   bird.velocity = bird.jump;
 }
 
+/* ====================================================== */
+/* CLOUD BOSS MODE TRANSITION & RENDER LOGIC */
+/* ====================================================== */
+
+function enterCloudMode() {
+  const fadeOverlay = document.getElementById('whiteFadeOverlay');
+  const cloudBtn = document.getElementById('cloudModeBtn');
+  
+  if (cloudBtn) cloudBtn.style.display = 'none';
+  if (fadeOverlay) fadeOverlay.classList.add('active');
+
+  setTimeout(() => {
+    isCloudBossMode = true;
+    document.body.classList.add('cloud-theme');
+
+    const termTitle = document.getElementById('terminalTitleText');
+    const consoleBox = document.getElementById('terminalConsoleBox');
+    const scoreboard = document.getElementById('gameScoreboard');
+    const gameOverTitle = document.getElementById('gameOverTitle');
+    const gameOverSub = document.getElementById('gameOverSub');
+
+    if (termTitle) termTitle.textContent = 'ELY_CLOUD_OS v5.0 // CLOUD BOSS MODE';
+    if (scoreboard) scoreboard.style.display = 'none'; // Top right score counter will pop up in canvas!
+    if (gameOverTitle) gameOverTitle.textContent = 'CLOUD CRASH';
+    if (gameOverSub) gameOverSub.textContent = 'ATMOSPHERIC OVERLOAD';
+
+    if (consoleBox) {
+      consoleBox.innerHTML = `
+        <p class="log-line green">> CLOUD BOSS MODE ACTIVATED!</p>
+        <p class="log-line cyan">> ATMOSPHERE LOADED: DREAMY SKY & LIGHTNING CLOUD PILLARS</p>
+        <p class="log-line yellow">> FLY THE CELESTIAL BIRD AND DEFEAT SKY HAZARDS!</p>
+      `;
+    }
+
+    resetFlappyGame();
+
+    setTimeout(() => {
+      if (fadeOverlay) fadeOverlay.classList.remove('active');
+    }, 600);
+
+  }, 800);
+}
+
 function gameLoop() {
   const canvas = document.getElementById('flappyCanvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
 
-  ctx.fillStyle = '#001207';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // Background Rendering
+  if (isCloudBossMode) {
+    // Dreamy Cyan Sky Gradient
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    skyGrad.addColorStop(0, '#b2ebf2');
+    skyGrad.addColorStop(0.5, '#e0f7fa');
+    skyGrad.addColorStop(1, '#e1f5fe');
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    // Parallax Floating Clouds
+    cloudBgX -= 0.6;
+    if (cloudBgX <= -400) cloudBgX = 0;
+    
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+    drawCloud(ctx, cloudBgX + 50, 60, 60);
+    drawCloud(ctx, cloudBgX + 280, 100, 80);
+    drawCloud(ctx, cloudBgX + 450, 60, 60);
+    drawCloud(ctx, cloudBgX + 680, 100, 80);
+  } else {
+    // Cyber Hacker Matrix Background
+    ctx.fillStyle = '#001207';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  // Game Logic Loop
   if (isGameStarted && !isGameOver) {
     bird.velocity += bird.gravity;
     bird.y += bird.velocity;
@@ -211,8 +290,9 @@ function gameLoop() {
     }
 
     frameCount++;
-    if (frameCount % 90 === 0) {
-      const gap = 120;
+    const spawnRate = isCloudBossMode ? 80 : 90;
+    if (frameCount % spawnRate === 0) {
+      const gap = isCloudBossMode ? 130 : 120;
       const minHeight = 40;
       const maxHeight = canvas.height - gap - minHeight - 60;
       const topHeight = Math.floor(Math.random() * (maxHeight - minHeight + 1)) + minHeight;
@@ -225,22 +305,57 @@ function gameLoop() {
       });
     }
 
+    // Pipe / Hazard Rendering & Collision
     for (let i = pipes.length - 1; i >= 0; i--) {
       const p = pipes[i];
-      p.x -= 2.2;
+      p.x -= isCloudBossMode ? 2.6 : 2.2;
 
-      ctx.fillStyle = '#00ff66';
-      ctx.fillRect(p.x, 0, 45, p.top);
-      ctx.strokeStyle = '#003311';
-      ctx.strokeRect(p.x, 0, 45, p.top);
+      if (isCloudBossMode) {
+        // Soft White Cloud Pillars with Glowing Blue Borders
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#00b0ff';
+        ctx.lineWidth = 3;
 
-      ctx.fillRect(p.x, canvas.height - p.bottom, 45, p.bottom);
-      ctx.strokeRect(p.x, canvas.height - p.bottom, 45, p.bottom);
+        // Top Cloud Pillar
+        ctx.fillRect(p.x, 0, 48, p.top);
+        ctx.strokeRect(p.x, 0, 48, p.top);
+
+        // Bottom Cloud Pillar
+        const bY = canvas.height - p.bottom;
+        ctx.fillRect(p.x, bY, 48, p.bottom);
+        ctx.strokeRect(p.x, bY, 48, p.bottom);
+
+        // Lightning Energy Core in center of gap
+        ctx.fillStyle = '#ffea00';
+        ctx.shadowColor = '#00e5ff';
+        ctx.shadowBlur = 10;
+        ctx.fillRect(p.x + 20, p.top - 6, 8, 12);
+        ctx.fillRect(p.x + 20, bY - 6, 8, 12);
+        ctx.shadowBlur = 0;
+
+      } else {
+        // Cyber Matrix Pipes
+        ctx.fillStyle = '#00ff66';
+        ctx.fillRect(p.x, 0, 45, p.top);
+        ctx.strokeStyle = '#003311';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(p.x, 0, 45, p.top);
+
+        ctx.fillRect(p.x, canvas.height - p.bottom, 45, p.bottom);
+        ctx.strokeRect(p.x, canvas.height - p.bottom, 45, p.bottom);
+      }
 
       if (!p.passed && p.x + 45 < bird.x) {
         p.passed = true;
         score++;
         document.getElementById('flappyScore').textContent = score;
+
+        // Unlock Cloud Mode Button when Score reaches 25!
+        if (score >= 25 && !isCloudBossMode) {
+          const cloudBtn = document.getElementById('cloudModeBtn');
+          if (cloudBtn) cloudBtn.style.display = 'block';
+        }
+
         if (score > highScore) {
           highScore = score;
           localStorage.setItem('dripswitch_flappy_highscore', highScore);
@@ -250,32 +365,84 @@ function gameLoop() {
 
       if (
         bird.x + bird.radius > p.x &&
-        bird.x - bird.radius < p.x + 45 &&
+        bird.x - bird.radius < p.x + (isCloudBossMode ? 48 : 45) &&
         (bird.y - bird.radius < p.top || bird.y + bird.radius > canvas.height - p.bottom)
       ) {
         triggerGameOver();
       }
 
-      if (p.x + 45 < 0) {
+      if (p.x + 48 < 0) {
         pipes.splice(i, 1);
       }
     }
   }
 
-  ctx.beginPath();
-  ctx.arc(bird.x, bird.y, bird.radius, 0, Math.PI * 2);
-  ctx.fillStyle = '#00e5ff';
-  ctx.shadowColor = '#00ff66';
-  ctx.shadowBlur = 12;
-  ctx.fill();
-  ctx.shadowBlur = 0;
+  // Bird / Character Rendering
+  if (isCloudBossMode) {
+    // Celestial Winged Cloud Boss Bird
+    ctx.shadowColor = '#00b0ff';
+    ctx.shadowBlur = 15;
 
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(bird.x - 4, bird.y - 2, 6, 4);
+    // Body
+    ctx.beginPath();
+    ctx.arc(bird.x, bird.y, bird.radius + 2, 0, Math.PI * 2);
+    ctx.fillStyle = '#00b0ff';
+    ctx.fill();
+
+    // Inner Glow
+    ctx.beginPath();
+    ctx.arc(bird.x - 2, bird.y - 2, bird.radius - 2, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Golden Wings
+    ctx.fillStyle = '#ffea00';
+    ctx.beginPath();
+    const wingY = bird.y + Math.sin(frameCount * 0.2) * 6;
+    ctx.ellipse(bird.x - 6, wingY, 10, 4, Math.PI / 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Eye
+    ctx.fillStyle = '#050515';
+    ctx.fillRect(bird.x + 4, bird.y - 4, 4, 4);
+
+  } else {
+    // Cyber Hacker Bird
+    ctx.beginPath();
+    ctx.arc(bird.x, bird.y, bird.radius, 0, Math.PI * 2);
+    ctx.fillStyle = '#00e5ff';
+    ctx.shadowColor = '#00ff66';
+    ctx.shadowBlur = 12;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(bird.x - 4, bird.y - 2, 6, 4);
+  }
+
+  // Top Right Corner Score Display in Cloud Boss Mode (8-Bit Font, No Emojis)
+  if (isCloudBossMode) {
+    ctx.font = "700 24px 'VT323', monospace";
+    ctx.fillStyle = '#0091ea';
+    ctx.textAlign = 'right';
+    ctx.fillText(`SCORE: ${score}`, canvas.width - 16, 36);
+    ctx.fillText(`BEST: ${highScore}`, canvas.width - 16, 62);
+  }
 
   if (!isGameOver) {
     flappyAnimationId = requestAnimationFrame(gameLoop);
   }
+}
+
+// Helper to draw fluffy clouds
+function drawCloud(ctx, x, y, size) {
+  ctx.beginPath();
+  ctx.arc(x, y, size * 0.4, 0, Math.PI * 2);
+  ctx.arc(x + size * 0.3, y - size * 0.2, size * 0.45, 0, Math.PI * 2);
+  ctx.arc(x + size * 0.7, y, size * 0.4, 0, Math.PI * 2);
+  ctx.arc(x + size * 0.35, y + size * 0.15, size * 0.4, 0, Math.PI * 2);
+  ctx.fill();
 }
 
 function triggerGameOver() {
@@ -284,7 +451,7 @@ function triggerGameOver() {
 }
 
 /* ====================================================== */
-/* EXISTING AUDIO PLAYER & CONVERSION LOGIC */
+/* AUDIO PLAYER & CONVERSION LOGIC */
 /* ====================================================== */
 
 function initAudioDeck() {

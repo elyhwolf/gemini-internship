@@ -466,6 +466,7 @@ button.convert-btn:hover {
   border-radius: var(--radius-lg);
   padding: 10px 18px;
   box-shadow: 0 0 15px rgba(0, 255, 102, 0.25);
+  transition: all 0.5s ease;
 }
 
 .terminal-title {
@@ -519,6 +520,7 @@ button.convert-btn:hover {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  transition: all 0.5s ease;
 }
 
 .log-line.green { color: #00ff66; }
@@ -540,6 +542,7 @@ button.convert-btn:hover {
 .game-scoreboard {
   display: flex;
   gap: 2rem;
+  transition: all 0.5s ease;
 }
 
 .score-card {
@@ -571,6 +574,7 @@ button.convert-btn:hover {
   box-shadow: 0 0 30px rgba(0, 255, 102, 0.35);
   overflow: hidden;
   background: #000c05;
+  transition: all 0.5s ease;
 }
 
 #flappyCanvas {
@@ -590,6 +594,7 @@ button.convert-btn:hover {
   gap: 1rem;
   text-align: center;
   padding: 1rem;
+  z-index: 20;
 }
 
 .game-over-overlay h2 {
@@ -619,4 +624,101 @@ button.convert-btn:hover {
 
 .restart-btn:hover {
   transform: scale(1.05);
+}
+
+/* ====================================================== */
+/* CLOUD MODE EASTER EGG STYLES */
+/* ====================================================== */
+
+.cloud-mode-btn {
+  display: none;
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 15;
+  background: linear-gradient(135deg, #00e5ff 0%, #ffffff 50%, #b388ff 100%);
+  color: #050515;
+  border: 2px solid #ffffff;
+  border-radius: var(--radius-md);
+  padding: 10px 18px;
+  font-family: 'VT323', monospace;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.9);
+  animation: cloudPulse 1.2s infinite ease-in-out alternate;
+  text-transform: uppercase;
+}
+
+.cloud-mode-btn:hover {
+  transform: scale(1.1) rotate(-2deg);
+  box-shadow: 0 0 30px rgba(255, 255, 255, 1), 0 0 40px rgba(0, 229, 255, 1);
+}
+
+@keyframes cloudPulse {
+  0% { transform: scale(1); filter: drop-shadow(0 0 5px #00e5ff); }
+  100% { transform: scale(1.06); filter: drop-shadow(0 0 18px #ffffff); }
+}
+
+.white-fade-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: #ffffff;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.white-fade-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* CLOUD BOSS MODE THEME OVERRIDES */
+.cloud-theme .hacker-terminal-screen {
+  background: #e0f7fa;
+}
+
+.cloud-theme .terminal-header {
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid #00b0ff;
+  box-shadow: 0 0 20px rgba(0, 176, 255, 0.4);
+}
+
+.cloud-theme .terminal-title {
+  color: #0091ea;
+}
+
+.cloud-theme .pulse-dot {
+  background: #00b0ff;
+  box-shadow: 0 0 12px #00b0ff;
+}
+
+.cloud-theme .terminal-console {
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #00b0ff;
+  box-shadow: 0 4px 15px rgba(0, 145, 234, 0.15);
+}
+
+.cloud-theme .log-line.green { color: #0091ea; }
+.cloud-theme .log-line.cyan { color: #00b8d4; }
+.cloud-theme .log-line.yellow { color: #ff6d00; }
+.cloud-theme .log-line.magenta { color: #d500f9; }
+
+.cloud-theme .score-card {
+  background: #ffffff;
+  border: 2px solid #00b0ff;
+  box-shadow: 0 4px 12px rgba(0, 176, 255, 0.2);
+}
+
+.cloud-theme .score-card span { color: #0091ea; }
+.cloud-theme .score-card h2 { color: #00b0ff; }
+.cloud-theme .score-card.highlight h2 { color: #ff6d00; }
+
+.cloud-theme .canvas-container {
+  border: 3px solid #00b0ff;
+  box-shadow: 0 0 40px rgba(0, 176, 255, 0.5);
+  background: #e0f7fa;
 }
