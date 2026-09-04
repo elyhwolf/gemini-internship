@@ -7,13 +7,16 @@
   <meta name="description" content="Extract high-quality 320kbps MP3 audio from any YouTube or YouTube Music URL instantly.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@600;700;800;900&family=VT323&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@600;700;800;900&family=VT323&family=Cinzel:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/yt2mp3/style.css">
 </head>
 <body>
 
   <!-- Full-Screen White Fade Transition Overlay -->
   <div id="whiteFadeOverlay" class="white-fade-overlay"></div>
+
+  <!-- Full-Screen Dark Red Fade Transition Overlay for Monster Boss Cutscene -->
+  <div id="darkRedFadeOverlay" class="dark-red-fade-overlay"></div>
 
   <div class="container">
     
@@ -152,6 +155,53 @@
 
       </div>
 
+    </div>
+  </div>
+
+  <!-- Animated Gothic Castle Cutscene Screen -->
+  <div class="monster-cutscene-screen" id="monsterCutsceneScreen">
+    <canvas id="castleCanvas"></canvas>
+    
+    <div class="cutscene-dialogue-card">
+      <div class="cutscene-speaker">
+        <span class="monster-badge">👑 CASTLE MONSTER LORD (1500 ELO)</span>
+      </div>
+      <p class="dialogue-text" id="monsterDialogueText">MORTAL... YOU DARED SOAR THROUGH MY CLOUDS.</p>
+      <button class="challenge-btn" id="challengeBtn" onclick="startChessGame()">
+        PLAY CHESS AGAINST THE MONSTER ⚔️
+      </button>
+    </div>
+  </div>
+
+  <!-- 1500 ELO Monster Boss Chessboard Modal -->
+  <div class="chess-game-screen" id="chessGameScreen">
+    <div class="chess-container">
+      <header class="chess-header">
+        <div class="boss-profile">
+          <div class="boss-avatar">👑</div>
+          <div class="boss-details">
+            <h2>CASTLE MONSTER LORD</h2>
+            <span class="elo-badge">1500 ELO AI BOSS</span>
+          </div>
+        </div>
+        <div class="chess-status-badge" id="chessTurnStatus">YOUR TURN (WHITE)</div>
+        <button class="chess-exit-btn" onclick="exitChessGame()">[ RETREAT ]</button>
+      </header>
+
+      <div class="chess-body">
+        <div class="captured-deck" id="blackCapturedDeck"></div>
+
+        <div class="chessboard-wrapper">
+          <div id="chessBoard" class="gothic-chessboard"></div>
+        </div>
+
+        <div class="captured-deck" id="whiteCapturedDeck"></div>
+      </div>
+
+      <div class="chess-controls">
+        <button class="chess-action-btn" onclick="resetChessBoard()">NEW GAME</button>
+        <button class="chess-action-btn resign" onclick="resignChessGame()">RESIGN</button>
+      </div>
     </div>
   </div>
 

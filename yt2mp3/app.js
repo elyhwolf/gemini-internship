@@ -1,5 +1,5 @@
 // DripSwitch Studio — YouTube & YouTube Music to MP3 Converter JS (Optimized 60FPS)
-// Includes Triple-Click Secret Easter Egg & Flappy Bird Hacker Engine with CLOUD BOSS MODE!
+// Includes Secret Easter Eggs: Hacker Terminal, Flappy Bird, Cloud Boss Mode, Castle Cutscene & 1500 ELO Chess AI!
 
 let audioPlayer = null;
 let isSeeking = false;
@@ -79,7 +79,7 @@ let flappyAnimationId = null;
 
 // Cloud Boss Mode Variables
 let isCloudBossMode = false;
-let cloudModeGraceTurnRemaining = 0; // 1-turn grace period after score 25+ crash
+let cloudModeGraceTurnRemaining = 0;
 let cloudBgX = 0;
 
 function launchHackerTerminal() {
@@ -171,6 +171,10 @@ function handleFlappyInput(e) {
       enterCloudMode();
       return;
     }
+    if (e.code === 'KeyM') {
+      triggerMonsterCutscene();
+      return;
+    }
     if (e.code === 'Space') {
       e.preventDefault();
       if (isGameOver) {
@@ -241,7 +245,7 @@ function enterCloudMode() {
     const gameOverSub = document.getElementById('gameOverSub');
 
     if (termTitle) termTitle.textContent = 'ELY_CLOUD_OS v5.0 // CLOUD BOSS MODE';
-    if (scoreboard) scoreboard.style.display = 'none'; // Top right score counter will pop up in canvas!
+    if (scoreboard) scoreboard.style.display = 'none';
     if (gameOverTitle) gameOverTitle.textContent = 'CLOUD CRASH';
     if (gameOverSub) gameOverSub.textContent = 'ATMOSPHERIC OVERLOAD';
 
@@ -249,7 +253,7 @@ function enterCloudMode() {
       consoleBox.innerHTML = `
         <p class="log-line green">> CLOUD BOSS MODE ACTIVATED!</p>
         <p class="log-line cyan">> ATMOSPHERE LOADED: DREAMY SKY & LIGHTNING CLOUD PILLARS</p>
-        <p class="log-line yellow">> FLY THE CELESTIAL BIRD AND DEFEAT SKY HAZARDS!</p>
+        <p class="log-line yellow">> REACH SCORE 30 IN CLOUD MODE TO SUMMON THE CASTLE MONSTER BOSS!</p>
       `;
     }
 
@@ -269,7 +273,6 @@ function gameLoop() {
 
   // Background Rendering
   if (isCloudBossMode) {
-    // Dreamy Cyan Sky Gradient
     const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
     skyGrad.addColorStop(0, '#b2ebf2');
     skyGrad.addColorStop(0.5, '#e0f7fa');
@@ -277,7 +280,6 @@ function gameLoop() {
     ctx.fillStyle = skyGrad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Parallax Floating Clouds
     cloudBgX -= 0.6;
     if (cloudBgX <= -400) cloudBgX = 0;
     
@@ -287,7 +289,6 @@ function gameLoop() {
     drawCloud(ctx, cloudBgX + 450, 60, 60);
     drawCloud(ctx, cloudBgX + 680, 100, 80);
   } else {
-    // Cyber Hacker Matrix Background
     ctx.fillStyle = '#001207';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
@@ -317,27 +318,22 @@ function gameLoop() {
       });
     }
 
-    // Pipe / Hazard Rendering & Collision
     for (let i = pipes.length - 1; i >= 0; i--) {
       const p = pipes[i];
       p.x -= isCloudBossMode ? 2.6 : 2.2;
 
       if (isCloudBossMode) {
-        // Soft White Cloud Pillars with Glowing Blue Borders
         ctx.fillStyle = '#ffffff';
         ctx.strokeStyle = '#00b0ff';
         ctx.lineWidth = 3;
 
-        // Top Cloud Pillar
         ctx.fillRect(p.x, 0, 48, p.top);
         ctx.strokeRect(p.x, 0, 48, p.top);
 
-        // Bottom Cloud Pillar
         const bY = canvas.height - p.bottom;
         ctx.fillRect(p.x, bY, 48, p.bottom);
         ctx.strokeRect(p.x, bY, 48, p.bottom);
 
-        // Lightning Energy Core in center of gap
         ctx.fillStyle = '#ffea00';
         ctx.shadowColor = '#00e5ff';
         ctx.shadowBlur = 10;
@@ -346,7 +342,6 @@ function gameLoop() {
         ctx.shadowBlur = 0;
 
       } else {
-        // Cyber Matrix Pipes
         ctx.fillStyle = '#00ff66';
         ctx.fillRect(p.x, 0, 45, p.top);
         ctx.strokeStyle = '#003311';
@@ -362,11 +357,16 @@ function gameLoop() {
         score++;
         document.getElementById('flappyScore').textContent = score;
 
-        // Unlock Cloud Mode Button when Score reaches 25!
         if (score >= 25 && !isCloudBossMode) {
-          cloudModeGraceTurnRemaining = 2; // Active for current turn + 1 grace turn after crash!
+          cloudModeGraceTurnRemaining = 2;
           const cloudBtn = document.getElementById('cloudModeBtn');
           if (cloudBtn) cloudBtn.style.display = 'block';
+        }
+
+        // TRIGGER MONSTER CASTLE CUTSCENE WHEN REACHING SCORE 30 IN CLOUD MODE!
+        if (isCloudBossMode && score >= 30) {
+          triggerMonsterCutscene();
+          return;
         }
 
         if (score > highScore) {
@@ -392,36 +392,30 @@ function gameLoop() {
 
   // Bird / Character Rendering
   if (isCloudBossMode) {
-    // Celestial Winged Cloud Boss Bird
     ctx.shadowColor = '#00b0ff';
     ctx.shadowBlur = 15;
 
-    // Body
     ctx.beginPath();
     ctx.arc(bird.x, bird.y, bird.radius + 2, 0, Math.PI * 2);
     ctx.fillStyle = '#00b0ff';
     ctx.fill();
 
-    // Inner Glow
     ctx.beginPath();
     ctx.arc(bird.x - 2, bird.y - 2, bird.radius - 2, 0, Math.PI * 2);
     ctx.fillStyle = '#ffffff';
     ctx.fill();
     ctx.shadowBlur = 0;
 
-    // Golden Wings
     ctx.fillStyle = '#ffea00';
     ctx.beginPath();
     const wingY = bird.y + Math.sin(frameCount * 0.2) * 6;
     ctx.ellipse(bird.x - 6, wingY, 10, 4, Math.PI / 4, 0, Math.PI * 2);
     ctx.fill();
 
-    // Eye
     ctx.fillStyle = '#050515';
     ctx.fillRect(bird.x + 4, bird.y - 4, 4, 4);
 
   } else {
-    // Cyber Hacker Bird
     ctx.beginPath();
     ctx.arc(bird.x, bird.y, bird.radius, 0, Math.PI * 2);
     ctx.fillStyle = '#00e5ff';
@@ -434,7 +428,6 @@ function gameLoop() {
     ctx.fillRect(bird.x - 4, bird.y - 2, 6, 4);
   }
 
-  // Top Right Corner Score Display in Cloud Boss Mode (8-Bit Font, No Emojis)
   if (isCloudBossMode) {
     ctx.font = "700 24px 'VT323', monospace";
     ctx.fillStyle = '#0091ea';
@@ -448,7 +441,6 @@ function gameLoop() {
   }
 }
 
-// Helper to draw fluffy clouds
 function drawCloud(ctx, x, y, size) {
   ctx.beginPath();
   ctx.arc(x, y, size * 0.4, 0, Math.PI * 2);
@@ -462,11 +454,572 @@ function triggerGameOver() {
   isGameOver = true;
   document.getElementById('flappyGameOverBox').style.display = 'flex';
 
-  // Keep Cloud Mode button visible on Game Over screen if unlocked for grace turn!
   const cloudBtn = document.getElementById('cloudModeBtn');
   if (cloudBtn && cloudModeGraceTurnRemaining > 0 && !isCloudBossMode) {
     cloudBtn.style.display = 'block';
   }
+}
+
+/* ====================================================== */
+/* ANIMATED CASTLE MONSTER CUTSCENE ENGINE */
+/* ====================================================== */
+
+let castleAnimationId = null;
+
+function triggerMonsterCutscene() {
+  if (flappyAnimationId) cancelAnimationFrame(flappyAnimationId);
+  
+  const darkRedOverlay = document.getElementById('darkRedFadeOverlay');
+  const cutsceneScreen = document.getElementById('monsterCutsceneScreen');
+  
+  if (darkRedOverlay) darkRedOverlay.classList.add('active');
+
+  setTimeout(() => {
+    if (cutsceneScreen) cutsceneScreen.style.display = 'block';
+    startCastleAnimation();
+    playMonsterDialogue();
+
+    setTimeout(() => {
+      if (darkRedOverlay) darkRedOverlay.classList.remove('active');
+    }, 600);
+  }, 1000);
+}
+
+function startCastleAnimation() {
+  const canvas = document.getElementById('castleCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  let torchFrame = 0;
+
+  function renderCastle() {
+    torchFrame += 0.08;
+
+    // Dark Crimson Castle Hall Background
+    const bgGrad = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 50, canvas.width / 2, canvas.height / 2, canvas.width);
+    bgGrad.addColorStop(0, '#2d0309');
+    bgGrad.addColorStop(0.6, '#120104');
+    bgGrad.addColorStop(1, '#050001');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Gothic Stone Pillars
+    ctx.fillStyle = '#1c0307';
+    ctx.fillRect(canvas.width * 0.1, 0, 80, canvas.height);
+    ctx.fillRect(canvas.width * 0.82, 0, 80, canvas.height);
+
+    // Flickering Torches
+    drawTorch(ctx, canvas.width * 0.1 + 40, canvas.height * 0.3, torchFrame);
+    drawTorch(ctx, canvas.width * 0.82 + 40, canvas.height * 0.3, torchFrame + 2);
+
+    // Dark Throne Structure
+    const tW = 240, tH = 320;
+    const tX = canvas.width / 2 - tW / 2;
+    const tY = canvas.height / 2 - 80;
+
+    ctx.fillStyle = '#080002';
+    ctx.fillRect(tX, tY, tW, tH);
+    ctx.strokeStyle = '#ff3344';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(tX, tY, tW, tH);
+
+    // Throne Crown Spikes
+    ctx.beginPath();
+    ctx.moveTo(tX, tY);
+    ctx.lineTo(tX + 40, tY - 40);
+    ctx.lineTo(tX + 80, tY);
+    ctx.lineTo(tX + 120, tY - 60);
+    ctx.lineTo(tX + 160, tY);
+    ctx.lineTo(tX + 200, tY - 40);
+    ctx.lineTo(tX + tW, tY);
+    ctx.fillStyle = '#080002';
+    ctx.fill();
+    ctx.stroke();
+
+    // Monster Boss sitting on Throne
+    const mX = canvas.width / 2;
+    const mY = tY + 130;
+
+    // Monster Body Shadow
+    ctx.fillStyle = '#0d0104';
+    ctx.beginPath();
+    ctx.arc(mX, mY, 65, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Glowing Red Eyes
+    const eyeFlicker = Math.sin(torchFrame * 2) * 4;
+    ctx.fillStyle = '#ff0033';
+    ctx.shadowColor = '#ff0033';
+    ctx.shadowBlur = 20;
+
+    ctx.beginPath();
+    ctx.arc(mX - 22, mY - 10, 10 + eyeFlicker, 0, Math.PI * 2);
+    ctx.arc(mX + 22, mY - 10, 10 + eyeFlicker, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(mX - 22, mY - 10, 4, 0, Math.PI * 2);
+    ctx.arc(mX + 22, mY - 10, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Monster Horns / Crown
+    ctx.fillStyle = '#ffaa00';
+    ctx.beginPath();
+    ctx.moveTo(mX - 35, mY - 45);
+    ctx.lineTo(mX - 55, mY - 95);
+    ctx.lineTo(mX - 20, mY - 55);
+    ctx.lineTo(mX, mY - 105);
+    ctx.lineTo(mX + 20, mY - 55);
+    ctx.lineTo(mX + 55, mY - 95);
+    ctx.lineTo(mX + 35, mY - 45);
+    ctx.fill();
+
+    castleAnimationId = requestAnimationFrame(renderCastle);
+  }
+
+  renderCastle();
+}
+
+function drawTorch(ctx, x, y, frame) {
+  ctx.fillStyle = '#3a0c12';
+  ctx.fillRect(x - 8, y, 16, 40);
+
+  const flameH = 30 + Math.sin(frame * 3) * 8;
+  ctx.fillStyle = '#ffea00';
+  ctx.shadowColor = '#ff1744';
+  ctx.shadowBlur = 25;
+  ctx.beginPath();
+  ctx.ellipse(x, y - flameH / 2, 14, flameH / 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+}
+
+function playMonsterDialogue() {
+  const textEl = document.getElementById('monsterDialogueText');
+  const btn = document.getElementById('challengeBtn');
+  if (!textEl) return;
+
+  btn.style.display = 'none';
+
+  const lines = [
+    "MORTAL... YOU DARED SOAR THROUGH MY CLOUDS.",
+    "I AM THE CASTLE MONSTER LORD.",
+    "SHALL WE PLAY A GAME OF CHESS?"
+  ];
+
+  let lineIdx = 0;
+  let charIdx = 0;
+
+  textEl.textContent = "";
+
+  function typeNextChar() {
+    if (lineIdx < lines.length) {
+      const currentLine = lines[lineIdx];
+      if (charIdx < currentLine.length) {
+        textEl.textContent += currentLine.charAt(charIdx);
+        charIdx++;
+        setTimeout(typeNextChar, 40);
+      } else {
+        setTimeout(() => {
+          lineIdx++;
+          charIdx = 0;
+          if (lineIdx < lines.length) {
+            textEl.textContent = "";
+            setTimeout(typeNextChar, 300);
+          } else {
+            if (btn) btn.style.display = 'inline-block';
+          }
+        }, 1200);
+      }
+    }
+  }
+
+  typeNextChar();
+}
+
+/* ====================================================== */
+/* 1500 ELO MINIMAX ALPHA-BETA GOTHIC CHESS AI ENGINE */
+/* ====================================================== */
+
+let chessBoardState = [];
+let selectedSquare = null;
+let validMoveTargets = [];
+let currentTurn = 'W'; // 'W' = Human White, 'B' = Monster Black
+let capturedWhite = [];
+let capturedBlack = [];
+
+const PIECE_UNICODE = {
+  'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙',
+  'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟'
+};
+
+const PIECE_VALUES = {
+  'p': 100, 'n': 320, 'b': 330, 'r': 500, 'q': 900, 'k': 20000,
+  'P': 100, 'N': 320, 'B': 330, 'R': 500, 'Q': 900, 'K': 20000
+};
+
+// 1500 ELO Positional Piece Tables
+const PAWN_TABLE = [
+  0,  0,  0,  0,  0,  0,  0,  0,
+  50, 50, 50, 50, 50, 50, 50, 50,
+  10, 10, 20, 30, 30, 20, 10, 10,
+   5,  5, 10, 25, 25, 10,  5,  5,
+   0,  0,  0, 20, 20,  0,  0,  0,
+   5, -5,-10,  0,  0,-10, -5,  5,
+   5, 10, 10,-20,-20, 10, 10,  5,
+   0,  0,  0,  0,  0,  0,  0,  0
+];
+
+const KNIGHT_TABLE = [
+  -50,-40,-30,-30,-30,-30,-40,-50,
+  -40,-20,  0,  0,  0,  0,-20,-40,
+  -30,  0, 10, 15, 15, 10,  0,-30,
+  -30,  5, 15, 20, 20, 15,  5,-30,
+  -30,  0, 15, 20, 20, 15,  0,-30,
+  -30,  5, 10, 15, 15, 10,  5,-30,
+  -40,-20,  0,  5,  5,  0,-20,-40,
+  -50,-40,-30,-30,-30,-30,-40,-50
+];
+
+function startChessGame() {
+  const cutsceneScreen = document.getElementById('monsterCutsceneScreen');
+  const chessScreen = document.getElementById('chessGameScreen');
+  
+  if (cutsceneScreen) cutsceneScreen.style.display = 'none';
+  if (castleAnimationId) cancelAnimationFrame(castleAnimationId);
+  if (chessScreen) chessScreen.style.display = 'flex';
+
+  resetChessBoard();
+}
+
+function exitChessGame() {
+  const chessScreen = document.getElementById('chessGameScreen');
+  if (chessScreen) chessScreen.style.display = 'none';
+  exitHackerTerminal();
+}
+
+function resetChessBoard() {
+  // Initial 8x8 Chess Position (Standard)
+  chessBoardState = [
+    ['r','n','b','q','k','b','n','r'],
+    ['p','p','p','p','p','p','p','p'],
+    ['.','.','.','.','.','.','.','.'],
+    ['.','.','.','.','.','.','.','.'],
+    ['.','.','.','.','.','.','.','.'],
+    ['.','.','.','.','.','.','.','.'],
+    ['P','P','P','P','P','P','P','P'],
+    ['R','N','B','Q','K','B','N','R']
+  ];
+
+  selectedSquare = null;
+  validMoveTargets = [];
+  currentTurn = 'W';
+  capturedWhite = [];
+  capturedBlack = [];
+
+  updateTurnUI("YOUR TURN (WHITE)");
+  renderChessBoard();
+}
+
+function renderChessBoard() {
+  const boardEl = document.getElementById('chessBoard');
+  const blackCapEl = document.getElementById('blackCapturedDeck');
+  const whiteCapEl = document.getElementById('whiteCapturedDeck');
+  
+  if (!boardEl) return;
+  boardEl.innerHTML = '';
+
+  if (blackCapEl) blackCapEl.innerHTML = capturedBlack.map(p => PIECE_UNICODE[p] || '').join(' ');
+  if (whiteCapEl) whiteCapEl.innerHTML = capturedWhite.map(p => PIECE_UNICODE[p] || '').join(' ');
+
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const sq = document.createElement('div');
+      const isDark = (r + c) % 2 === 1;
+      sq.className = `chess-square ${isDark ? 'dark' : 'light'}`;
+      
+      const piece = chessBoardState[r][c];
+      if (piece !== '.') {
+        sq.textContent = PIECE_UNICODE[piece] || piece;
+      }
+
+      if (selectedSquare && selectedSquare.r === r && selectedSquare.c === c) {
+        sq.classList.add('selected');
+      }
+
+      if (validMoveTargets.some(m => m.r === r && m.c === c)) {
+        sq.classList.add('valid-target');
+      }
+
+      sq.onclick = () => handleSquareClick(r, c);
+      boardEl.appendChild(sq);
+    }
+  }
+}
+
+function handleSquareClick(r, c) {
+  if (currentTurn !== 'W') return; // Monster is thinking
+
+  const piece = chessBoardState[r][c];
+
+  // If clicking on valid target square
+  if (selectedSquare && validMoveTargets.some(m => m.r === r && m.c === c)) {
+    makeMove(selectedSquare.r, selectedSquare.c, r, c);
+    selectedSquare = null;
+    validMoveTargets = [];
+    renderChessBoard();
+
+    // Trigger Monster AI turn if White played
+    if (currentTurn === 'B') {
+      updateTurnUI("MONSTER CONTEMPLATING... (1500 ELO)");
+      setTimeout(makeMonsterAIMove, 600);
+    }
+    return;
+  }
+
+  // Select player's White piece (Uppercase)
+  if (piece !== '.' && isWhitePiece(piece)) {
+    selectedSquare = { r, c };
+    validMoveTargets = getLegalMovesForSquare(r, c, chessBoardState);
+  } else {
+    selectedSquare = null;
+    validMoveTargets = [];
+  }
+
+  renderChessBoard();
+}
+
+function makeMove(fromR, fromC, toR, toC) {
+  const p = chessBoardState[fromR][fromC];
+  const targetP = chessBoardState[toR][toC];
+
+  if (targetP !== '.') {
+    if (isWhitePiece(targetP)) capturedWhite.push(targetP);
+    else capturedBlack.push(targetP);
+  }
+
+  chessBoardState[toR][toC] = p;
+  chessBoardState[fromR][fromC] = '.';
+
+  // Pawn Promotion to Queen
+  if (p === 'P' && toR === 0) chessBoardState[toR][toC] = 'Q';
+  if (p === 'p' && toR === 7) chessBoardState[toR][toC] = 'q';
+
+  currentTurn = currentTurn === 'W' ? 'B' : 'W';
+}
+
+function updateTurnUI(text) {
+  const el = document.getElementById('chessTurnStatus');
+  if (el) el.textContent = text;
+}
+
+function isWhitePiece(p) { return p >= 'A' && p <= 'Z'; }
+function isBlackPiece(p) { return p >= 'a' && p <= 'z'; }
+
+/* 1500 ELO MINIMAX ALPHA-BETA SEARCH ENGINE */
+
+function makeMonsterAIMove() {
+  const bestMove = getBestMoveMinimax(chessBoardState, 3, -100000, 100000, true);
+  
+  if (bestMove && bestMove.move) {
+    const { fromR, fromC, toR, toC } = bestMove.move;
+    makeMove(fromR, fromC, toR, toC);
+    updateTurnUI("YOUR TURN (WHITE)");
+  } else {
+    updateTurnUI("CHECKMATE! YOU DEFEATED THE MONSTER!");
+  }
+  
+  renderChessBoard();
+}
+
+function getBestMoveMinimax(board, depth, alpha, beta, isMaximizing) {
+  const allMoves = getAllLegalMoves(board, isMaximizing ? 'B' : 'W');
+  if (depth === 0 || allMoves.length === 0) {
+    return { score: evaluateBoard(board) };
+  }
+
+  let bestMove = null;
+  let bestScore = isMaximizing ? -100000 : 100000;
+
+  for (const move of allMoves) {
+    const tempBoard = cloneBoard(board);
+    tempBoard[move.toR][move.toC] = tempBoard[move.fromR][move.fromC];
+    tempBoard[move.fromR][move.fromC] = '.';
+
+    const result = getBestMoveMinimax(tempBoard, depth - 1, alpha, beta, !isMaximizing);
+    
+    if (isMaximizing) {
+      if (result.score > bestScore) {
+        bestScore = result.score;
+        bestMove = move;
+      }
+      alpha = Math.max(alpha, bestScore);
+    } else {
+      if (result.score < bestScore) {
+        bestScore = result.score;
+        bestMove = move;
+      }
+      beta = Math.min(beta, bestScore);
+    }
+
+    if (beta <= alpha) break; // Alpha-Beta Cutoff
+  }
+
+  return { score: bestScore, move: bestMove };
+}
+
+function evaluateBoard(board) {
+  let totalScore = 0;
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const p = board[r][c];
+      if (p !== '.') {
+        let val = PIECE_VALUES[p] || 0;
+        let posVal = 0;
+
+        const idx = r * 8 + c;
+        if (p === 'p') posVal = PAWN_TABLE[idx];
+        if (p === 'n') posVal = KNIGHT_TABLE[idx];
+        if (p === 'P') posVal = PAWN_TABLE[63 - idx];
+        if (p === 'N') posVal = KNIGHT_TABLE[63 - idx];
+
+        val += posVal;
+
+        if (isBlackPiece(p)) totalScore += val; // Monster Black +
+        else totalScore -= val; // Human White -
+      }
+    }
+  }
+  return totalScore;
+}
+
+function getAllLegalMoves(board, side) {
+  const moves = [];
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const p = board[r][c];
+      if (p !== '.' && ((side === 'W' && isWhitePiece(p)) || (side === 'B' && isBlackPiece(p)))) {
+        const sqMoves = getLegalMovesForSquare(r, c, board);
+        sqMoves.forEach(m => moves.push({ fromR: r, fromC: c, toR: m.r, toC: m.c }));
+      }
+    }
+  }
+  return moves;
+}
+
+function getLegalMovesForSquare(r, c, board) {
+  const p = board[r][c];
+  const moves = [];
+  const isWhite = isWhitePiece(p);
+
+  // Pawns
+  if (p === 'P' || p === 'p') {
+    const dir = isWhite ? -1 : 1;
+    const startRow = isWhite ? 6 : 1;
+
+    // Move forward 1
+    if (board[r + dir] && board[r + dir][c] === '.') {
+      moves.push({ r: r + dir, c });
+      // Move forward 2
+      if (r === startRow && board[r + 2 * dir] && board[r + 2 * dir][c] === '.') {
+        moves.push({ r: r + 2 * dir, c });
+      }
+    }
+    // Captures
+    [-1, 1].forEach(dc => {
+      if (board[r + dir] && board[r + dir][c + dc]) {
+        const target = board[r + dir][c + dc];
+        if (target !== '.' && (isWhite ? isBlackPiece(target) : isWhitePiece(target))) {
+          moves.push({ r: r + dir, c: c + dc });
+        }
+      }
+    });
+  }
+
+  // Knights
+  if (p === 'N' || p === 'n') {
+    const offsets = [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
+    offsets.forEach(([dr, dc]) => {
+      const nr = r + dr, nc = c + dc;
+      if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) {
+        const target = board[nr][nc];
+        if (target === '.' || (isWhite ? isBlackPiece(target) : isWhitePiece(target))) {
+          moves.push({ r: nr, c: nc });
+        }
+      }
+    });
+  }
+
+  // Rooks / Queen (Linear)
+  if (p === 'R' || p === 'r' || p === 'Q' || p === 'q') {
+    const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+    dirs.forEach(([dr, dc]) => {
+      let step = 1;
+      while (true) {
+        const nr = r + dr * step, nc = c + dc * step;
+        if (nr < 0 || nr >= 8 || nc < 0 || nc >= 8) break;
+        const target = board[nr][nc];
+        if (target === '.') {
+          moves.push({ r: nr, c: nc });
+        } else {
+          if (isWhite ? isBlackPiece(target) : isWhitePiece(target)) moves.push({ r: nr, c: nc });
+          break;
+        }
+        step++;
+      }
+    });
+  }
+
+  // Bishops / Queen (Diagonal)
+  if (p === 'B' || p === 'b' || p === 'Q' || p === 'q') {
+    const dirs = [[-1,-1],[-1,1],[1,-1],[1,1]];
+    dirs.forEach(([dr, dc]) => {
+      let step = 1;
+      while (true) {
+        const nr = r + dr * step, nc = c + dc * step;
+        if (nr < 0 || nr >= 8 || nc < 0 || nc >= 8) break;
+        const target = board[nr][nc];
+        if (target === '.') {
+          moves.push({ r: nr, c: nc });
+        } else {
+          if (isWhite ? isBlackPiece(target) : isWhitePiece(target)) moves.push({ r: nr, c: nc });
+          break;
+        }
+        step++;
+      }
+    });
+  }
+
+  // Kings
+  if (p === 'K' || p === 'k') {
+    for (let dr = -1; dr <= 1; dr++) {
+      for (let dc = -1; dc <= 1; dc++) {
+        if (dr === 0 && dc === 0) continue;
+        const nr = r + dr, nc = c + dc;
+        if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) {
+          const target = board[nr][nc];
+          if (target === '.' || (isWhite ? isBlackPiece(target) : isWhitePiece(target))) {
+            moves.push({ r: nr, c: nc });
+          }
+        }
+      }
+    }
+  }
+
+  return moves;
+}
+
+function cloneBoard(board) {
+  return board.map(row => [...row]);
+}
+
+function resignChessGame() {
+  updateTurnUI("YOU RESIGNED! THE MONSTER REIGNS SUPREME!");
 }
 
 /* ====================================================== */

@@ -626,9 +626,7 @@ button.convert-btn:hover {
   transform: scale(1.05);
 }
 
-/* ====================================================== */
 /* CLOUD MODE EASTER EGG STYLES */
-/* ====================================================== */
 
 .cloud-mode-btn {
   display: none;
@@ -721,4 +719,271 @@ button.convert-btn:hover {
   border: 3px solid #00b0ff;
   box-shadow: 0 0 40px rgba(0, 176, 255, 0.5);
   background: #e0f7fa;
+}
+
+/* ====================================================== */
+/* MONSTER CASTLE CUTSCENE & 1500 ELO CHESS BOSS STYLES */
+/* ====================================================== */
+
+.dark-red-fade-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background: #2a0005;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark-red-fade-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.monster-cutscene-screen {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  background: #0d0003;
+  color: #ff3344;
+  font-family: 'Cinzel', 'VT323', serif;
+  overflow: hidden;
+}
+
+#castleCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+.cutscene-dialogue-card {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 760px;
+  background: rgba(18, 2, 6, 0.95);
+  border: 2px solid #ff3344;
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  box-shadow: 0 0 40px rgba(255, 51, 68, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  z-index: 10;
+  text-align: center;
+}
+
+.monster-badge {
+  font-family: 'VT323', monospace;
+  font-size: 1.4rem;
+  color: #ffaa00;
+  letter-spacing: 2px;
+}
+
+.dialogue-text {
+  font-family: 'Cinzel', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.5;
+  min-height: 4.5rem;
+  text-shadow: 0 0 10px #ff3344;
+}
+
+.challenge-btn {
+  background: linear-gradient(135deg, #ff1744 0%, #aa0000 100%);
+  color: #ffffff;
+  border: 1px solid #ffaa00;
+  border-radius: var(--radius-md);
+  padding: 12px 24px;
+  font-family: 'VT323', monospace;
+  font-size: 1.6rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(255, 23, 68, 0.8);
+  transition: transform 0.2s, box-shadow 0.2s;
+  align-self: center;
+}
+
+.challenge-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 35px rgba(255, 23, 68, 1);
+}
+
+/* 1500 ELO CHESSBOARD ENGINE SCREEN */
+
+.chess-game-screen {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 100001;
+  background: radial-gradient(circle at 50% 40%, #20040a 0%, #080103 100%);
+  color: #ffffff;
+  font-family: 'Space Grotesk', sans-serif;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+.chess-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  align-items: center;
+}
+
+.chess-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(35, 5, 12, 0.9);
+  border: 1px solid #ff3344;
+  border-radius: var(--radius-lg);
+  padding: 12px 20px;
+  box-shadow: 0 0 20px rgba(255, 51, 68, 0.3);
+}
+
+.boss-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.boss-avatar {
+  font-size: 2.2rem;
+}
+
+.boss-details h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 1.15rem;
+  color: #ff4455;
+  margin: 0;
+}
+
+.elo-badge {
+  font-family: 'VT323', monospace;
+  font-size: 1.1rem;
+  color: #ffaa00;
+}
+
+.chess-status-badge {
+  font-family: 'VT323', monospace;
+  font-size: 1.4rem;
+  color: #00ff66;
+  letter-spacing: 1px;
+}
+
+.chess-exit-btn {
+  background: rgba(255, 51, 102, 0.2);
+  border: 1px solid #ff3366;
+  color: #ff3366;
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  font-family: 'VT323', monospace;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.chess-body {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.captured-deck {
+  width: 100%;
+  min-height: 32px;
+  display: flex;
+  gap: 6px;
+  font-size: 1.4rem;
+  padding: 4px 10px;
+  background: rgba(20, 3, 7, 0.7);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 51, 68, 0.3);
+}
+
+.chessboard-wrapper {
+  border: 4px solid #5a151f;
+  border-radius: 8px;
+  box-shadow: 0 0 40px rgba(255, 51, 68, 0.6);
+  overflow: hidden;
+}
+
+.gothic-chessboard {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  width: min(88vw, 480px);
+  height: min(88vw, 480px);
+  user-select: none;
+}
+
+.chess-square {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(2rem, 6vw, 3rem);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s;
+}
+
+.chess-square.light {
+  background: #e6c8a2;
+  color: #1a080c;
+}
+
+.chess-square.dark {
+  background: #5c1d28;
+  color: #ffffff;
+}
+
+.chess-square.selected {
+  background: #ffaa00 !important;
+}
+
+.chess-square.valid-target::after {
+  content: '';
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #00ff66;
+  box-shadow: 0 0 10px #00ff66;
+  position: absolute;
+}
+
+.chess-square.last-move {
+  background: rgba(255, 234, 0, 0.5) !important;
+}
+
+.chess-controls {
+  display: flex;
+  gap: 1rem;
+}
+
+.chess-action-btn {
+  background: #ff3344;
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-family: 'VT323', monospace;
+  font-size: 1.4rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.chess-action-btn.resign {
+  background: rgba(255, 51, 102, 0.2);
+  border: 1px solid #ff3366;
+  color: #ff3366;
 }
