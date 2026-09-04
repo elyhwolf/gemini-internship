@@ -752,6 +752,12 @@ function renderChessBoard() {
   if (blackCapEl) blackCapEl.innerHTML = capturedBlack.map(p => CHESS_SVG_PIECES[p] || '').join('');
   if (whiteCapEl) whiteCapEl.innerHTML = capturedWhite.map(p => CHESS_SVG_PIECES[p] || '').join('');
 
+  const wKing = findKing(chessBoardState, 'W');
+  const isWKingCheck = wKing && isKingInCheck(chessBoardState, 'W');
+
+  const bKing = findKing(chessBoardState, 'B');
+  const isBKingCheck = bKing && isKingInCheck(chessBoardState, 'B');
+
   for (let r = 0; r < 8; r++) {
     for (let c = 0; c < 8; c++) {
       const sq = document.createElement('div');
@@ -775,6 +781,14 @@ function renderChessBoard() {
         sq.classList.add('last-move');
       }
 
+      if (isWKingCheck && wKing.r === r && wKing.c === c) {
+        sq.classList.add('in-check');
+      }
+
+      if (isBKingCheck && bKing.r === r && bKing.c === c) {
+        sq.classList.add('in-check');
+      }
+
       sq.onclick = () => handleSquareClick(r, c);
       boardEl.appendChild(sq);
     }
@@ -782,7 +796,7 @@ function renderChessBoard() {
 }
 
 function handleSquareClick(r, c) {
-  if (currentTurn !== 'W') return; // Monster is thinking
+  if (currentTurn !== 'W') return; // Monster is thinking or game over
 
   const piece = chessBoardState[r][c];
 
@@ -793,18 +807,30 @@ function handleSquareClick(r, c) {
     validMoveTargets = [];
     renderChessBoard();
 
-    // Trigger Monster AI turn if White played
-    if (currentTurn === 'B') {
+    // Check if Monster is checkmated or in stalemate
+    if (isCheckmate(chessBoardState, 'B')) {
+      currentTurn = 'OVER';
+      updateTurnUI("[VICTORY] CHECKMATE! YOU DEFEATED THE MONSTER!");
+      return;
+    } else if (isStalemate(chessBoardState, 'B')) {
+      currentTurn = 'OVER';
+      updateTurnUI("[DRAW] STALEMATE! THE GAME IS A DRAW!");
+      return;
+    } else if (isKingInCheck(chessBoardState, 'B')) {
+      updateTurnUI("[CHECK] MONSTER UNDER ATTACK...");
+    } else {
       updateTurnUI("MONSTER CONTEMPLATING... (1500 ELO)");
-      setTimeout(makeMonsterAIMove, 600);
     }
+
+    // Trigger Monster AI turn if White played
+    setTimeout(makeMonsterAIMove, 600);
     return;
   }
 
   // Select player's White piece (Uppercase)
   if (piece !== '.' && isWhitePiece(piece)) {
     selectedSquare = { r, c };
-    validMoveTargets = getLegalMovesForSquare(r, c, chessBoardState);
+    validMoveTargets = getStrictlyLegalMovesForSquare(r, c, chessBoardState);
   } else {
     selectedSquare = null;
     validMoveTargets = [];
@@ -845,21 +871,40 @@ function isBlackPiece(p) { return p >= 'a' && p <= 'z'; }
 /* 1500 ELO MINIMAX ALPHA-BETA SEARCH ENGINE */
 
 function makeMonsterAIMove() {
+  if (currentTurn !== 'B') return;
+
   const bestMove = getBestMoveMinimax(chessBoardState, 3, -100000, 100000, true);
   
   if (bestMove && bestMove.move) {
     const { fromR, fromC, toR, toC } = bestMove.move;
     makeMove(fromR, fromC, toR, toC);
-    updateTurnUI("YOUR TURN (WHITE)");
+    
+    if (isCheckmate(chessBoardState, 'W')) {
+      currentTurn = 'OVER';
+      updateTurnUI("[DEFEAT] CHECKMATE! THE MONSTER REIGNS SUPREME!");
+    } else if (isStalemate(chessBoardState, 'W')) {
+      currentTurn = 'OVER';
+      updateTurnUI("[DRAW] STALEMATE! GAME DRAWN!");
+    } else if (isKingInCheck(chessBoardState, 'W')) {
+      updateTurnUI("[CHECK] YOUR KING IS UNDER ATTACK!");
+    } else {
+      updateTurnUI("YOUR TURN (WHITE)");
+    }
   } else {
-    updateTurnUI("CHECKMATE! YOU DEFEATED THE MONSTER!");
+    if (isKingInCheck(chessBoardState, 'B')) {
+      currentTurn = 'OVER';
+      updateTurnUI("[VICTORY] CHECKMATE! YOU DEFEATED THE MONSTER!");
+    } else {
+      currentTurn = 'OVER';
+      updateTurnUI("[DRAW] STALEMATE! GAME DRAWN!");
+    }
   }
   
   renderChessBoard();
 }
 
 function getBestMoveMinimax(board, depth, alpha, beta, isMaximizing) {
-  const allMoves = getAllLegalMoves(board, isMaximizing ? 'B' : 'W');
+  const allMoves = getStrictlyLegalMoves(board, isMaximizing ? 'B' : 'W');
   if (depth === 0 || allMoves.length === 0) {
     return { score: evaluateBoard(board) };
   }
@@ -871,6 +916,9 @@ function getBestMoveMinimax(board, depth, alpha, beta, isMaximizing) {
     const tempBoard = cloneBoard(board);
     tempBoard[move.toR][move.toC] = tempBoard[move.fromR][move.fromC];
     tempBoard[move.fromR][move.fromC] = '.';
+
+    if (tempBoard[move.toR][move.toC] === 'P' && move.toR === 0) tempBoard[move.toR][move.toC] = 'Q';
+    if (tempBoard[move.toR][move.toC] === 'p' && move.toR === 7) tempBoard[move.toR][move.toC] = 'q';
 
     const result = getBestMoveMinimax(tempBoard, depth - 1, alpha, beta, !isMaximizing);
     
@@ -895,6 +943,11 @@ function getBestMoveMinimax(board, depth, alpha, beta, isMaximizing) {
 }
 
 function evaluateBoard(board) {
+  const blackKing = findKing(board, 'B');
+  if (!blackKing) return -99999;
+  const whiteKing = findKing(board, 'W');
+  if (!whiteKing) return 99999;
+
   let totalScore = 0;
   for (let r = 0; r < 8; r++) {
     for (let c = 0; c < 8; c++) {
@@ -919,21 +972,96 @@ function evaluateBoard(board) {
   return totalScore;
 }
 
-function getAllLegalMoves(board, side) {
-  const moves = [];
+function findKing(board, side) {
+  const targetPiece = side === 'W' ? 'K' : 'k';
   for (let r = 0; r < 8; r++) {
     for (let c = 0; c < 8; c++) {
-      const p = board[r][c];
-      if (p !== '.' && ((side === 'W' && isWhitePiece(p)) || (side === 'B' && isBlackPiece(p)))) {
-        const sqMoves = getLegalMovesForSquare(r, c, board);
-        sqMoves.forEach(m => moves.push({ fromR: r, fromC: c, toR: m.r, toC: m.c }));
+      if (board[r][c] === targetPiece) return { r, c };
+    }
+  }
+  return null;
+}
+
+function isSquareAttacked(board, r, c, attackerSide) {
+  const isAttackerWhite = attackerSide === 'W';
+  const pawnPiece = isAttackerWhite ? 'P' : 'p';
+  const knightPiece = isAttackerWhite ? 'N' : 'n';
+  const bishopPiece = isAttackerWhite ? 'B' : 'b';
+  const rookPiece = isAttackerWhite ? 'R' : 'r';
+  const queenPiece = isAttackerWhite ? 'Q' : 'q';
+  const kingPiece = isAttackerWhite ? 'K' : 'k';
+
+  // 1. Pawns (attacker pawns attack diagonally towards target)
+  const pawnDir = isAttackerWhite ? 1 : -1;
+  const pr = r + pawnDir;
+  if (pr >= 0 && pr < 8) {
+    if (c - 1 >= 0 && board[pr][c - 1] === pawnPiece) return true;
+    if (c + 1 < 8 && board[pr][c + 1] === pawnPiece) return true;
+  }
+
+  // 2. Knights
+  const knightOffsets = [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
+  for (const [dr, dc] of knightOffsets) {
+    const nr = r + dr, nc = c + dc;
+    if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) {
+      if (board[nr][nc] === knightPiece) return true;
+    }
+  }
+
+  // 3. Kings
+  for (let dr = -1; dr <= 1; dr++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      if (dr === 0 && dc === 0) continue;
+      const nr = r + dr, nc = c + dc;
+      if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) {
+        if (board[nr][nc] === kingPiece) return true;
       }
     }
   }
-  return moves;
+
+  // 4. Linear (Rook / Queen)
+  const linearDirs = [[-1,0],[1,0],[0,-1],[0,1]];
+  for (const [dr, dc] of linearDirs) {
+    let step = 1;
+    while (true) {
+      const nr = r + dr * step, nc = c + dc * step;
+      if (nr < 0 || nr >= 8 || nc < 0 || nc >= 8) break;
+      const target = board[nr][nc];
+      if (target !== '.') {
+        if (target === rookPiece || target === queenPiece) return true;
+        break;
+      }
+      step++;
+    }
+  }
+
+  // 5. Diagonal (Bishop / Queen)
+  const diagDirs = [[-1,-1],[-1,1],[1,-1],[1,1]];
+  for (const [dr, dc] of diagDirs) {
+    let step = 1;
+    while (true) {
+      const nr = r + dr * step, nc = c + dc * step;
+      if (nr < 0 || nr >= 8 || nc < 0 || nc >= 8) break;
+      const target = board[nr][nc];
+      if (target !== '.') {
+        if (target === bishopPiece || target === queenPiece) return true;
+        break;
+      }
+      step++;
+    }
+  }
+
+  return false;
 }
 
-function getLegalMovesForSquare(r, c, board) {
+function isKingInCheck(board, side) {
+  const king = findKing(board, side);
+  if (!king) return true;
+  const opponentSide = side === 'W' ? 'B' : 'W';
+  return isSquareAttacked(board, king.r, king.c, opponentSide);
+}
+
+function getPseudoLegalMovesForSquare(r, c, board) {
   const p = board[r][c];
   const moves = [];
   const isWhite = isWhitePiece(p);
@@ -1033,6 +1161,46 @@ function getLegalMovesForSquare(r, c, board) {
   }
 
   return moves;
+}
+
+function getStrictlyLegalMovesForSquare(r, c, board) {
+  const p = board[r][c];
+  if (p === '.') return [];
+  const side = isWhitePiece(p) ? 'W' : 'B';
+  const pseudoMoves = getPseudoLegalMovesForSquare(r, c, board);
+
+  return pseudoMoves.filter(move => {
+    const tempBoard = cloneBoard(board);
+    tempBoard[move.r][move.c] = tempBoard[r][c];
+    tempBoard[r][c] = '.';
+
+    if (tempBoard[move.r][move.c] === 'P' && move.r === 0) tempBoard[move.r][move.c] = 'Q';
+    if (tempBoard[move.r][move.c] === 'p' && move.r === 7) tempBoard[move.r][move.c] = 'q';
+
+    return !isKingInCheck(tempBoard, side);
+  });
+}
+
+function getStrictlyLegalMoves(board, side) {
+  const moves = [];
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const p = board[r][c];
+      if (p !== '.' && ((side === 'W' && isWhitePiece(p)) || (side === 'B' && isBlackPiece(p)))) {
+        const sqMoves = getStrictlyLegalMovesForSquare(r, c, board);
+        sqMoves.forEach(m => moves.push({ fromR: r, fromC: c, toR: m.r, toC: m.c }));
+      }
+    }
+  }
+  return moves;
+}
+
+function isCheckmate(board, side) {
+  return isKingInCheck(board, side) && getStrictlyLegalMoves(board, side).length === 0;
+}
+
+function isStalemate(board, side) {
+  return !isKingInCheck(board, side) && getStrictlyLegalMoves(board, side).length === 0;
 }
 
 function cloneBoard(board) {
