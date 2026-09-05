@@ -653,6 +653,7 @@ let currentTurn = 'W'; // 'W' = Human White, 'B' = Monster Black
 let capturedWhite = [];
 let capturedBlack = [];
 let lastMove = null;
+let enPassantTarget = null; // { r, c } target square for en-passant capture
 
 // Castling State Tracking Flags
 let hasMovedWKing = false;
@@ -744,6 +745,7 @@ function resetChessBoard() {
   capturedWhite = [];
   capturedBlack = [];
   lastMove = null;
+  enPassantTarget = null;
 
   hasMovedWKing = false;
   hasMovedWRookA = false;
@@ -863,6 +865,16 @@ function makeMove(fromR, fromC, toR, toC) {
     else capturedBlack.push(targetP);
   }
 
+  // Handle En Passant Capture
+  if ((p === 'P' || p === 'p') && fromC !== toC && targetP === '.') {
+    const capPawn = chessBoardState[fromR][toC];
+    if (capPawn !== '.') {
+      if (isWhitePiece(capPawn)) capturedWhite.push(capPawn);
+      else capturedBlack.push(capPawn);
+      chessBoardState[fromR][toC] = '.';
+    }
+  }
+
   // Handle Castling Rook Movement
   if (p === 'K' && fromR === 7 && fromC === 4) {
     if (toR === 7 && toC === 6) { // White Kingside
@@ -884,6 +896,15 @@ function makeMove(fromR, fromC, toR, toC) {
 
   chessBoardState[toR][toC] = p;
   chessBoardState[fromR][fromC] = '.';
+
+  // Set En Passant Target for next immediate turn
+  if (p === 'P' && fromR === 6 && toR === 4) {
+    enPassantTarget = { r: 5, c: fromC };
+  } else if (p === 'p' && fromR === 1 && toR === 3) {
+    enPassantTarget = { r: 2, c: fromC };
+  } else {
+    enPassantTarget = null;
+  }
 
   // Update Castling History Flags
   if (fromR === 7 && fromC === 4) hasMovedWKing = true;
@@ -966,6 +987,11 @@ function getBestMoveMinimax(board, depth, alpha, beta, isMaximizing) {
     } else if (pMoved === 'k' && move.fromR === 0 && move.fromC === 4) {
       if (move.toR === 0 && move.toC === 6) { tempBoard[0][5] = 'r'; tempBoard[0][7] = '.'; }
       if (move.toR === 0 && move.toC === 2) { tempBoard[0][3] = 'r'; tempBoard[0][0] = '.'; }
+    }
+
+    // Handle En Passant Simulation for Minimax
+    if ((pMoved === 'P' || pMoved === 'p') && move.fromC !== move.toC && tempBoard[move.toR][move.toC] === '.') {
+      tempBoard[move.fromR][move.toC] = '.';
     }
 
     tempBoard[move.toR][move.toC] = pMoved;
@@ -1142,6 +1168,10 @@ function getPseudoLegalMovesForSquare(r, c, board) {
         }
       }
     });
+    // En Passant Captures
+    if (enPassantTarget && enPassantTarget.r === r + dir && Math.abs(enPassantTarget.c - c) === 1) {
+      moves.push({ r: r + dir, c: enPassantTarget.c, isEnPassant: true });
+    }
   }
 
   // Knights
@@ -1267,6 +1297,11 @@ function getStrictlyLegalMovesForSquare(r, c, board) {
     } else if (pieceMoved === 'k' && r === 0 && c === 4) {
       if (move.r === 0 && move.c === 6) { tempBoard[0][5] = 'r'; tempBoard[0][7] = '.'; }
       if (move.r === 0 && move.c === 2) { tempBoard[0][3] = 'r'; tempBoard[0][0] = '.'; }
+    }
+
+    // Handle En Passant Simulation on tempBoard
+    if ((pieceMoved === 'P' || pieceMoved === 'p') && c !== move.c && tempBoard[move.r][move.c] === '.') {
+      tempBoard[r][move.c] = '.';
     }
 
     tempBoard[move.r][move.c] = pieceMoved;
