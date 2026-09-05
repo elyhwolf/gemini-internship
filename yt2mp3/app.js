@@ -654,6 +654,14 @@ let capturedWhite = [];
 let capturedBlack = [];
 let lastMove = null;
 
+// Castling State Tracking Flags
+let hasMovedWKing = false;
+let hasMovedWRookA = false;
+let hasMovedWRookH = false;
+let hasMovedBKing = false;
+let hasMovedBRookA = false;
+let hasMovedBRookH = false;
+
 const CHESS_SVG_PIECES = {
   // White Pieces (#FFFFFF fill, Gold accent glow, #000 stroke)
   'K': `<svg viewBox="0 0 45 45" class="piece-svg white"><g fill="#ffffff" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M 22.5,11.63 C 22.5,11.63 21,14.63 21,14.63 L 15,14.63 L 15,17.63 L 17.5,17.63 L 17.5,21.63 C 15.5,21.63 12.5,23.13 12.5,26.63 C 12.5,28.63 14,30.13 16,30.13 L 29,30.13 C 31,30.13 32.5,28.63 32.5,26.63 C 32.5,23.13 29.5,21.63 27.5,21.63 L 27.5,17.63 L 30,17.63 L 30,14.63 L 24,14.63 L 24,11.63 Z"/><path d="M 22.5,6 L 22.5,11.63 M 20,8 L 25,8"/><path d="M 11.5,37 L 33.5,37 M 13,34 L 32,34 M 14.5,31 L 30.5,31"/></g></svg>`,
@@ -736,6 +744,13 @@ function resetChessBoard() {
   capturedWhite = [];
   capturedBlack = [];
   lastMove = null;
+
+  hasMovedWKing = false;
+  hasMovedWRookA = false;
+  hasMovedWRookH = false;
+  hasMovedBKing = false;
+  hasMovedBRookA = false;
+  hasMovedBRookH = false;
 
   updateTurnUI("YOUR TURN (WHITE)");
   renderChessBoard();
@@ -848,8 +863,36 @@ function makeMove(fromR, fromC, toR, toC) {
     else capturedBlack.push(targetP);
   }
 
+  // Handle Castling Rook Movement
+  if (p === 'K' && fromR === 7 && fromC === 4) {
+    if (toR === 7 && toC === 6) { // White Kingside
+      chessBoardState[7][5] = 'R';
+      chessBoardState[7][7] = '.';
+    } else if (toR === 7 && toC === 2) { // White Queenside
+      chessBoardState[7][3] = 'R';
+      chessBoardState[7][0] = '.';
+    }
+  } else if (p === 'k' && fromR === 0 && fromC === 4) {
+    if (toR === 0 && toC === 6) { // Black Kingside
+      chessBoardState[0][5] = 'r';
+      chessBoardState[0][7] = '.';
+    } else if (toR === 0 && toC === 2) { // Black Queenside
+      chessBoardState[0][3] = 'r';
+      chessBoardState[0][0] = '.';
+    }
+  }
+
   chessBoardState[toR][toC] = p;
   chessBoardState[fromR][fromC] = '.';
+
+  // Update Castling History Flags
+  if (fromR === 7 && fromC === 4) hasMovedWKing = true;
+  if ((fromR === 7 && fromC === 7) || (toR === 7 && toC === 7)) hasMovedWRookH = true;
+  if ((fromR === 7 && fromC === 0) || (toR === 7 && toC === 0)) hasMovedWRookA = true;
+
+  if (fromR === 0 && fromC === 4) hasMovedBKing = true;
+  if ((fromR === 0 && fromC === 7) || (toR === 0 && toC === 7)) hasMovedBRookH = true;
+  if ((fromR === 0 && fromC === 0) || (toR === 0 && toC === 0)) hasMovedBRookA = true;
 
   lastMove = { fromR, fromC, toR, toC };
 
@@ -914,7 +957,18 @@ function getBestMoveMinimax(board, depth, alpha, beta, isMaximizing) {
 
   for (const move of allMoves) {
     const tempBoard = cloneBoard(board);
-    tempBoard[move.toR][move.toC] = tempBoard[move.fromR][move.fromC];
+    const pMoved = tempBoard[move.fromR][move.fromC];
+
+    // Handle Castling Rook Simulation on tempBoard for Minimax
+    if (pMoved === 'K' && move.fromR === 7 && move.fromC === 4) {
+      if (move.toR === 7 && move.toC === 6) { tempBoard[7][5] = 'R'; tempBoard[7][7] = '.'; }
+      if (move.toR === 7 && move.toC === 2) { tempBoard[7][3] = 'R'; tempBoard[7][0] = '.'; }
+    } else if (pMoved === 'k' && move.fromR === 0 && move.fromC === 4) {
+      if (move.toR === 0 && move.toC === 6) { tempBoard[0][5] = 'r'; tempBoard[0][7] = '.'; }
+      if (move.toR === 0 && move.toC === 2) { tempBoard[0][3] = 'r'; tempBoard[0][0] = '.'; }
+    }
+
+    tempBoard[move.toR][move.toC] = pMoved;
     tempBoard[move.fromR][move.fromC] = '.';
 
     if (tempBoard[move.toR][move.toC] === 'P' && move.toR === 0) tempBoard[move.toR][move.toC] = 'Q';
@@ -1158,6 +1212,39 @@ function getPseudoLegalMovesForSquare(r, c, board) {
         }
       }
     }
+
+    // Castling Logic
+    if (isWhite && r === 7 && c === 4) {
+      const opp = 'B';
+      // Kingside (O-O): e1 -> g1 (7,4 -> 7,6)
+      if (!hasMovedWKing && !hasMovedWRookH && board[7][7] === 'R' && board[7][5] === '.' && board[7][6] === '.') {
+        if (!isSquareAttacked(board, 7, 4, opp) && !isSquareAttacked(board, 7, 5, opp) && !isSquareAttacked(board, 7, 6, opp)) {
+          moves.push({ r: 7, c: 6, isCastling: true });
+        }
+      }
+      // Queenside (O-O-O): e1 -> c1 (7,4 -> 7,2)
+      if (!hasMovedWKing && !hasMovedWRookA && board[7][0] === 'R' && board[7][1] === '.' && board[7][2] === '.' && board[7][3] === '.') {
+        if (!isSquareAttacked(board, 7, 4, opp) && !isSquareAttacked(board, 7, 3, opp) && !isSquareAttacked(board, 7, 2, opp)) {
+          moves.push({ r: 7, c: 2, isCastling: true });
+        }
+      }
+    }
+
+    if (!isWhite && r === 0 && c === 4) {
+      const opp = 'W';
+      // Kingside (O-O): e8 -> g8 (0,4 -> 0,6)
+      if (!hasMovedBKing && !hasMovedBRookH && board[0][7] === 'r' && board[0][5] === '.' && board[0][6] === '.') {
+        if (!isSquareAttacked(board, 0, 4, opp) && !isSquareAttacked(board, 0, 5, opp) && !isSquareAttacked(board, 0, 6, opp)) {
+          moves.push({ r: 0, c: 6, isCastling: true });
+        }
+      }
+      // Queenside (O-O-O): e8 -> c8 (0,4 -> 0,2)
+      if (!hasMovedBKing && !hasMovedBRookA && board[0][0] === 'r' && board[0][1] === '.' && board[0][2] === '.' && board[0][3] === '.') {
+        if (!isSquareAttacked(board, 0, 4, opp) && !isSquareAttacked(board, 0, 3, opp) && !isSquareAttacked(board, 0, 2, opp)) {
+          moves.push({ r: 0, c: 2, isCastling: true });
+        }
+      }
+    }
   }
 
   return moves;
@@ -1171,7 +1258,18 @@ function getStrictlyLegalMovesForSquare(r, c, board) {
 
   return pseudoMoves.filter(move => {
     const tempBoard = cloneBoard(board);
-    tempBoard[move.r][move.c] = tempBoard[r][c];
+    const pieceMoved = tempBoard[r][c];
+
+    // Handle Castling Rook Simulation on tempBoard
+    if (pieceMoved === 'K' && r === 7 && c === 4) {
+      if (move.r === 7 && move.c === 6) { tempBoard[7][5] = 'R'; tempBoard[7][7] = '.'; }
+      if (move.r === 7 && move.c === 2) { tempBoard[7][3] = 'R'; tempBoard[7][0] = '.'; }
+    } else if (pieceMoved === 'k' && r === 0 && c === 4) {
+      if (move.r === 0 && move.c === 6) { tempBoard[0][5] = 'r'; tempBoard[0][7] = '.'; }
+      if (move.r === 0 && move.c === 2) { tempBoard[0][3] = 'r'; tempBoard[0][0] = '.'; }
+    }
+
+    tempBoard[move.r][move.c] = pieceMoved;
     tempBoard[r][c] = '.';
 
     if (tempBoard[move.r][move.c] === 'P' && move.r === 0) tempBoard[move.r][move.c] = 'Q';
