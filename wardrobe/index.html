@@ -355,6 +355,20 @@
     </div>
   </div>
 
+  <!-- CONFIRMATION / DELETE MODAL -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal-card" style="max-width: 400px; text-align: center; gap: 1rem;">
+      <div style="font-size: 2.8rem; margin-top: 0.5rem; line-height: 1;">🗑️</div>
+      <h3 style="font-family: 'Space Grotesk', sans-serif; color: #ffffff; font-size: 1.25rem; margin: 0;" id="confirmModalTitle">Remove Item?</h3>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0;" id="confirmModalDesc">Are you sure you want to remove this item from your vault?</p>
+      
+      <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 0.5rem;">
+        <button type="button" class="btn-secondary" style="flex: 1;" onclick="closeConfirmModal()">Cancel</button>
+        <button type="button" class="btn-primary" style="flex: 1; background: #f43f5e; border-color: #f43f5e; box-shadow: 0 4px 15px rgba(244, 63, 94, 0.4);" id="confirmModalActionBtn" onclick="executeConfirmAction()">Delete</button>
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>

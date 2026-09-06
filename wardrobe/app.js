@@ -109,6 +109,7 @@ let savedOutfits = [];
 let activeCategoryFilter = "all";
 let activeTab = "closet";
 let uploadedImageDataUrl = null;
+let pendingConfirmAction = null;
 
 // Fit Studio Canvas Selection State
 let currentOutfitCanvas = {
@@ -120,6 +121,36 @@ let currentOutfitCanvas = {
 };
 
 let activePickingSlot = null;
+
+// Confirmation Modal Handlers
+function showConfirmDialog(title, desc, actionCallback) {
+  const modal = document.getElementById("confirmModal");
+  if (!modal) {
+    if (confirm(desc)) actionCallback();
+    return;
+  }
+
+  const titleEl = document.getElementById("confirmModalTitle");
+  const descEl = document.getElementById("confirmModalDesc");
+  if (titleEl) titleEl.textContent = title;
+  if (descEl) descEl.textContent = desc;
+
+  pendingConfirmAction = actionCallback;
+  modal.classList.add("active");
+}
+
+function closeConfirmModal() {
+  const modal = document.getElementById("confirmModal");
+  if (modal) modal.classList.remove("active");
+  pendingConfirmAction = null;
+}
+
+function executeConfirmAction() {
+  if (pendingConfirmAction) {
+    pendingConfirmAction();
+  }
+  closeConfirmModal();
+}
 
 // Initialize App
 document.addEventListener("DOMContentLoaded", () => {
@@ -358,7 +389,7 @@ function renderClosetGrid() {
 
           <div class="item-actions">
             <button type="button" class="icon-action-btn" title="Equip in Fit Studio" onclick="equipInStudio('${item.id}')">✨</button>
-            <button type="button" class="icon-action-btn delete" title="Delete Item" onclick="deleteItem('${item.id}')">🗑️</button>
+            <button type="button" class="icon-action-btn delete" title="Delete Item" onclick="deleteItem('${item.id}', event)">🗑️</button>
           </div>
         </div>
       </div>
@@ -380,21 +411,33 @@ function toggleFavorite(id, event) {
 }
 
 // Delete Item
-function deleteItem(id) {
-  if (confirm("Are you sure you want to remove this item from your vault?")) {
-    inventory = inventory.filter(i => i.id !== id);
-    
-    // Remove from current studio canvas if equipped
-    Object.keys(currentOutfitCanvas).forEach(slot => {
-      if (currentOutfitCanvas[slot] && currentOutfitCanvas[slot].id === id) {
-        currentOutfitCanvas[slot] = null;
-      }
-    });
-
-    saveDataToStorage();
-    renderAllViews();
-    showToast("Item removed from Vault");
+function deleteItem(id, event) {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
   }
+
+  const item = inventory.find(i => i.id === id);
+  const itemName = item ? item.name : "this item";
+
+  showConfirmDialog(
+    "Remove Item?",
+    `Are you sure you want to remove "${itemName}" from your vault?`,
+    () => {
+      inventory = inventory.filter(i => i.id !== id);
+      
+      // Remove from current studio canvas if equipped
+      Object.keys(currentOutfitCanvas).forEach(slot => {
+        if (currentOutfitCanvas[slot] && currentOutfitCanvas[slot].id === id) {
+          currentOutfitCanvas[slot] = null;
+        }
+      });
+
+      saveDataToStorage();
+      renderAllViews();
+      showToast(`Removed "${itemName}" from Vault`);
+    }
+  );
 }
 
 /* ====================================================== */
@@ -882,7 +925,7 @@ function renderLookbook() {
     card.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <h4 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.05rem; color: #ffffff;">${outfit.name}</h4>
-        <button type="button" class="icon-action-btn delete" onclick="deleteOutfit('${outfit.id}')">🗑️</button>
+        <button type="button" class="icon-action-btn delete" onclick="deleteOutfit('${outfit.id}', event)">🗑️</button>
       </div>
 
       <div class="lookbook-items-preview">
@@ -901,14 +944,26 @@ function renderLookbook() {
   });
 }
 
-function deleteOutfit(id) {
-  if (confirm("Delete this outfit from Lookbook?")) {
-    savedOutfits = savedOutfits.filter(o => o.id !== id);
-    saveDataToStorage();
-    renderStatsBar();
-    renderLookbook();
-    showToast("Outfit removed");
+function deleteOutfit(id, event) {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
   }
+
+  const outfit = savedOutfits.find(o => o.id === id);
+  const outfitName = outfit ? outfit.name : "this outfit";
+
+  showConfirmDialog(
+    "Remove Outfit?",
+    `Are you sure you want to remove "${outfitName}" from your Lookbook?`,
+    () => {
+      savedOutfits = savedOutfits.filter(o => o.id !== id);
+      saveDataToStorage();
+      renderStatsBar();
+      renderLookbook();
+      showToast(`Removed "${outfitName}" from Lookbook`);
+    }
+  );
 }
 
 function equipLookbookOutfit(id) {
