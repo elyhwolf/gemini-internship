@@ -108,6 +108,7 @@ let inventory = [];
 let savedOutfits = [];
 let activeCategoryFilter = "all";
 let activeTab = "closet";
+let uploadedImageDataUrl = null;
 
 // Fit Studio Canvas Selection State
 let currentOutfitCanvas = {
@@ -129,6 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   renderAllViews();
   setupClickOutsideHandlers();
+  setupDragAndDrop();
 });
 
 // Seed Initial Demonstration Items
@@ -398,16 +400,107 @@ function deleteItem(id) {
 /* ====================================================== */
 /* SMART AUTOCOMPLETE & WEB LOOKUP ENGINE */
 /* ====================================================== */
+/* SMART AUTOCOMPLETE & DRAG-AND-DROP IMAGE ENGINE */
+/* ====================================================== */
+
+function setupDragAndDrop() {
+  const dropzone = document.getElementById("imageDropzone");
+  if (!dropzone) return;
+
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropzone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    }, false);
+  });
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropzone.addEventListener(eventName, () => {
+      dropzone.classList.add('drag-over');
+    }, false);
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropzone.addEventListener(eventName, () => {
+      dropzone.classList.remove('drag-over');
+    }, false);
+  });
+
+  dropzone.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    if (files && files.length > 0) {
+      processFile(files[0]);
+    }
+  }, false);
+}
+
+function triggerFileInput() {
+  const fileInput = document.getElementById("itemFileInput");
+  if (fileInput) fileInput.click();
+}
+
+function handleFileSelect(e) {
+  const file = e.target.files && e.target.files[0];
+  if (file) {
+    processFile(file);
+  }
+}
+
+function processFile(file) {
+  if (!file || !file.type.startsWith("image/")) {
+    alert("Please select a valid image file (PNG, JPG, WEBP).");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    uploadedImageDataUrl = e.target.result;
+    displayImagePreview(uploadedImageDataUrl);
+  };
+  reader.readAsDataURL(file);
+}
+
+function displayImagePreview(url) {
+  const preview = document.getElementById("dropzonePreview");
+  const content = document.getElementById("dropzoneContent");
+  const img = document.getElementById("previewImg");
+
+  if (img && preview && content) {
+    img.src = url;
+    preview.style.display = "flex";
+    content.style.display = "none";
+  }
+}
+
+function removeUploadedImage(e) {
+  if (e) e.stopPropagation();
+  uploadedImageDataUrl = null;
+  
+  const preview = document.getElementById("dropzonePreview");
+  const content = document.getElementById("dropzoneContent");
+  const img = document.getElementById("previewImg");
+  const fileInput = document.getElementById("itemFileInput");
+
+  if (img) img.src = "";
+  if (preview) preview.style.display = "none";
+  if (content) content.style.display = "flex";
+  if (fileInput) fileInput.value = "";
+}
 
 function openAddItemModal() {
   document.getElementById("addItemModal").classList.add("active");
   document.getElementById("itemQueryInput").value = "";
+  document.getElementById("itemBrand").value = "";
+  document.getElementById("itemColorName").value = "";
   document.getElementById("autocompleteDropdown").classList.remove("active");
+  removeUploadedImage();
   document.getElementById("itemQueryInput").focus();
 }
 
 function closeAddItemModal() {
   document.getElementById("addItemModal").classList.remove("active");
+  removeUploadedImage();
 }
 
 function handleSmartTyping(e) {
@@ -458,23 +551,18 @@ function selectAutocompleteSuggestion(item) {
   document.getElementById("itemBrand").value = item.brand;
   document.getElementById("itemColorPicker").value = item.colorHex;
   document.getElementById("itemColorName").value = item.colorName;
-  document.getElementById("itemImagePreset").value = item.preset || "preset-hoodie-oatmeal";
   
+  if (item.imageUrl) {
+    uploadedImageDataUrl = item.imageUrl;
+    displayImagePreview(uploadedImageDataUrl);
+  }
+
   document.getElementById("autocompleteDropdown").classList.remove("active");
   showToast(`Autofilled: ${item.name}`);
 }
 
 function syncColorInput(hex) {
   document.getElementById("itemColorPicker").value = hex;
-}
-
-function previewPresetImage(val) {
-  const urlGroup = document.getElementById("customUrlGroup");
-  if (val === "custom") {
-    urlGroup.style.display = "flex";
-  } else {
-    urlGroup.style.display = "none";
-  }
 }
 
 function saveItemFromModal() {
@@ -484,34 +572,31 @@ function saveItemFromModal() {
   const colorHex = document.getElementById("itemColorPicker").value;
   const colorName = document.getElementById("itemColorName").value.trim() || "Custom";
   const season = document.getElementById("itemSeason").value;
-  const preset = document.getElementById("itemImagePreset").value;
-  const customUrl = document.getElementById("itemCustomUrl").value.trim();
 
   if (!name) {
     alert("Please enter or select an item name!");
     return;
   }
 
-  // Find matching image from catalog or preset map
-  let imageUrl = "/wardrobe/assets/fog_essentials_hoodie_oatmeal.png";
+  // Use uploaded/dragged image if provided, catalog match if available, or default image
+  let imageUrl = uploadedImageDataUrl;
   
-  const catalogMatch = STREETWEAR_CATALOG.find(c => c.name === name);
-  if (catalogMatch) {
-    imageUrl = catalogMatch.imageUrl;
-  } else if (preset === "custom" && customUrl) {
-    imageUrl = customUrl;
-  } else {
-    // Map preset dropdown to studio apparel assets
-    const PRESET_MAP = {
-      "preset-hoodie-oatmeal": "/wardrobe/assets/fog_essentials_hoodie_oatmeal.png",
-      "preset-shorts-oatmeal": "/wardrobe/assets/fog_essentials_shorts_oatmeal.png",
-      "preset-dunk-panda": "/wardrobe/assets/nike_dunk_panda.png",
-      "preset-carhartt-jacket": "/wardrobe/assets/carhartt_detroit_jacket.png",
-      "preset-stussy-tee": "/wardrobe/assets/stussy_white_tee.png",
-      "preset-levis-pants": "/wardrobe/assets/levis_501_jeans.png",
-      "preset-beanie": "https://images.unsplash.com/photo-1576871337632-b9aef4c17ab9?w=600&auto=format&fit=crop&q=80"
-    };
-    imageUrl = PRESET_MAP[preset] || imageUrl;
+  if (!imageUrl) {
+    const catalogMatch = STREETWEAR_CATALOG.find(c => c.name.toLowerCase() === name.toLowerCase());
+    if (catalogMatch) {
+      imageUrl = catalogMatch.imageUrl;
+    } else {
+      const FALLBACK_MAP = {
+        "Hoodies": "/wardrobe/assets/fog_essentials_hoodie_oatmeal.png",
+        "Shorts": "/wardrobe/assets/fog_essentials_shorts_oatmeal.png",
+        "Shoes": "/wardrobe/assets/nike_dunk_panda.png",
+        "Jackets": "/wardrobe/assets/carhartt_detroit_jacket.png",
+        "Shirts": "/wardrobe/assets/stussy_white_tee.png",
+        "Pants": "/wardrobe/assets/levis_501_jeans.png",
+        "Accessories": "/wardrobe/assets/stussy_white_tee.png"
+      };
+      imageUrl = FALLBACK_MAP[category] || "/wardrobe/assets/fog_essentials_hoodie_oatmeal.png";
+    }
   }
 
   const newItem = {

@@ -315,22 +315,21 @@
       </div>
 
       <div class="form-group">
-        <label for="itemImagePreset">Item Visual / Icon</label>
-        <select id="itemImagePreset" class="input-style" onchange="previewPresetImage(this.value)">
-          <option value="preset-hoodie-oatmeal">FOG Essentials Hoodie (Light Oatmeal)</option>
-          <option value="preset-shorts-oatmeal">Essentials Shorts (Light Oatmeal)</option>
-          <option value="preset-dunk-panda">Nike Dunk Low (Panda Black/White)</option>
-          <option value="preset-carhartt-jacket">Carhartt Detroit Jacket (Brown)</option>
-          <option value="preset-stussy-tee">Stüssy Basic Logo Tee (White)</option>
-          <option value="preset-levis-pants">Levi's 501 Straight Jeans (Denim)</option>
-          <option value="preset-beanie">Yeezy / Carhartt Ribbed Beanie</option>
-          <option value="custom">Custom Image URL</option>
-        </select>
-      </div>
+        <label>Clothing Photo / Image Upload</label>
+        <div class="image-dropzone" id="imageDropzone" onclick="triggerFileInput()">
+          <input type="file" id="itemFileInput" accept="image/*" style="display: none;" onchange="handleFileSelect(event)">
+          
+          <div class="dropzone-content" id="dropzoneContent">
+            <div class="dropzone-icon">📥</div>
+            <p class="dropzone-text">Drag & drop clothing photo here, or <span style="color: var(--accent-purple); text-decoration: underline;">browse files</span></p>
+            <span class="dropzone-hint">Supports PNG, JPG, WEBP images</span>
+          </div>
 
-      <div class="form-group" id="customUrlGroup" style="display: none;">
-        <label for="itemCustomUrl">Custom Image URL</label>
-        <input type="text" id="itemCustomUrl" class="input-style" placeholder="https://example.com/item.jpg">
+          <div class="dropzone-preview" id="dropzonePreview" style="display: none;">
+            <img src="" id="previewImg" alt="Clothing Preview">
+            <button type="button" class="remove-img-btn" title="Remove Photo" onclick="removeUploadedImage(event)">&times;</button>
+          </div>
+        </div>
       </div>
 
       <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 0.5rem;">
