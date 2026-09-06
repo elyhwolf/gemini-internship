@@ -654,6 +654,7 @@ let capturedWhite = [];
 let capturedBlack = [];
 let lastMove = null;
 let enPassantTarget = null; // { r, c } target square for en-passant capture
+let isChessAnimating = false;
 
 // Castling State Tracking Flags
 let hasMovedWKing = false;
@@ -746,6 +747,7 @@ function resetChessBoard() {
   capturedBlack = [];
   lastMove = null;
   enPassantTarget = null;
+  isChessAnimating = false;
 
   hasMovedWKing = false;
   hasMovedWRookA = false;
@@ -812,35 +814,110 @@ function renderChessBoard() {
   }
 }
 
+function animatePieceMove(fromR, fromC, toR, toC, callback) {
+  const boardEl = document.getElementById('chessBoard');
+  if (!boardEl) { callback(); return; }
+
+  const squares = boardEl.children;
+  const fromIdx = fromR * 8 + fromC;
+  const toIdx = toR * 8 + toC;
+
+  const fromSq = squares[fromIdx];
+  const toSq = squares[toIdx];
+
+  if (!fromSq || !toSq) { callback(); return; }
+
+  const pieceSvg = fromSq.querySelector('.piece-svg');
+  if (!pieceSvg) { callback(); return; }
+
+  isChessAnimating = true;
+
+  const pieceRect = pieceSvg.getBoundingClientRect();
+  const toRect = toSq.getBoundingClientRect();
+
+  // Calculate centered target position inside destination square
+  const targetLeft = toRect.left + (toRect.width - pieceRect.width) / 2;
+  const targetTop = toRect.top + (toRect.height - pieceRect.height) / 2;
+
+  const dx = targetLeft - pieceRect.left;
+  const dy = targetTop - pieceRect.top;
+
+  // Clone SVG piece for exact 0.25s ease-in-out glide
+  const clone = pieceSvg.cloneNode(true);
+  clone.style.position = 'fixed';
+  clone.style.left = `${pieceRect.left}px`;
+  clone.style.top = `${pieceRect.top}px`;
+  clone.style.width = `${pieceRect.width}px`;
+  clone.style.height = `${pieceRect.height}px`;
+  clone.style.margin = '0';
+  clone.style.padding = '0';
+  clone.style.zIndex = '99999';
+  clone.style.pointerEvents = 'none';
+  clone.style.willChange = 'transform';
+  clone.style.transform = 'translate3d(0px, 0px, 0px)';
+
+  // Append clone to body FIRST
+  document.body.appendChild(clone);
+
+  // Force reflow to guarantee starting position (0,0) is registered by browser
+  void clone.offsetHeight;
+
+  // Now hide original piece without any blank gap frame
+  pieceSvg.style.opacity = '0';
+
+  // Apply smooth ease-in-out transition and slide to destination
+  clone.style.transition = 'transform 0.25s cubic-bezier(0.42, 0, 0.58, 1)';
+  clone.style.transform = `translate3d(${dx}px, ${dy}px, 0px)`;
+
+  setTimeout(() => {
+    // 1. Render updated board state under the clone FIRST
+    callback();
+
+    // 2. Remove clone on the next frame after new board is painted (zero flicker/pop)
+    requestAnimationFrame(() => {
+      if (clone.parentNode) clone.parentNode.removeChild(clone);
+      isChessAnimating = false;
+    });
+  }, 250);
+}
+
 function handleSquareClick(r, c) {
-  if (currentTurn !== 'W') return; // Monster is thinking or game over
+  if (currentTurn !== 'W' || isChessAnimating) return; // Monster thinking, animating, or game over
 
   const piece = chessBoardState[r][c];
 
   // If clicking on valid target square
   if (selectedSquare && validMoveTargets.some(m => m.r === r && m.c === c)) {
-    makeMove(selectedSquare.r, selectedSquare.c, r, c);
+    const fromR = selectedSquare.r;
+    const fromC = selectedSquare.c;
+
+    // Clear selection highlights immediately for a clean board during glide
     selectedSquare = null;
     validMoveTargets = [];
     renderChessBoard();
 
-    // Check if Monster is checkmated or in stalemate
-    if (isCheckmate(chessBoardState, 'B')) {
-      currentTurn = 'OVER';
-      updateTurnUI("[VICTORY] CHECKMATE! YOU DEFEATED THE MONSTER!");
-      return;
-    } else if (isStalemate(chessBoardState, 'B')) {
-      currentTurn = 'OVER';
-      updateTurnUI("[DRAW] STALEMATE! THE GAME IS A DRAW!");
-      return;
-    } else if (isKingInCheck(chessBoardState, 'B')) {
-      updateTurnUI("[CHECK] MONSTER UNDER ATTACK...");
-    } else {
-      updateTurnUI("MONSTER CONTEMPLATING... (1500 ELO)");
-    }
+    animatePieceMove(fromR, fromC, r, c, () => {
+      makeMove(fromR, fromC, r, c);
+      renderChessBoard();
 
-    // Trigger Monster AI turn if White played
-    setTimeout(makeMonsterAIMove, 600);
+      // Check if Monster is checkmated or in stalemate
+      if (isCheckmate(chessBoardState, 'B')) {
+        currentTurn = 'OVER';
+        updateTurnUI("[VICTORY] CHECKMATE! YOU DEFEATED THE MONSTER!");
+        return;
+      } else if (isStalemate(chessBoardState, 'B')) {
+        currentTurn = 'OVER';
+        updateTurnUI("[DRAW] STALEMATE! THE GAME IS A DRAW!");
+        return;
+      } else if (isKingInCheck(chessBoardState, 'B')) {
+        updateTurnUI("[CHECK] MONSTER UNDER ATTACK...");
+      } else {
+        updateTurnUI("MONSTER CONTEMPLATING... (1500 ELO)");
+      }
+
+      // Trigger Monster AI turn if White played
+      setTimeout(makeMonsterAIMove, 300);
+    });
     return;
   }
 
@@ -935,25 +1012,34 @@ function isBlackPiece(p) { return p >= 'a' && p <= 'z'; }
 /* 1500 ELO MINIMAX ALPHA-BETA SEARCH ENGINE */
 
 function makeMonsterAIMove() {
-  if (currentTurn !== 'B') return;
+  if (currentTurn !== 'B' || isChessAnimating) return;
 
   const bestMove = getBestMoveMinimax(chessBoardState, 3, -100000, 100000, true);
   
   if (bestMove && bestMove.move) {
     const { fromR, fromC, toR, toC } = bestMove.move;
-    makeMove(fromR, fromC, toR, toC);
-    
-    if (isCheckmate(chessBoardState, 'W')) {
-      currentTurn = 'OVER';
-      updateTurnUI("[DEFEAT] CHECKMATE! THE MONSTER REIGNS SUPREME!");
-    } else if (isStalemate(chessBoardState, 'W')) {
-      currentTurn = 'OVER';
-      updateTurnUI("[DRAW] STALEMATE! GAME DRAWN!");
-    } else if (isKingInCheck(chessBoardState, 'W')) {
-      updateTurnUI("[CHECK] YOUR KING IS UNDER ATTACK!");
-    } else {
-      updateTurnUI("YOUR TURN (WHITE)");
-    }
+
+    // Clear selection state before AI animation
+    selectedSquare = null;
+    validMoveTargets = [];
+
+    animatePieceMove(fromR, fromC, toR, toC, () => {
+      makeMove(fromR, fromC, toR, toC);
+      
+      if (isCheckmate(chessBoardState, 'W')) {
+        currentTurn = 'OVER';
+        updateTurnUI("[DEFEAT] CHECKMATE! THE MONSTER REIGNS SUPREME!");
+      } else if (isStalemate(chessBoardState, 'W')) {
+        currentTurn = 'OVER';
+        updateTurnUI("[DRAW] STALEMATE! GAME DRAWN!");
+      } else if (isKingInCheck(chessBoardState, 'W')) {
+        updateTurnUI("[CHECK] YOUR KING IS UNDER ATTACK!");
+      } else {
+        updateTurnUI("YOUR TURN (WHITE)");
+      }
+
+      renderChessBoard();
+    });
   } else {
     if (isKingInCheck(chessBoardState, 'B')) {
       currentTurn = 'OVER';
@@ -962,9 +1048,8 @@ function makeMonsterAIMove() {
       currentTurn = 'OVER';
       updateTurnUI("[DRAW] STALEMATE! GAME DRAWN!");
     }
+    renderChessBoard();
   }
-  
-  renderChessBoard();
 }
 
 function getBestMoveMinimax(board, depth, alpha, beta, isMaximizing) {
