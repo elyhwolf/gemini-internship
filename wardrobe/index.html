@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DripVault — Smart Wardrobe & AI Outfit Builder</title>
+  <meta name="description" content="Organize your clothing inventory across 7 apparel categories, autofill items with smart web search, and craft high-vibe outfits with AI color harmony styling.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- App Header -->
+    <header>
+      <div class="brand-logo">
+        <div class="logo-badge">🧥</div>
+        <div class="brand-title">
+          <h1>DripVault</h1>
+          <p>Smart Wardrobe & AI Outfit Studio</p>
+        </div>
+      </div>
+
+      <nav class="nav-tabs">
+        <button type="button" class="nav-tab active" id="tabCloset" onclick="switchTab('closet')">
+          <span>👔</span> My Closet
+        </button>
+        <button type="button" class="nav-tab" id="tabStudio" onclick="switchTab('studio')">
+          <span>✨</span> Fit Studio
+        </button>
+        <button type="button" class="nav-tab" id="tabLookbook" onclick="switchTab('lookbook')">
+          <span>📖</span> Lookbook
+        </button>
+      </nav>
+    </header>
+
+    <!-- Action & Stats Bar -->
+    <div class="action-stats-bar">
+      <div class="stats-group">
+        <div class="stat-pill">
+          <div class="stat-icon">🏷️</div>
+          <div class="stat-details">
+            <span class="stat-val" id="statTotalItems">0</span>
+            <span class="stat-lbl">Total Items</span>
+          </div>
+        </div>
+
+        <div class="stat-pill">
+          <div class="stat-icon">🔥</div>
+          <div class="stat-details">
+            <span class="stat-val" id="statTotalOutfits">0</span>
+            <span class="stat-lbl">Saved Fits</span>
+          </div>
+        </div>
+
+        <div class="stat-pill">
+          <div class="stat-icon">✨</div>
+          <div class="stat-details">
+            <span class="stat-val" id="statTopCategory">None</span>
+            <span class="stat-lbl">Top Category</span>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="btn-primary" onclick="openAddItemModal()">
+        <span>➕</span> Add Clothing Item
+      </button>
+    </div>
+
+    <!-- Category Filter Navigation -->
+    <div class="category-filter-bar" id="categoryFilterBar">
+      <button type="button" class="cat-btn active" onclick="filterCategory('all')">
+        <span>🌐</span> All Items <span class="cat-count" id="count-all">0</span>
+      </button>
+      <button type="button" class="cat-btn" onclick="filterCategory('Shirts')">
+        <span>👕</span> Shirts <span class="cat-count" id="count-Shirts">0</span>
+      </button>
+      <button type="button" class="cat-btn" onclick="filterCategory('Shorts')">
+        <span>🩳</span> Shorts <span class="cat-count" id="count-Shorts">0</span>
+      </button>
+      <button type="button" class="cat-btn" onclick="filterCategory('Pants')">
+        <span>👖</span> Pants <span class="cat-count" id="count-Pants">0</span>
+      </button>
+      <button type="button" class="cat-btn" onclick="filterCategory('Hoodies')">
+        <span>🧥</span> Hoodies <span class="cat-count" id="count-Hoodies">0</span>
+      </button>
+      <button type="button" class="cat-btn" onclick="filterCategory('Jackets')">
+        <span>🥼</span> Jackets <span class="cat-count" id="count-Jackets">0</span>
+      </button>
+      <button type="button" class="cat-btn" onclick="filterCategory('Shoes')">
+        <span>👟</span> Shoes <span class="cat-count" id="count-Shoes">0</span>
+      </button>
+      <button type="button" class="cat-btn" onclick="filterCategory('Accessories')">
+        <span>🧢</span> Accessories <span class="cat-count" id="count-Accessories">0</span>
+      </button>
+    </div>
+
+    <!-- VIEW 1: MY CLOSET -->
+    <main class="view-panel active" id="viewCloset">
+      <div class="closet-grid" id="closetGrid">
+        <!-- Rendered dynamically via JS -->
+      </div>
+      
+      <div class="empty-state" id="closetEmptyState" style="display: none;">
+        <div class="empty-icon">🧺</div>
+        <h3>Your Closet is Empty</h3>
+        <p>Start adding your clothes! Use smart search like <strong>"Light Oatmeal Ess"</strong> to autofill item details instantly.</p>
+        <button type="button" class="btn-primary" onclick="openAddItemModal()">
+          <span>➕</span> Add First Item
+        </button>
+      </div>
+    </main>
+
+    <!-- VIEW 2: FIT STUDIO (Outfit Creator) -->
+    <section class="view-panel" id="viewStudio">
+      <div class="fit-studio-layout">
+        
+        <!-- Interactive Canvas -->
+        <div class="canvas-card">
+          <div class="canvas-header">
+            <div class="canvas-title">
+              <span>🖼️</span> Outfit Canvas Builder
+            </div>
+            <button type="button" class="btn-secondary" onclick="clearStudioCanvas()">
+              <span>🧹</span> Reset Canvas
+            </button>
+          </div>
+
+          <div class="outfit-slots-container">
+            
+            <!-- Slot 1: Hoodie / Jacket (Outerwear) -->
+            <div class="slot-row">
+              <div class="slot-label">
+                <span>🧥</span> Outerwear
+              </div>
+              <div class="slot-dropzone" id="slotOuterwear" onclick="openSlotPicker('Outerwear')">
+                <div class="slot-empty-prompt">
+                  <span>➕</span> Select Hoodie or Jacket
+                </div>
+              </div>
+            </div>
+
+            <!-- Slot 2: Shirt / Top -->
+            <div class="slot-row">
+              <div class="slot-label">
+                <span>👕</span> Top
+              </div>
+              <div class="slot-dropzone" id="slotTop" onclick="openSlotPicker('Top')">
+                <div class="slot-empty-prompt">
+                  <span>➕</span> Select Shirt
+                </div>
+              </div>
+            </div>
+
+            <!-- Slot 3: Bottom (Pants / Shorts) -->
+            <div class="slot-row">
+              <div class="slot-label">
+                <span>👖</span> Bottom
+              </div>
+              <div class="slot-dropzone" id="slotBottom" onclick="openSlotPicker('Bottom')">
+                <div class="slot-empty-prompt">
+                  <span>➕</span> Select Pants or Shorts
+                </div>
+              </div>
+            </div>
+
+            <!-- Slot 4: Shoes -->
+            <div class="slot-row">
+              <div class="slot-label">
+                <span>👟</span> Footwear
+              </div>
+              <div class="slot-dropzone" id="slotShoes" onclick="openSlotPicker('Shoes')">
+                <div class="slot-empty-prompt">
+                  <span>➕</span> Select Shoes
+                </div>
+              </div>
+            </div>
+
+            <!-- Slot 5: Accessory -->
+            <div class="slot-row">
+              <div class="slot-label">
+                <span>🧢</span> Accessory
+              </div>
+              <div class="slot-dropzone" id="slotAccessory" onclick="openSlotPicker('Accessory')">
+                <div class="slot-empty-prompt">
+                  <span>➕</span> Select Accessory
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 0.5rem;">
+            <button type="button" class="btn-primary" onclick="saveCurrentOutfit()">
+              <span>💾</span> Save Outfit to Lookbook
+            </button>
+          </div>
+        </div>
+
+        <!-- AI Stylist Sidebar & Color Harmony Meter -->
+        <div class="stylist-sidebar">
+          
+          <div class="stylist-card">
+            <h3><span>🎨</span> Color Harmony Engine</h3>
+            
+            <div class="harmony-score-box">
+              <div class="score-circle" id="harmonyCircle">
+                <div class="score-inner" id="harmonyScoreText">95%</div>
+              </div>
+              <div class="vibe-tag" id="harmonyVibeTag">Streetwear Essential</div>
+              <div class="vibe-desc" id="harmonyVibeDesc">Neutral palette with balanced contrast.</div>
+            </div>
+          </div>
+
+          <div class="stylist-card">
+            <h3><span>🤖</span> AI Outfit Generator</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Automatically picks a high-vibe outfit combination from your actual inventory.</p>
+
+            <div class="form-group">
+              <label for="generatorOccasion">Style / Occasion</label>
+              <select id="generatorOccasion" class="input-style">
+                <option value="cozy">Cozy & Relaxed (Hoodie + Shorts)</option>
+                <option value="streetwear">Streetwear Drip (Jackets + Dunks)</option>
+                <option value="clean">Clean Minimalist (Monochrome)</option>
+                <option value="random">Full Surprise Shuffle</option>
+              </select>
+            </div>
+
+            <button type="button" class="btn-primary" style="width: 100%; justify-content: center;" onclick="generateAiOutfit()">
+              <span>🎲</span> Generate Drip Outfit
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- VIEW 3: LOOKBOOK / SAVED FITS -->
+    <section class="view-panel" id="viewLookbook">
+      <div class="lookbook-grid" id="lookbookGrid">
+        <!-- Rendered dynamically via JS -->
+      </div>
+      
+      <div class="empty-state" id="lookbookEmptyState" style="display: none;">
+        <div class="empty-icon">📖</div>
+        <h3>No Saved Outfits Yet</h3>
+        <p>Go to the <strong>Fit Studio</strong>, mix & match your clothes, and save your favorite outfits to your Lookbook!</p>
+        <button type="button" class="btn-primary" onclick="switchTab('studio')">
+          <span>✨</span> Open Fit Studio
+        </button>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ADD ITEM / SMART AUTOFILL MODAL -->
+  <div class="modal-overlay" id="addItemModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>✨</span> Add Wardrobe Item
+        </div>
+        <button type="button" class="close-modal-btn" onclick="closeAddItemModal()">&times;</button>
+      </div>
+
+      <!-- Smart Input with Real-Time Autocomplete -->
+      <div class="form-group">
+        <label for="itemQueryInput">Item Name / Smart Lookup</label>
+        <input type="text" id="itemQueryInput" class="input-style" placeholder="Try typing 'Light Oatmeal Ess' or 'Nike Dunk'..." autocomplete="off" oninput="handleSmartTyping(event)">
+        
+        <!-- Autocomplete Suggestions Dropdown -->
+        <div class="autocomplete-dropdown" id="autocompleteDropdown">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label for="itemCategory">Category</label>
+          <select id="itemCategory" class="input-style">
+            <option value="Shirts">Shirts</option>
+            <option value="Shorts">Shorts</option>
+            <option value="Pants">Pants</option>
+            <option value="Hoodies">Hoodies</option>
+            <option value="Jackets">Jackets</option>
+            <option value="Shoes">Shoes</option>
+            <option value="Accessories">Accessories</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="itemBrand">Brand Name</label>
+          <input type="text" id="itemBrand" class="input-style" placeholder="e.g. Essentials, Nike, Carhartt">
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label for="itemColorHex">Primary Color</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="color" id="itemColorPicker" value="#8b5cf6" style="width: 44px; height: 42px; border: none; border-radius: 8px; cursor: pointer; background: transparent;" onchange="syncColorInput(this.value)">
+            <input type="text" id="itemColorName" class="input-style" placeholder="e.g. Light Oatmeal, Black">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="itemSeason">Season / Vibe</label>
+          <select id="itemSeason" class="input-style">
+            <option value="All-Season">All-Season</option>
+            <option value="Fall/Winter">Fall / Winter</option>
+            <option value="Spring/Summer">Spring / Summer</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="itemImagePreset">Item Visual / Icon</label>
+        <select id="itemImagePreset" class="input-style" onchange="previewPresetImage(this.value)">
+          <option value="preset-hoodie-oatmeal">FOG Essentials Hoodie (Light Oatmeal)</option>
+          <option value="preset-shorts-oatmeal">Essentials Shorts (Light Oatmeal)</option>
+          <option value="preset-dunk-panda">Nike Dunk Low (Panda Black/White)</option>
+          <option value="preset-carhartt-jacket">Carhartt Detroit Jacket (Brown)</option>
+          <option value="preset-stussy-tee">Stüssy Basic Logo Tee (White)</option>
+          <option value="preset-levis-pants">Levi's 501 Straight Jeans (Denim)</option>
+          <option value="preset-beanie">Yeezy / Carhartt Ribbed Beanie</option>
+          <option value="custom">Custom Image URL</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="customUrlGroup" style="display: none;">
+        <label for="itemCustomUrl">Custom Image URL</label>
+        <input type="text" id="itemCustomUrl" class="input-style" placeholder="https://example.com/item.jpg">
+      </div>
+
+      <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 0.5rem;">
+        <button type="button" class="btn-secondary" onclick="closeAddItemModal()">Cancel</button>
+        <button type="button" class="btn-primary" onclick="saveItemFromModal()"><span>💾</span> Add to Vault</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLOT PICKER MODAL -->
+  <div class="modal-overlay" id="slotPickerModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title" id="slotPickerTitle">
+          <span>👔</span> Select Item
+        </div>
+        <button type="button" class="close-modal-btn" onclick="closeSlotPicker()">&times;</button>
+      </div>
+
+      <div id="slotPickerGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; max-height: 360px; overflow-y: auto;">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

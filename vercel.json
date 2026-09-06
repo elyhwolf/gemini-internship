@@ -7,6 +7,7 @@
     { "source": "/api/publish-youtube", "destination": "/api/publish-youtube.py" },
     { "source": "/sounddrop(.*)", "destination": "/distro/index.html" },
     { "source": "/distro(.*)", "destination": "/distro/index.html" },
+    { "source": "/wardrobe(.*)", "destination": "/wardrobe/index.html" },
     { "source": "/dripswitch(.*)", "destination": "/yt2mp3/index.html" },
     { "source": "/", "destination": "/yt2mp3/index.html" }
   ]
