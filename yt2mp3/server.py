@@ -12,6 +12,7 @@ import urllib.request
 import urllib.parse
 import sys
 import re
+import time
 import threading
 
 user_python_path = "/Users/elywolf/Library/Python/3.9/lib/python/site-packages"
@@ -23,6 +24,7 @@ import imageio_ffmpeg
 
 PORT = 5177
 DIRECTORY = os.path.dirname(os.path.abspath(__file__))
+ROOT_WORKSPACE = os.path.dirname(DIRECTORY)
 DOWNLOADS_DIR = os.path.join(DIRECTORY, 'downloads')
 os.makedirs(DOWNLOADS_DIR, exist_ok=True)
 
@@ -51,7 +53,7 @@ def background_ffmpeg_download(yt_url, mp3_filepath):
             'outtmpl': mp3_filepath.replace('.mp3', '.%(ext)s'),
             'noplaylist': True,
             'extractor_args': {'youtube': {'player_client': ['android', 'mweb']}},
-            'socket_timeout': 15,
+            'socket_timeout': 20,
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
@@ -75,21 +77,54 @@ class DripSwitchHandler(http.server.SimpleHTTPRequestHandler):
             if not self.path:
                 self.path = '/'
 
+    def do_HEAD(self):
+        self.do_GET()
+
     def do_OPTIONS(self):
         self.clean_request_path()
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+        self.send_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, HEAD')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type, Range')
         self.end_headers()
 
     def do_GET(self):
+        if self.path.startswith('/wardrobe') or self.path.startswith('/distro'):
+            rel_path = self.path.lstrip('/')
+            file_path = os.path.join(ROOT_WORKSPACE, rel_path)
+            if os.path.isdir(file_path):
+                file_path = os.path.join(file_path, 'index.html')
+            
+            if os.path.exists(file_path):
+                self.send_response(200)
+                self.send_header('Access-Control-Allow-Origin', '*')
+                if file_path.endswith('.html'):
+                    self.send_header('Content-Type', 'text/html')
+                elif file_path.endswith('.css'):
+                    self.send_header('Content-Type', 'text/css')
+                elif file_path.endswith('.js'):
+                    self.send_header('Content-Type', 'application/javascript')
+                elif file_path.endswith('.svg'):
+                    self.send_header('Content-Type', 'image/svg+xml')
+                elif file_path.endswith('.png'):
+                    self.send_header('Content-Type', 'image/png')
+                self.end_headers()
+                with open(file_path, 'rb') as f:
+                    self.wfile.write(f.read())
+                return
+
         self.clean_request_path()
 
         # HTTP 206 Byte Range Seeking Handler for MP3 audio files
         if self.path.startswith('/downloads/'):
             filename = os.path.basename(urllib.parse.unquote(self.path))
             file_path = os.path.join(DOWNLOADS_DIR, filename)
+
+            # Wait up to 15s if background FFmpeg conversion is still completing
+            wait_count = 0
+            while not os.path.exists(file_path) and wait_count < 30:
+                time.sleep(0.5)
+                wait_count += 1
 
             if not os.path.exists(file_path):
                 self.send_response(404)
