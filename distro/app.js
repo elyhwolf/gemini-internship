@@ -119,6 +119,44 @@ function handleAudioFile(file) {
   reader.readAsArrayBuffer(file);
 }
 
+function loadTestTrackNovember(e) {
+  if (e) e.stopPropagation();
+
+  const testAudioUrl = "/distro/november_hd.mp3";
+  const fileName = "Ely Wolf Music - November HD.mp3";
+
+  document.getElementById('fileNameDisplay').textContent = fileName;
+  document.getElementById('uploadDropzone').style.display = 'none';
+  document.getElementById('waveformCard').style.display = 'flex';
+
+  const titleInput = document.getElementById('inputTrackTitle');
+  const artistInput = document.getElementById('inputArtistName');
+
+  if (titleInput) titleInput.value = "November (HD)";
+  if (artistInput) artistInput.value = "Ely Wolf Music";
+
+  appState.trackTitle = "November (HD)";
+  appState.artistName = "Ely Wolf Music";
+
+  // Decode audio data for Web Audio API spectrum waveform
+  fetch(testAudioUrl)
+    .then(res => res.arrayBuffer())
+    .then(arrayBuffer => {
+      if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      audioContext.decodeAudioData(arrayBuffer, function(buffer) {
+        currentAudioBuffer = buffer;
+        drawWaveform(buffer);
+      }, function(err) {
+        console.warn("Audio decode fallback:", err);
+        drawFallbackWaveform();
+      });
+    })
+    .catch(err => {
+      console.warn("Audio fetch fallback:", err);
+      drawFallbackWaveform();
+    });
+}
+
 // Canvas Waveform Renderer
 function drawWaveform(buffer) {
   const canvas = document.getElementById('waveformCanvas');
