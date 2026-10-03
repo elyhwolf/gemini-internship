@@ -43,6 +43,30 @@ body, html {
   position: relative;
 }
 
+/* Ely Wolf Credit Footer */
+.app-credit {
+  position: fixed;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: #888888;
+  letter-spacing: 0.06em;
+  pointer-events: none;
+  z-index: 100;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 4px 14px;
+  border-radius: 20px;
+  border: 1px solid #eeeeee;
+}
+
+.app-credit strong {
+  color: #000000;
+  font-weight: 700;
+}
+
 /* Stages */
 .stage {
   display: none;
