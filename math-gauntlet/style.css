@@ -144,16 +144,77 @@ body, html {
   transition: background 0.3s ease;
 }
 
-.puzzle-timer-badge {
+.coin-badge {
   font-family: var(--font-mono);
   font-weight: 700;
   font-size: 0.88rem;
-  background: #f0f0f0;
-  color: #000000;
-  border: 1.5px solid #dcdcdc;
-  padding: 4px 10px;
+  background: #fef9c3;
+  color: #854d0e;
+  border: 1.5px solid #fde047;
+  padding: 4px 12px;
   border-radius: 20px;
-  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.coin-badge.gain {
+  animation: coinPop 0.4s ease-in-out;
+}
+
+@keyframes coinPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+.shop-bar {
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.buy-time-btn {
+  background: #000000;
+  color: #ffffff;
+  border: 2px solid #000000;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.buy-time-btn:hover {
+  background: #222222;
+  transform: translateY(-2px);
+}
+
+.buy-time-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.coin-popup {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-mono);
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #eab308;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 2000;
+  transition: opacity 0.3s ease, transform 0.6s ease;
+}
+
+.coin-popup.show {
+  opacity: 1;
+  transform: translate(-50%, -100%);
 }
 
 .puzzle-timer-badge.warning {

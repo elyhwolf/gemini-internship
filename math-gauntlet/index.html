@@ -33,7 +33,12 @@
         <span class="question-counter" id="questionCounter">1 / 100</span>
         <div class="timer-display" id="timerDisplay">⏱ 00:00.0</div>
         <div class="puzzle-timer-badge" id="puzzleTimerBadge">⏳ 10s</div>
+        <div class="coin-badge" id="coinBadge">🪙 <span id="coinCounter">0</span></div>
         <span class="level-indicator" id="difficultyTag">Ultra Easy</span>
+      </div>
+
+      <div class="shop-bar">
+        <button type="button" class="buy-time-btn" id="buyTimeBtn" onclick="buyExtraTime()">⚡ +5s Extra Time (15 🪙)</button>
       </div>
 
       <div class="equation-box" id="equationBox">
@@ -51,6 +56,7 @@
 
       <div class="error-msg" id="errorMsg">Incorrect. Try again!</div>
       <div class="toast-msg" id="toastMsg"></div>
+      <div class="coin-popup" id="coinPopup">+10 🪙</div>
     </div>
 
     <!-- STAGE 3: Completion & Level 2 Prank -->

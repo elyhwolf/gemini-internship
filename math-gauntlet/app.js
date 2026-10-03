@@ -117,8 +117,10 @@ let timerInterval = null;
 let puzzleTimerInterval = null;
 let startTime = 0;
 let totalElapsedMs = 0;
-const MAX_PUZZLE_MS = 10000; // 10 seconds per puzzle
-let puzzleTimeRemainingMs = MAX_PUZZLE_MS;
+let currentMaxPuzzleMs = 10000;
+let puzzleTimeRemainingMs = 10000;
+let userCoins = 0;
+const EXTRA_TIME_COST = 15;
 let selectedTileIndex = null;
 let currentTiles = [];
 
@@ -140,10 +142,58 @@ function playTone(freq, type = 'sine', duration = 0.15) {
   } catch (e) {}
 }
 
+function getCoinReward(level) {
+  switch(level) {
+    case "Ultra Easy": return 5;
+    case "Easy": return 10;
+    case "Medium": return 20;
+    case "Hard": return 35;
+    case "Expert": return 50;
+    default: return 10;
+  }
+}
+
+function updateCoinDisplay() {
+  const counter = document.getElementById('coinCounter');
+  if (counter) counter.textContent = userCoins;
+  const buyBtn = document.getElementById('buyTimeBtn');
+  if (buyBtn) buyBtn.disabled = (userCoins < EXTRA_TIME_COST);
+}
+
+function showCoinPopup(text) {
+  const popup = document.getElementById('coinPopup');
+  if (!popup) return;
+  popup.textContent = text;
+  popup.classList.add('show');
+  setTimeout(() => {
+    popup.classList.remove('show');
+  }, 800);
+}
+
+function buyExtraTime() {
+  if (userCoins < EXTRA_TIME_COST) {
+    showToast("Not enough coins! Need 15 🪙");
+    return;
+  }
+  userCoins -= EXTRA_TIME_COST;
+  updateCoinDisplay();
+  puzzleTimeRemainingMs += 5000;
+  updatePuzzleTimerUI();
+  playTone(1400, 'sine', 0.2);
+  showToast("⚡ Bought +5s Extra Time! (-15 🪙)");
+}
+
+function calculateMaxPuzzleMs(qNum) {
+  // Q1: 10.0s (10000ms), Q100: ~3.5s (3500ms)
+  return Math.max(3500, Math.round(10000 - (qNum - 1) * 65));
+}
+
 function startGauntlet() {
   document.getElementById('startStage').classList.remove('active');
   document.getElementById('gauntletStage').classList.add('active');
   currentIndex = 0;
+  userCoins = 0;
+  updateCoinDisplay();
   startSpeedrunTimer();
   renderQuestion();
   setupEventListeners();
@@ -172,10 +222,12 @@ function updateTimerDisplay() {
   document.getElementById('timerDisplay').textContent = formatted;
 }
 
-/* Per-Puzzle Countdown Timer (10 Seconds Limit) */
+/* Per-Puzzle Countdown Timer (Escalating Speed Limit) */
 function startPuzzleCountdown() {
   if (puzzleTimerInterval) clearInterval(puzzleTimerInterval);
-  puzzleTimeRemainingMs = MAX_PUZZLE_MS;
+  const qNum = currentIndex + 1;
+  currentMaxPuzzleMs = calculateMaxPuzzleMs(qNum);
+  puzzleTimeRemainingMs = currentMaxPuzzleMs;
   updatePuzzleTimerUI();
 
   let lastSec = Math.ceil(puzzleTimeRemainingMs / 1000);
@@ -202,7 +254,7 @@ function startPuzzleCountdown() {
 }
 
 function updatePuzzleTimerUI() {
-  const pct = Math.max(0, (puzzleTimeRemainingMs / MAX_PUZZLE_MS) * 100);
+  const pct = Math.max(0, (puzzleTimeRemainingMs / currentMaxPuzzleMs) * 100);
   const secs = (puzzleTimeRemainingMs / 1000).toFixed(1);
   const bar = document.getElementById('puzzleTimerFill');
   const badge = document.getElementById('puzzleTimerBadge');
@@ -223,7 +275,7 @@ function handlePuzzleTimeout() {
   playTone(150, 'sawtooth', 0.4);
   if (puzzleTimerInterval) clearInterval(puzzleTimerInterval);
 
-  showToast("⏱️ TIMEOUT! Make 2 FREE THROWS IN A ROW to return! 🏀", 3000);
+  showToast("⏱️ TIMEOUT! Make 2 FREE THROWS IN A ROW or RESTART! 🏀", 3000);
 
   document.getElementById('gauntletStage').classList.remove('active');
   document.getElementById('basketballStage').classList.add('active');
@@ -257,7 +309,7 @@ function startBasketballMinigame() {
 }
 
 function animateShotMeter() {
-  meterPos += meterDirection * 2.4;
+  meterPos += meterDirection * 2.5;
   if (meterPos >= 100) {
     meterPos = 100;
     meterDirection = -1;
@@ -316,40 +368,23 @@ function shootFreeThrow() {
         meterInterval = setInterval(animateShotMeter, 16);
       }, 1200);
     }
-  } else if (meterPos >= 60 && meterPos <= 95) {
-    // 🟡 SLIGHT MISS
-    freeThrowsStreak = 0;
-    updateStreakDots();
-    playTone(260, 'sawtooth', 0.3);
-
-    feedback.textContent = meterPos < 72 ? "SLIGHTLY EARLY 🟡 (MISSED!)" : "SLIGHTLY LATE 🟡 (MISSED!)";
-    feedback.className = "shot-feedback miss";
-    ball.classList.add('clang');
-
-    setTimeout(() => {
-      ball.className = "basketball";
-      feedback.textContent = "MISSED! Streak reset to 0/2. Try again!";
-      feedback.className = "shot-feedback";
-      isShooting = false;
-      meterInterval = setInterval(animateShotMeter, 16);
-    }, 1200);
   } else {
-    // 🔴 FAR MISS / AIRBALL
+    // 💀 MISSED FREE THROW -> RESTART GAUNTLET BACK TO QUESTION 1!
     freeThrowsStreak = 0;
     updateStreakDots();
-    playTone(140, 'sawtooth', 0.35);
+    playTone(100, 'sawtooth', 0.6); // Loud fail buzzer
 
-    feedback.textContent = meterPos < 60 ? "VERY EARLY 🔴 (HARD BRICK!)" : "VERY LATE 🔴 (AIRBALL!)";
+    feedback.textContent = "MISSED FREE THROW! RESTARTING GAUNTLET BACK TO QUESTION 1! 💀";
     feedback.className = "shot-feedback miss";
     ball.classList.add('clang');
 
     setTimeout(() => {
-      ball.className = "basketball";
-      feedback.textContent = "BRICK! Streak reset to 0/2. Try again!";
-      feedback.className = "shot-feedback";
-      isShooting = false;
-      meterInterval = setInterval(animateShotMeter, 16);
-    }, 1200);
+      currentIndex = 0; // RESTART GAUNTLET TO QUESTION 1!
+      showToast("💀 MISSED FREE THROW! RESETTING GAUNTLET BACK TO QUESTION 1!", 4000);
+      bbStage.classList.remove('active');
+      document.getElementById('gauntletStage').classList.add('active');
+      renderQuestion();
+    }, 1600);
   }
 }
 
@@ -497,6 +532,20 @@ function submitAnswer(e) {
 }
 
 function advanceQuestion() {
+  const current = QUESTIONS[currentIndex];
+  if (current) {
+    const earned = getCoinReward(current.level);
+    userCoins += earned;
+    updateCoinDisplay();
+    showCoinPopup(`+${earned} 🪙`);
+
+    const badge = document.getElementById('coinBadge');
+    if (badge) {
+      badge.classList.add('gain');
+      setTimeout(() => badge.classList.remove('gain'), 400);
+    }
+  }
+
   currentIndex++;
   if (currentIndex >= QUESTIONS.length) {
     stopSpeedrunTimer();
