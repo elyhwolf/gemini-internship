@@ -427,3 +427,219 @@ body, html {
   opacity: 0;
   transform: scale(0.92);
 }
+
+/* STAGE 4: NBA 2K Basketball Penalty View */
+.bb-header {
+  margin-bottom: 1.5rem;
+}
+
+.bb-title {
+  font-family: var(--font-sans);
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #000000;
+  margin-bottom: 6px;
+}
+
+.bb-subtitle {
+  font-size: 0.9rem;
+  color: #666666;
+}
+
+.kbd-badge {
+  background: #000000;
+  color: #ffffff;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* Court Graphic */
+.court-wrapper {
+  position: relative;
+  width: 280px;
+  height: 160px;
+  background: #f7f7f7;
+  border: 2px solid #e0e0e0;
+  border-radius: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.backboard {
+  position: absolute;
+  top: 20px;
+  width: 80px;
+  height: 60px;
+  border: 4px solid #000000;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+}
+
+.inner-square {
+  width: 36px;
+  height: 28px;
+  border: 3px solid #000000;
+  margin-top: 10px;
+}
+
+.rim {
+  position: absolute;
+  bottom: -12px;
+  width: 36px;
+  height: 12px;
+  border: 3px solid #ef4444;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.net {
+  width: 24px;
+  height: 20px;
+  border-left: 2px dashed #bbbbbb;
+  border-right: 2px dashed #bbbbbb;
+  border-bottom: 2px dashed #bbbbbb;
+  margin: 0 auto;
+  border-radius: 0 0 8px 8px;
+}
+
+.basketball {
+  position: absolute;
+  bottom: 16px;
+  font-size: 2.2rem;
+  transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.basketball.swish {
+  animation: ballSwish 0.7s forwards ease-in-out;
+}
+
+.basketball.clang {
+  animation: ballClang 0.7s forwards ease-in-out;
+}
+
+@keyframes ballSwish {
+  0% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-75px) scale(0.85); }
+  100% { transform: translateY(-68px) scale(0.7); opacity: 0; }
+}
+
+@keyframes ballClang {
+  0% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-75px) scale(0.85); }
+  70% { transform: translateY(-60px) translateX(25px) rotate(180deg); }
+  100% { transform: translateY(10px) translateX(40px) rotate(360deg); opacity: 0; }
+}
+
+/* Free Throw Streak Tracker */
+.streak-tracker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.streak-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.streak-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #e5e5e5;
+  border: 2px solid #cccccc;
+  transition: all 0.3s ease;
+}
+
+.streak-dot.active {
+  background: #22c55e;
+  border-color: #16a34a;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
+}
+
+/* NBA 2K Shot Meter */
+.meter-wrapper {
+  width: 100%;
+  max-width: 340px;
+  margin-bottom: 1.25rem;
+}
+
+.shot-meter {
+  position: relative;
+  width: 100%;
+  height: 32px;
+  background: #222222;
+  border: 3px solid #000000;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.green-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 72%;
+  width: 16%;
+  background: #22c55e;
+  box-shadow: 0 0 15px #22c55e;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #ffffff;
+}
+
+.shot-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0%;
+  width: 6px;
+  background: #ffffff;
+  box-shadow: 0 0 8px #ffffff;
+  border-radius: 3px;
+  transition: left 0.05s linear;
+}
+
+.shot-feedback {
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  font-weight: 800;
+  height: 28px;
+  margin-bottom: 1.25rem;
+  letter-spacing: 0.05em;
+  color: #000000;
+  transition: color 0.2s ease;
+}
+
+.shot-feedback.green {
+  color: #16a34a;
+  animation: greenPulse 0.4s ease;
+}
+
+.shot-feedback.miss {
+  color: #ef4444;
+  animation: shake 0.3s ease;
+}
+
+@keyframes greenPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.btn-shoot {
+  margin-top: 0.5rem;
+}

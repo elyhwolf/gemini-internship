@@ -221,19 +221,136 @@ function updatePuzzleTimerUI() {
 
 function handlePuzzleTimeout() {
   playTone(150, 'sawtooth', 0.4);
+  if (puzzleTimerInterval) clearInterval(puzzleTimerInterval);
 
-  // Demote player back 1 level (or show troll message)
-  if (currentIndex > 0) {
-    currentIndex--;
-    showToast("⏱️ TOO SLOW! 10s expired — Demoted back 1 question! 😈", 3000);
-  } else {
-    showToast("⏱️ TOO SLOW! 10s expired — Resetting question timer!", 3000);
+  showToast("⏱️ TIMEOUT! Make 2 FREE THROWS IN A ROW to return! 🏀", 3000);
+
+  document.getElementById('gauntletStage').classList.remove('active');
+  document.getElementById('basketballStage').classList.add('active');
+
+  startBasketballMinigame();
+}
+
+/* NBA 2K Basketball Free Throw Minigame Engine */
+let freeThrowsStreak = 0;
+let meterPos = 0;
+let meterDirection = 1;
+let meterInterval = null;
+let isShooting = false;
+
+function startBasketballMinigame() {
+  freeThrowsStreak = 0;
+  updateStreakDots();
+  isShooting = false;
+
+  const ball = document.getElementById('basketballBall');
+  ball.className = "basketball";
+
+  const feedback = document.getElementById('shotFeedback');
+  feedback.textContent = "PRESS SPACE TO TIME YOUR SHOT!";
+  feedback.className = "shot-feedback";
+
+  meterPos = 0;
+  meterDirection = 1;
+  if (meterInterval) clearInterval(meterInterval);
+  meterInterval = setInterval(animateShotMeter, 16);
+}
+
+function animateShotMeter() {
+  meterPos += meterDirection * 2.4;
+  if (meterPos >= 100) {
+    meterPos = 100;
+    meterDirection = -1;
+  } else if (meterPos <= 0) {
+    meterPos = 0;
+    meterDirection = 1;
   }
+  document.getElementById('shotBar').style.left = `${meterPos}%`;
+}
 
-  showError();
-  setTimeout(() => {
-    renderQuestion();
-  }, 1000);
+function updateStreakDots() {
+  const dot1 = document.getElementById('dot1');
+  const dot2 = document.getElementById('dot2');
+  if (dot1) dot1.className = freeThrowsStreak >= 1 ? "streak-dot active" : "streak-dot";
+  if (dot2) dot2.className = freeThrowsStreak >= 2 ? "streak-dot active" : "streak-dot";
+}
+
+function shootFreeThrow() {
+  const bbStage = document.getElementById('basketballStage');
+  if (!bbStage.classList.contains('active') || isShooting) return;
+
+  isShooting = true;
+  clearInterval(meterInterval);
+
+  const ball = document.getElementById('basketballBall');
+  const feedback = document.getElementById('shotFeedback');
+
+  ball.className = "basketball";
+  void ball.offsetWidth; // Force CSS reflow
+
+  // Green Zone: 72% to 88%
+  if (meterPos >= 72 && meterPos <= 88) {
+    // 🟢 GREEN RELEASE!
+    freeThrowsStreak++;
+    updateStreakDots();
+    playTone(1200, 'sine', 0.2);
+    setTimeout(() => playTone(1600, 'triangle', 0.25), 100);
+
+    feedback.textContent = "EXCELLENT RELEASE! 🟢 GREEN SPLASH!";
+    feedback.className = "shot-feedback green";
+    ball.classList.add('swish');
+
+    if (freeThrowsStreak >= 2) {
+      setTimeout(() => {
+        showToast("🏀 2 FREE THROWS CLEARED! Returning to Gauntlet!");
+        bbStage.classList.remove('active');
+        document.getElementById('gauntletStage').classList.add('active');
+        renderQuestion();
+      }, 1200);
+    } else {
+      setTimeout(() => {
+        ball.className = "basketball";
+        feedback.textContent = "1 / 2 MADE! Shoot Free Throw #2!";
+        feedback.className = "shot-feedback";
+        isShooting = false;
+        meterInterval = setInterval(animateShotMeter, 16);
+      }, 1200);
+    }
+  } else if (meterPos >= 60 && meterPos <= 95) {
+    // 🟡 SLIGHT MISS
+    freeThrowsStreak = 0;
+    updateStreakDots();
+    playTone(260, 'sawtooth', 0.3);
+
+    feedback.textContent = meterPos < 72 ? "SLIGHTLY EARLY 🟡 (MISSED!)" : "SLIGHTLY LATE 🟡 (MISSED!)";
+    feedback.className = "shot-feedback miss";
+    ball.classList.add('clang');
+
+    setTimeout(() => {
+      ball.className = "basketball";
+      feedback.textContent = "MISSED! Streak reset to 0/2. Try again!";
+      feedback.className = "shot-feedback";
+      isShooting = false;
+      meterInterval = setInterval(animateShotMeter, 16);
+    }, 1200);
+  } else {
+    // 🔴 FAR MISS / AIRBALL
+    freeThrowsStreak = 0;
+    updateStreakDots();
+    playTone(140, 'sawtooth', 0.35);
+
+    feedback.textContent = meterPos < 60 ? "VERY EARLY 🔴 (HARD BRICK!)" : "VERY LATE 🔴 (AIRBALL!)";
+    feedback.className = "shot-feedback miss";
+    ball.classList.add('clang');
+
+    setTimeout(() => {
+      ball.className = "basketball";
+      feedback.textContent = "BRICK! Streak reset to 0/2. Try again!";
+      feedback.className = "shot-feedback";
+      isShooting = false;
+      meterInterval = setInterval(animateShotMeter, 16);
+    }, 1200);
+  }
 }
 
 function renderQuestion() {
@@ -441,6 +558,17 @@ let konamiIndex = 0;
 
 function setupEventListeners() {
   document.addEventListener('keydown', (e) => {
+    // Spacebar listener for Basketball 2K shooting
+    if (e.code === 'Space' || e.key === ' ') {
+      const bbStage = document.getElementById('basketballStage');
+      if (bbStage && bbStage.classList.contains('active')) {
+        e.preventDefault();
+        shootFreeThrow();
+        return;
+      }
+    }
+
+    // Konami Code detector
     if (e.key === konamiCode[konamiIndex]) {
       konamiIndex++;
       if (konamiIndex === konamiCode.length) {

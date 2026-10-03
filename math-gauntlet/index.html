@@ -58,6 +58,46 @@
       <h1 class="prank-text" id="prankText">NOW LEVEL 2</h1>
     </div>
 
+    <!-- STAGE 4: NBA 2K26 Basketball Penalty View -->
+    <div id="basketballStage" class="stage">
+      <div class="bb-header">
+        <h2 class="bb-title">🏀 TIMEOUT PENALTY</h2>
+        <p class="bb-subtitle">Press <kbd class="kbd-badge">SPACE</kbd> or click to time your release! Make <strong>2 IN A ROW</strong> to return.</p>
+      </div>
+
+      <!-- Court & Hoop Graphic -->
+      <div class="court-wrapper">
+        <div class="backboard">
+          <div class="inner-square"></div>
+          <div class="rim" id="basketballRim">
+            <div class="net"></div>
+          </div>
+        </div>
+        <div class="basketball" id="basketballBall">🏀</div>
+      </div>
+
+      <!-- Free Throw Streak Tracker -->
+      <div class="streak-tracker">
+        <span class="streak-label">FREE THROWS:</span>
+        <div class="streak-dots">
+          <div class="streak-dot" id="dot1"></div>
+          <div class="streak-dot" id="dot2"></div>
+        </div>
+      </div>
+
+      <!-- NBA 2K Shot Meter -->
+      <div class="meter-wrapper">
+        <div class="shot-meter" id="shotMeter">
+          <div class="green-zone" id="greenZone"></div>
+          <div class="shot-bar" id="shotBar"></div>
+        </div>
+      </div>
+
+      <div class="shot-feedback" id="shotFeedback">PRESS SPACE TO SHOOT</div>
+
+      <button type="button" class="btn-black-start btn-shoot" onclick="shootFreeThrow()">Shoot [SPACE]</button>
+    </div>
+
   </main>
 
   <script src="app.js"></script>
