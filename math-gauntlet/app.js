@@ -123,6 +123,7 @@ let userCoins = 0;
 const EXTRA_TIME_COST = 15;
 let selectedTileIndex = null;
 let currentTiles = [];
+let blurryTimeout = null;
 
 // Audio Synthesizer via Web Audio API
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -428,6 +429,12 @@ function renderQuestion() {
   eqText.textContent = current.q;
   eqHint.textContent = current.hint || "Enter numerical answer";
 
+  // Clear any active blurry memorization timer
+  if (blurryTimeout) {
+    clearTimeout(blurryTimeout);
+    blurryTimeout = null;
+  }
+
   // Start 10-second puzzle countdown timer
   startPuzzleCountdown();
 
@@ -436,6 +443,12 @@ function renderQuestion() {
     eqBox.classList.add("upside-down");
   } else if (current.type === "blurry") {
     eqText.classList.add("blurry-text");
+    eqHint.textContent = "⏱️ QUICK! You have 2 seconds to memorize the equation!";
+    blurryTimeout = setTimeout(() => {
+      eqText.classList.add("auto-blurred");
+      eqHint.textContent = "🙈 PERMANENTLY BLURRED! Solve from memory!";
+      playTone(280, 'sine', 0.2);
+    }, 2000);
   } else if (current.type === "invisible") {
     eqText.classList.add("invisible-text");
   } else if (current.type === "wobbly") {

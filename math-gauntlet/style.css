@@ -372,14 +372,16 @@ body, html {
   transform: rotate(180deg);
 }
 
-/* 2. Blurry Text (Hover / Click to reveal) */
+/* 2. Permanent Auto-Blur Text (2s memorization limit) */
 .blurry-text {
-  filter: blur(10px);
-  cursor: pointer;
+  transition: filter 0.4s ease-in-out;
+  user-select: text;
 }
 
-.blurry-text:hover, .blurry-text:active {
-  filter: blur(0px);
+.blurry-text.auto-blurred {
+  filter: blur(18px) !important;
+  user-select: none !important;
+  pointer-events: none !important;
 }
 
 /* 3. Invisible Ink */
