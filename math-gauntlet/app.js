@@ -144,12 +144,12 @@ function playTone(freq, type = 'sine', duration = 0.15) {
 
 function getCoinReward(level) {
   switch(level) {
-    case "Ultra Easy": return 5;
-    case "Easy": return 10;
-    case "Medium": return 20;
-    case "Hard": return 35;
+    case "Ultra Easy": return 1;
+    case "Easy": return 5;
+    case "Medium": return 15;
+    case "Hard": return 30;
     case "Expert": return 50;
-    default: return 10;
+    default: return 5;
   }
 }
 
