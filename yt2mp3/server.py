@@ -89,8 +89,10 @@ class DripSwitchHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        if self.path.startswith('/wardrobe') or self.path.startswith('/distro'):
+        if self.path.startswith('/wardrobe') or self.path.startswith('/distro') or self.path.startswith('/math'):
             rel_path = self.path.lstrip('/')
+            if rel_path == 'math' or rel_path.startswith('math/'):
+                rel_path = rel_path.replace('math', 'math-gauntlet', 1)
             file_path = os.path.join(ROOT_WORKSPACE, rel_path)
             if os.path.isdir(file_path):
                 file_path = os.path.join(file_path, 'index.html')

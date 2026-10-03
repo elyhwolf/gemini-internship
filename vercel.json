@@ -1,14 +1,19 @@
 {
   "version": 2,
-  "public": true,
   "cleanUrls": true,
   "rewrites": [
     { "source": "/api/convert", "destination": "/api/convert.py" },
     { "source": "/api/publish-youtube", "destination": "/api/publish-youtube.py" },
-    { "source": "/sounddrop(.*)", "destination": "/distro/index.html" },
-    { "source": "/distro(.*)", "destination": "/distro/index.html" },
-    { "source": "/wardrobe(.*)", "destination": "/wardrobe/index.html" },
-    { "source": "/dripswitch(.*)", "destination": "/yt2mp3/index.html" },
+    { "source": "/sounddrop", "destination": "/distro/index.html" },
+    { "source": "/sounddrop/(.*)", "destination": "/distro/index.html" },
+    { "source": "/distro", "destination": "/distro/index.html" },
+    { "source": "/distro/(.*)", "destination": "/distro/index.html" },
+    { "source": "/wardrobe", "destination": "/wardrobe/index.html" },
+    { "source": "/wardrobe/(.*)", "destination": "/wardrobe/index.html" },
+    { "source": "/math", "destination": "/math-gauntlet/index.html" },
+    { "source": "/math/(.*)", "destination": "/math-gauntlet/index.html" },
+    { "source": "/math-gauntlet", "destination": "/math-gauntlet/index.html" },
+    { "source": "/math-gauntlet/(.*)", "destination": "/math-gauntlet/index.html" },
     { "source": "/", "destination": "/yt2mp3/index.html" }
   ]
 }

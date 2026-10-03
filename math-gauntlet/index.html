@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minimal Math Gauntlet</title>
+  <meta name="description" content="A minimalist 100 math equation challenge scaling from ultra-easy to expert.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Confetti Canvas Overlay -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <main class="app-screen">
+    
+    <!-- STAGE 1: Minimalist Start View -->
+    <div id="startStage" class="stage active">
+      <button type="button" class="btn-black-start" onclick="startGauntlet()">start</button>
+    </div>
+
+    <!-- STAGE 2: 100 Math Equations Gauntlet -->
+    <div id="gauntletStage" class="stage">
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="progressFill"></div>
+      </div>
+
+      <div class="gauntlet-header">
+        <span class="question-counter" id="questionCounter">1 / 100</span>
+        <span class="level-indicator" id="difficultyTag">Ultra Easy</span>
+      </div>
+
+      <div class="equation-box" id="equationBox">
+        <h2 class="equation-text" id="equationText">1 + 1 = ?</h2>
+        <p class="equation-hint" id="equationHint">Enter the correct numerical answer</p>
+      </div>
+
+      <form onsubmit="submitAnswer(event)" class="answer-form">
+        <input type="text" id="answerInput" class="answer-input" placeholder="Your answer..." autocomplete="off" autofocus>
+        <button type="submit" class="submit-btn">Submit ↵</button>
+      </form>
+
+      <div class="error-msg" id="errorMsg">Incorrect. Try again!</div>
+    </div>
+
+    <!-- STAGE 3: Completion & Level 2 Prank -->
+    <div id="prankStage" class="stage">
+      <h1 class="prank-text" id="prankText">NOW LEVEL 2</h1>
+    </div>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

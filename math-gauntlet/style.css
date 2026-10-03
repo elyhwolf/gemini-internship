@@ -1,0 +1,233 @@
+/* Minimalist Math Gauntlet Stylesheet */
+:root {
+  --bg-color: #ffffff;
+  --text-main: #000000;
+  --text-muted: #888888;
+  --accent-error: #ef4444;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body, html {
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Confetti Overlay */
+#confettiCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.app-screen {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Stages */
+.stage {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 600px;
+  padding: 2rem;
+  text-align: center;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.stage.active {
+  display: flex;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* STAGE 1: Stark Black Start Button */
+.btn-black-start {
+  background: #000000;
+  color: #ffffff;
+  border: none;
+  font-family: var(--font-sans);
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 16px 48px;
+  border-radius: 40px;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, background-color 0.2s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.btn-black-start:hover {
+  transform: scale(1.06);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.25);
+  background: #111111;
+}
+
+.btn-black-start:active {
+  transform: scale(0.98);
+}
+
+/* STAGE 2: Gauntlet Questions */
+.progress-bar-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: #f0f0f0;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  width: 1%;
+  background: #000000;
+  transition: width 0.3s ease;
+}
+
+.gauntlet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 3rem;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+}
+
+.question-counter {
+  font-weight: 700;
+  color: #000000;
+}
+
+.level-indicator {
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.equation-box {
+  margin-bottom: 2.5rem;
+}
+
+.equation-text {
+  font-family: var(--font-mono);
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: #000000;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+
+.equation-hint {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.answer-form {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.answer-input {
+  flex: 1;
+  background: #f7f7f7;
+  border: 2px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #000000;
+  outline: none;
+  text-align: center;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.answer-input:focus {
+  border-color: #000000;
+  background: #ffffff;
+}
+
+.submit-btn {
+  background: #000000;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 0 24px;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.submit-btn:hover {
+  background: #222222;
+  transform: translateY(-1px);
+}
+
+.error-msg {
+  margin-top: 1.25rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--accent-error);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  height: 20px;
+}
+
+.error-msg.active {
+  opacity: 1;
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+/* STAGE 3: Prank View */
+.prank-text {
+  font-family: var(--font-sans);
+  font-size: 3.5rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: #000000;
+  text-transform: uppercase;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.prank-text.fade-out {
+  opacity: 0;
+  transform: scale(0.92);
+}
