@@ -113,7 +113,7 @@ body, html {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  margin-bottom: 3rem;
+  margin-bottom: 2.5rem;
   font-family: var(--font-mono);
   font-size: 0.88rem;
 }
@@ -121,6 +121,18 @@ body, html {
 .question-counter {
   font-weight: 700;
   color: #000000;
+}
+
+.timer-display {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.95rem;
+  background: #000000;
+  color: #ffffff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+  transition: background 0.3s ease;
 }
 
 .level-indicator {
@@ -132,7 +144,14 @@ body, html {
 }
 
 .equation-box {
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .equation-text {
@@ -143,11 +162,117 @@ body, html {
   letter-spacing: -0.02em;
   margin-bottom: 8px;
   line-height: 1.2;
+  transition: filter 0.3s ease, transform 0.4s ease, opacity 0.3s ease, color 0.3s ease;
+  user-select: text;
 }
 
 .equation-hint {
   font-size: 0.88rem;
   color: var(--text-muted);
+  transition: color 0.3s ease;
+}
+
+/* SHENANIGAN STYLES */
+
+/* 1. Upside Down */
+.upside-down {
+  transform: rotate(180deg);
+}
+
+/* 2. Blurry Text (Hover / Click to reveal) */
+.blurry-text {
+  filter: blur(10px);
+  cursor: pointer;
+}
+
+.blurry-text:hover, .blurry-text:active {
+  filter: blur(0px);
+}
+
+/* 3. Invisible Ink */
+.invisible-text {
+  color: #ffffff;
+  background: #ffffff;
+  user-select: all;
+  cursor: pointer;
+}
+
+.invisible-text::selection {
+  background: #000000;
+  color: #ffffff;
+}
+
+/* 4. Wobbly Spongebob Wave */
+.wobbly-text {
+  animation: wobbleWave 1.2s infinite ease-in-out alternate;
+  display: inline-block;
+}
+
+@keyframes wobbleWave {
+  0% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(-8px) rotate(-3deg); }
+  66% { transform: translateY(6px) rotate(3deg); }
+  100% { transform: translateY(-4px) rotate(-1deg); }
+}
+
+/* 5. Clickable Dot Secret */
+.secret-dot {
+  display: inline-block;
+  color: #000000;
+  cursor: pointer;
+  padding: 4px;
+  font-size: 2.8rem;
+  font-weight: 900;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.secret-dot:hover {
+  transform: scale(1.6);
+  color: #ef4444;
+}
+
+/* 6. Runaway Button */
+.submit-btn.runaway {
+  position: relative;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* 7. Tile Rearrange Container */
+.tile-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.tile-block {
+  background: #f0f0f0;
+  border: 2px solid #dcdcdc;
+  color: #000000;
+  font-family: var(--font-mono);
+  font-size: 1.6rem;
+  font-weight: 700;
+  padding: 12px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.tile-block:hover {
+  transform: translateY(-2px);
+  border-color: #000000;
+  background: #ffffff;
+}
+
+.tile-block.selected {
+  background: #000000;
+  color: #ffffff;
+  border-color: #000000;
+  transform: scale(1.08);
 }
 
 .answer-form {
@@ -169,7 +294,12 @@ body, html {
   color: #000000;
   outline: none;
   text-align: center;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.answer-input.reversed {
+  direction: rtl;
+  text-align: right;
 }
 
 .answer-input:focus {
@@ -196,7 +326,7 @@ body, html {
 }
 
 .error-msg {
-  margin-top: 1.25rem;
+  margin-top: 1rem;
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--accent-error);
@@ -208,6 +338,31 @@ body, html {
 .error-msg.active {
   opacity: 1;
   animation: shake 0.3s ease-in-out;
+}
+
+/* Toast Message for Easter Eggs */
+.toast-msg {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #000000;
+  color: #ffffff;
+  padding: 10px 24px;
+  border-radius: 30px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 1000;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.toast-msg.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 @keyframes shake {
@@ -225,6 +380,14 @@ body, html {
   color: #000000;
   text-transform: uppercase;
   transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.prank-subtext {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #666666;
+  margin-top: 16px;
 }
 
 .prank-text.fade-out {

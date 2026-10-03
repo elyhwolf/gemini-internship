@@ -30,6 +30,7 @@
 
       <div class="gauntlet-header">
         <span class="question-counter" id="questionCounter">1 / 100</span>
+        <div class="timer-display" id="timerDisplay">⏱ 00:00.0</div>
         <span class="level-indicator" id="difficultyTag">Ultra Easy</span>
       </div>
 
@@ -38,12 +39,16 @@
         <p class="equation-hint" id="equationHint">Enter the correct numerical answer</p>
       </div>
 
-      <form onsubmit="submitAnswer(event)" class="answer-form">
+      <!-- Shenanigan Container: Interactive Tile Rearrange -->
+      <div id="tileContainer" class="tile-container" style="display: none;"></div>
+
+      <form onsubmit="submitAnswer(event)" class="answer-form" id="answerForm">
         <input type="text" id="answerInput" class="answer-input" placeholder="Your answer..." autocomplete="off" autofocus>
-        <button type="submit" class="submit-btn">Submit ↵</button>
+        <button type="submit" id="submitBtn" class="submit-btn">Submit ↵</button>
       </form>
 
       <div class="error-msg" id="errorMsg">Incorrect. Try again!</div>
+      <div class="toast-msg" id="toastMsg"></div>
     </div>
 
     <!-- STAGE 3: Completion & Level 2 Prank -->
