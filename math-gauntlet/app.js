@@ -218,8 +218,13 @@ function updateTimerDisplay() {
   const mins = Math.floor(totalSecs / 60);
   const secs = totalSecs % 60;
   const tenths = Math.floor((totalElapsedMs % 1000) / 100);
-  const formatted = `⏱ ${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${tenths}`;
-  document.getElementById('timerDisplay').textContent = formatted;
+  const formatted = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${tenths}`;
+  const timerText = document.getElementById('timerText');
+  if (timerText) {
+    timerText.textContent = formatted;
+  } else {
+    document.getElementById('timerDisplay').textContent = formatted;
+  }
 }
 
 /* Per-Puzzle Countdown Timer (Escalating Speed Limit) */
@@ -258,9 +263,14 @@ function updatePuzzleTimerUI() {
   const secs = (puzzleTimeRemainingMs / 1000).toFixed(1);
   const bar = document.getElementById('puzzleTimerFill');
   const badge = document.getElementById('puzzleTimerBadge');
+  const puzzleTimerText = document.getElementById('puzzleTimerText');
 
   bar.style.width = `${pct}%`;
-  badge.textContent = `⏳ ${secs}s`;
+  if (puzzleTimerText) {
+    puzzleTimerText.textContent = `${secs}s`;
+  } else {
+    badge.textContent = `${secs}s`;
+  }
 
   if (puzzleTimeRemainingMs <= 3000) {
     badge.classList.add('warning');

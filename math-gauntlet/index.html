@@ -31,14 +31,26 @@
 
       <div class="gauntlet-header">
         <span class="question-counter" id="questionCounter">1 / 100</span>
-        <div class="timer-display" id="timerDisplay">⏱ 00:00.0</div>
-        <div class="puzzle-timer-badge" id="puzzleTimerBadge">⏳ 10s</div>
-        <div class="coin-badge" id="coinBadge">🪙 <span id="coinCounter">0</span></div>
+        <div class="timer-display" id="timerDisplay">
+          <img src="assets/stopwatch.svg" class="icon-svg" alt="timer" />
+          <span id="timerText">00:00.0</span>
+        </div>
+        <div class="puzzle-timer-badge" id="puzzleTimerBadge">
+          <img src="assets/hourglass.svg" class="icon-svg" alt="hourglass" />
+          <span id="puzzleTimerText">10s</span>
+        </div>
+        <div class="coin-badge" id="coinBadge">
+          <img src="assets/coin.svg" class="icon-coin" alt="coin" />
+          <span id="coinCounter">0</span>
+        </div>
         <span class="level-indicator" id="difficultyTag">Ultra Easy</span>
       </div>
 
       <div class="shop-bar">
-        <button type="button" class="buy-time-btn" id="buyTimeBtn" onclick="buyExtraTime()">⚡ +5s Extra Time (15 🪙)</button>
+        <button type="button" class="buy-time-btn" id="buyTimeBtn" onclick="buyExtraTime()">
+          <img src="assets/lightning.svg" class="icon-lightning" alt="lightning" />
+          +5s Extra Time (15 <img src="assets/coin.svg" class="icon-coin-sm" alt="coin" />)
+        </button>
       </div>
 
       <div class="equation-box" id="equationBox">
@@ -56,7 +68,9 @@
 
       <div class="error-msg" id="errorMsg">Incorrect. Try again!</div>
       <div class="toast-msg" id="toastMsg"></div>
-      <div class="coin-popup" id="coinPopup">+10 🪙</div>
+      <div class="coin-popup" id="coinPopup">
+        +10 <img src="assets/coin.svg" class="icon-coin-popup" alt="coin" />
+      </div>
     </div>
 
     <!-- STAGE 3: Completion & Level 2 Prank -->
@@ -67,7 +81,9 @@
     <!-- STAGE 4: NBA 2K26 Basketball Penalty View -->
     <div id="basketballStage" class="stage">
       <div class="bb-header">
-        <h2 class="bb-title">🏀 TIMEOUT PENALTY</h2>
+        <h2 class="bb-title">
+          <img src="assets/basketball.svg" class="icon-title-bb" alt="basketball" /> TIMEOUT PENALTY
+        </h2>
         <p class="bb-subtitle">Press <kbd class="kbd-badge">SPACE</kbd> or click to time your release! Make <strong>2 IN A ROW</strong> to return.</p>
       </div>
 
@@ -79,7 +95,9 @@
             <div class="net"></div>
           </div>
         </div>
-        <div class="basketball" id="basketballBall">🏀</div>
+        <div class="basketball" id="basketballBall">
+          <img src="assets/basketball.svg" class="basketball-img" alt="basketball" />
+        </div>
       </div>
 
       <!-- Free Throw Streak Tracker -->
