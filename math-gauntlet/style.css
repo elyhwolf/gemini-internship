@@ -97,15 +97,24 @@ body, html {
   top: 0;
   left: 0;
   width: 100%;
-  height: 4px;
+  height: 6px;
   background: #f0f0f0;
+  display: flex;
+  flex-direction: column;
 }
 
 .progress-bar-fill {
-  height: 100%;
+  height: 3px;
   width: 1%;
   background: #000000;
   transition: width 0.3s ease;
+}
+
+.puzzle-timer-bar-fill {
+  height: 3px;
+  width: 100%;
+  background: #ef4444;
+  transition: width 0.1s linear, background 0.3s ease;
 }
 
 .gauntlet-header {
@@ -133,6 +142,30 @@ body, html {
   border-radius: 20px;
   letter-spacing: 0.05em;
   transition: background 0.3s ease;
+}
+
+.puzzle-timer-badge {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.88rem;
+  background: #f0f0f0;
+  color: #000000;
+  border: 1.5px solid #dcdcdc;
+  padding: 4px 10px;
+  border-radius: 20px;
+  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+}
+
+.puzzle-timer-badge.warning {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+  animation: pulseUrgent 0.5s infinite alternate ease-in-out;
+}
+
+@keyframes pulseUrgent {
+  from { transform: scale(1); }
+  to { transform: scale(1.12); }
 }
 
 .level-indicator {

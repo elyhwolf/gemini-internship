@@ -114,8 +114,11 @@ const QUESTIONS = [
 
 let currentIndex = 0;
 let timerInterval = null;
+let puzzleTimerInterval = null;
 let startTime = 0;
 let totalElapsedMs = 0;
+const MAX_PUZZLE_MS = 10000; // 10 seconds per puzzle
+let puzzleTimeRemainingMs = MAX_PUZZLE_MS;
 let selectedTileIndex = null;
 let currentTiles = [];
 
@@ -157,6 +160,7 @@ function startSpeedrunTimer() {
 
 function stopSpeedrunTimer() {
   if (timerInterval) clearInterval(timerInterval);
+  if (puzzleTimerInterval) clearInterval(puzzleTimerInterval);
 }
 
 function updateTimerDisplay() {
@@ -166,6 +170,70 @@ function updateTimerDisplay() {
   const tenths = Math.floor((totalElapsedMs % 1000) / 100);
   const formatted = `⏱ ${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${tenths}`;
   document.getElementById('timerDisplay').textContent = formatted;
+}
+
+/* Per-Puzzle Countdown Timer (10 Seconds Limit) */
+function startPuzzleCountdown() {
+  if (puzzleTimerInterval) clearInterval(puzzleTimerInterval);
+  puzzleTimeRemainingMs = MAX_PUZZLE_MS;
+  updatePuzzleTimerUI();
+
+  let lastSec = Math.ceil(puzzleTimeRemainingMs / 1000);
+
+  puzzleTimerInterval = setInterval(() => {
+    puzzleTimeRemainingMs -= 100;
+    const currentSec = Math.ceil(puzzleTimeRemainingMs / 1000);
+
+    // Play urgent tick sound on last 3 seconds
+    if (currentSec <= 3 && currentSec !== lastSec && puzzleTimeRemainingMs > 0) {
+      playTone(900, 'square', 0.05);
+      lastSec = currentSec;
+    }
+
+    if (puzzleTimeRemainingMs <= 0) {
+      clearInterval(puzzleTimerInterval);
+      puzzleTimeRemainingMs = 0;
+      updatePuzzleTimerUI();
+      handlePuzzleTimeout();
+    } else {
+      updatePuzzleTimerUI();
+    }
+  }, 100);
+}
+
+function updatePuzzleTimerUI() {
+  const pct = Math.max(0, (puzzleTimeRemainingMs / MAX_PUZZLE_MS) * 100);
+  const secs = (puzzleTimeRemainingMs / 1000).toFixed(1);
+  const bar = document.getElementById('puzzleTimerFill');
+  const badge = document.getElementById('puzzleTimerBadge');
+
+  bar.style.width = `${pct}%`;
+  badge.textContent = `⏳ ${secs}s`;
+
+  if (puzzleTimeRemainingMs <= 3000) {
+    badge.classList.add('warning');
+    bar.style.background = '#ef4444';
+  } else {
+    badge.classList.remove('warning');
+    bar.style.background = '#ef4444';
+  }
+}
+
+function handlePuzzleTimeout() {
+  playTone(150, 'sawtooth', 0.4);
+
+  // Demote player back 1 level (or show troll message)
+  if (currentIndex > 0) {
+    currentIndex--;
+    showToast("⏱️ TOO SLOW! 10s expired — Demoted back 1 question! 😈", 3000);
+  } else {
+    showToast("⏱️ TOO SLOW! 10s expired — Resetting question timer!", 3000);
+  }
+
+  showError();
+  setTimeout(() => {
+    renderQuestion();
+  }, 1000);
 }
 
 function renderQuestion() {
@@ -197,6 +265,9 @@ function renderQuestion() {
 
   eqText.textContent = current.q;
   eqHint.textContent = current.hint || "Enter numerical answer";
+
+  // Start 10-second puzzle countdown timer
+  startPuzzleCountdown();
 
   // Apply specific Shenanigan mechanics
   if (current.type === "upside_down") {
