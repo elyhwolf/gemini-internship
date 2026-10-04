@@ -128,26 +128,54 @@ let blurryTimeout = null;
 /* Lil Tecca - DOPAMINE Background Music Engine */
 let ytPlayer = null;
 let isMusicPlaying = false;
-let userHasInteracted = false;
+
+function initYTMusicPlayer() {
+  if (ytPlayer) return; // avoid duplicate initialization
+  if (!window.YT || !window.YT.Player) return;
+
+  try {
+    ytPlayer = new YT.Player('ytMusicPlayer', {
+      height: '0',
+      width: '0',
+      playerVars: {
+        listType: 'playlist',
+        list: 'OLAK5uy_nhsNzPJhU9ZD8SFMR7Kh8y6CMV-IeWubM', // Lil Tecca DOPAMINE Album Playlist
+        autoplay: 1,
+        loop: 1,
+        controls: 0,
+        enablejsapi: 1
+      },
+      events: {
+        'onReady': onPlayerReady,
+        'onStateChange': onPlayerStateChange,
+        'onError': onPlayerError
+      }
+    });
+  } catch (e) {
+    console.error("Failed to initialize YT Player:", e);
+  }
+}
 
 window.onYouTubeIframeAPIReady = function() {
-  ytPlayer = new YT.Player('ytMusicPlayer', {
-    height: '0',
-    width: '0',
-    playerVars: {
-      listType: 'playlist',
-      list: 'OLAK5uy_nhsNzPJhU9ZD8SFMR7Kh8y6CMV-IeWubM', // Lil Tecca DOPAMINE Album Playlist
-      autoplay: 1,
-      loop: 1,
-      controls: 0,
-      enablejsapi: 1
-    },
-    events: {
-      'onReady': onPlayerReady,
-      'onStateChange': onPlayerStateChange
-    }
-  });
+  initYTMusicPlayer();
 };
+
+// Check if YT API loaded before app.js parsed (e.g., page refresh / browser cache)
+if (window.YT && window.YT.Player) {
+  initYTMusicPlayer();
+} else {
+  // Inject YouTube Iframe API dynamically to ensure handler is registered
+  if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    if (firstScriptTag && firstScriptTag.parentNode) {
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    } else {
+      document.head.appendChild(tag);
+    }
+  }
+}
 
 function onPlayerReady(event) {
   try {
@@ -155,7 +183,21 @@ function onPlayerReady(event) {
   } catch (e) {}
 }
 
-// Global auto-play trigger on first user interaction anywhere
+function onPlayerError(event) {
+  console.warn("YouTube player error event:", event.data);
+  // If topic playlist (OLAK...) fails due to embed restrictions, fallback to public DOPAMINE playlist
+  try {
+    if (ytPlayer && typeof ytPlayer.loadPlaylist === 'function') {
+      ytPlayer.loadPlaylist({
+        listType: 'playlist',
+        list: 'PLw-VjHDlEOgsT1v_V_7E5aYlU9tQ1xW1A'
+      });
+      ytPlayer.playVideo();
+    }
+  } catch (e) {}
+}
+
+// Global auto-play trigger on user interaction anywhere on screen
 function tryAutoPlayMusic() {
   if (!isMusicPlaying && ytPlayer && typeof ytPlayer.playVideo === 'function') {
     try {
