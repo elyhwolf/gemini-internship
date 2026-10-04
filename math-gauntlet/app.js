@@ -140,7 +140,7 @@ function initYTMusicPlayer() {
       playerVars: {
         listType: 'playlist',
         list: 'OLAK5uy_nhsNzPJhU9ZD8SFMR7Kh8y6CMV-IeWubM', // Lil Tecca DOPAMINE Album Playlist
-        autoplay: 0,
+        autoplay: 1,
         loop: 1,
         controls: 0,
         enablejsapi: 1
@@ -208,13 +208,23 @@ if (window.YT && window.YT.Player) {
 }
 
 function onPlayerReady(event) {
-  const gauntletActive = document.getElementById('gauntletStage').classList.contains('active');
-  if (gauntletActive) {
+  try {
+    event.target.playVideo();
+  } catch (e) {}
+}
+
+// Global trigger to ensure playback on first user gesture after refresh
+function tryAutoPlayMusicOnRefresh() {
+  if (!isMusicPlaying && ytPlayer && typeof ytPlayer.playVideo === 'function') {
     try {
-      event.target.playVideo();
+      ytPlayer.playVideo();
     } catch (e) {}
   }
 }
+
+document.addEventListener('pointerdown', tryAutoPlayMusicOnRefresh, { once: false });
+document.addEventListener('keydown', tryAutoPlayMusicOnRefresh, { once: false });
+document.addEventListener('click', tryAutoPlayMusicOnRefresh, { once: false });
 
 function onPlayerError(event) {
   console.warn("YouTube player error event:", event.data);
@@ -225,10 +235,7 @@ function onPlayerError(event) {
         listType: 'playlist',
         list: 'PLw-VjHDlEOgsT1v_V_7E5aYlU9tQ1xW1A'
       });
-      const gauntletActive = document.getElementById('gauntletStage').classList.contains('active');
-      if (gauntletActive) {
-        ytPlayer.playVideo();
-      }
+      ytPlayer.playVideo();
     }
   } catch (e) {}
 }
@@ -238,9 +245,11 @@ function onPlayerStateChange(event) {
   const btn = document.getElementById('btnPlayPause');
   const disc = document.getElementById('discIcon');
   const title = document.getElementById('musicTrackTitle');
+  const widget = document.getElementById('musicPlayerWidget');
 
   if (event.data === YT.PlayerState.PLAYING) {
     isMusicPlaying = true;
+    if (widget) widget.classList.add('visible');
     if (badge) { badge.textContent = "PLAYING"; badge.className = "album-badge"; }
     if (btn) btn.textContent = "❚❚";
     if (disc) disc.classList.remove("paused");
