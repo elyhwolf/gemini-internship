@@ -126,8 +126,12 @@ let currentTiles = [];
 let blurryTimeout = null;
 
 /* Lil Tecca - DOPAMINE Background Music Engine */
+const EXPLICIT_PLAYLIST_ID = 'OLAK5uy_nhsNzPJhU9ZD8SFMR7Kh8y6CMV-IeWubM';
+const CLEAN_PLAYLIST_ID = 'OLAK5uy_l9ZwfYqZdMD4_Jny-ifG5A1WXpxI7M3e8';
+
 let ytPlayer = null;
 let isMusicPlaying = false;
+let hasSwitchedToCleanPlaylist = false;
 
 function initYTMusicPlayer() {
   if (ytPlayer) return; // avoid duplicate initialization
@@ -139,7 +143,7 @@ function initYTMusicPlayer() {
       width: '0',
       playerVars: {
         listType: 'playlist',
-        list: 'OLAK5uy_nhsNzPJhU9ZD8SFMR7Kh8y6CMV-IeWubM', // Lil Tecca DOPAMINE Album Playlist
+        list: EXPLICIT_PLAYLIST_ID, // Default: Original Album Playlist
         autoplay: 1,
         loop: 1,
         controls: 0,
@@ -166,6 +170,7 @@ function resetAndReinitYTPlayer() {
   }
   ytPlayer = null;
   isMusicPlaying = false;
+  hasSwitchedToCleanPlaylist = false;
 
   const container = document.getElementById('ytAudioContainer');
   if (container) {
@@ -227,17 +232,25 @@ document.addEventListener('keydown', tryAutoPlayMusicOnRefresh, { once: false })
 document.addEventListener('click', tryAutoPlayMusicOnRefresh, { once: false });
 
 function onPlayerError(event) {
-  console.warn("YouTube player error event:", event.data);
-  // If topic playlist (OLAK...) fails due to embed restrictions, fallback to public DOPAMINE playlist
-  try {
-    if (ytPlayer && typeof ytPlayer.loadPlaylist === 'function') {
-      ytPlayer.loadPlaylist({
-        listType: 'playlist',
-        list: 'PLw-VjHDlEOgsT1v_V_7E5aYlU9tQ1xW1A'
-      });
-      ytPlayer.playVideo();
+  console.warn("Explicit filter or playback error detected:", event.data);
+
+  // ONLY WHEN EXPLICIT CONTENT FILTERS / RESTRICTIONS ARE DETECTED: Switch to Clean Playlist
+  if (!hasSwitchedToCleanPlaylist) {
+    hasSwitchedToCleanPlaylist = true;
+    showToast("🧼 Content Filter Detected — Switched to Clean Album! 🎵", 4000);
+
+    try {
+      if (ytPlayer && typeof ytPlayer.loadPlaylist === 'function') {
+        ytPlayer.loadPlaylist({
+          listType: 'playlist',
+          list: CLEAN_PLAYLIST_ID
+        });
+        ytPlayer.playVideo();
+      }
+    } catch (e) {
+      console.error("Failed to switch to clean playlist:", e);
     }
-  } catch (e) {}
+  }
 }
 
 function onPlayerStateChange(event) {
