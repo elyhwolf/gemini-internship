@@ -128,6 +128,7 @@ let blurryTimeout = null;
 /* Lil Tecca - DOPAMINE Background Music Engine */
 let ytPlayer = null;
 let isMusicPlaying = false;
+let userHasInteracted = false;
 
 window.onYouTubeIframeAPIReady = function() {
   ytPlayer = new YT.Player('ytMusicPlayer', {
@@ -136,9 +137,10 @@ window.onYouTubeIframeAPIReady = function() {
     playerVars: {
       listType: 'playlist',
       list: 'OLAK5uy_nhsNzPJhU9ZD8SFMR7Kh8y6CMV-IeWubM', // Lil Tecca DOPAMINE Album Playlist
-      autoplay: 0,
+      autoplay: 1,
       loop: 1,
-      controls: 0
+      controls: 0,
+      enablejsapi: 1
     },
     events: {
       'onReady': onPlayerReady,
@@ -148,8 +150,23 @@ window.onYouTubeIframeAPIReady = function() {
 };
 
 function onPlayerReady(event) {
-  // Ready
+  try {
+    event.target.playVideo();
+  } catch (e) {}
 }
+
+// Global auto-play trigger on first user interaction anywhere
+function tryAutoPlayMusic() {
+  if (!isMusicPlaying && ytPlayer && typeof ytPlayer.playVideo === 'function') {
+    try {
+      ytPlayer.playVideo();
+    } catch (e) {}
+  }
+}
+
+document.addEventListener('pointerdown', tryAutoPlayMusic, { once: false });
+document.addEventListener('keydown', tryAutoPlayMusic, { once: false });
+document.addEventListener('click', tryAutoPlayMusic, { once: false });
 
 function onPlayerStateChange(event) {
   const badge = document.getElementById('musicStatusBadge');
@@ -169,7 +186,12 @@ function onPlayerStateChange(event) {
         title.textContent = `Lil Tecca — ${videoData.title.replace(/lil tecca/gi, '').replace(/official/gi, '').trim()}`;
       }
     } catch (e) {}
-  } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+  } else if (event.data === YT.PlayerState.ENDED) {
+    // Automatically advance to next track in DOPAMINE album
+    if (ytPlayer && typeof ytPlayer.nextVideo === 'function') {
+      ytPlayer.nextVideo();
+    }
+  } else if (event.data === YT.PlayerState.PAUSED) {
     isMusicPlaying = false;
     if (badge) { badge.textContent = "PAUSED"; badge.className = "album-badge paused"; }
     if (btn) btn.textContent = "▶";
