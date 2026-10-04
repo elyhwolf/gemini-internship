@@ -77,12 +77,18 @@ body, html {
   border: 1.5px solid #222222;
   border-radius: 30px;
   padding: 8px 16px;
-  display: flex;
+  display: none;
   align-items: center;
   gap: 12px;
   z-index: 1000;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: opacity 0.4s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  opacity: 0;
+}
+
+.music-player-widget.visible {
+  display: flex;
+  opacity: 1;
 }
 
 .music-player-widget:hover {

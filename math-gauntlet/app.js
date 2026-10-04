@@ -140,7 +140,7 @@ function initYTMusicPlayer() {
       playerVars: {
         listType: 'playlist',
         list: 'OLAK5uy_nhsNzPJhU9ZD8SFMR7Kh8y6CMV-IeWubM', // Lil Tecca DOPAMINE Album Playlist
-        autoplay: 1,
+        autoplay: 0,
         loop: 1,
         controls: 0,
         enablejsapi: 1
@@ -178,9 +178,7 @@ if (window.YT && window.YT.Player) {
 }
 
 function onPlayerReady(event) {
-  try {
-    event.target.playVideo();
-  } catch (e) {}
+  // Ready - stays idle until user clicks 'start' to begin gauntlet
 }
 
 function onPlayerError(event) {
@@ -192,23 +190,13 @@ function onPlayerError(event) {
         listType: 'playlist',
         list: 'PLw-VjHDlEOgsT1v_V_7E5aYlU9tQ1xW1A'
       });
-      ytPlayer.playVideo();
+      const gauntletActive = document.getElementById('gauntletStage').classList.contains('active');
+      if (gauntletActive) {
+        ytPlayer.playVideo();
+      }
     }
   } catch (e) {}
 }
-
-// Global auto-play trigger on user interaction anywhere on screen
-function tryAutoPlayMusic() {
-  if (!isMusicPlaying && ytPlayer && typeof ytPlayer.playVideo === 'function') {
-    try {
-      ytPlayer.playVideo();
-    } catch (e) {}
-  }
-}
-
-document.addEventListener('pointerdown', tryAutoPlayMusic, { once: false });
-document.addEventListener('keydown', tryAutoPlayMusic, { once: false });
-document.addEventListener('click', tryAutoPlayMusic, { once: false });
 
 function onPlayerStateChange(event) {
   const badge = document.getElementById('musicStatusBadge');
@@ -242,6 +230,9 @@ function onPlayerStateChange(event) {
 }
 
 function toggleMusicPlay() {
+  const widget = document.getElementById('musicPlayerWidget');
+  if (widget) widget.classList.add('visible');
+
   if (!ytPlayer || typeof ytPlayer.playVideo !== 'function') {
     showToast("🎵 Lil Tecca Audio Player initializing...");
     return;
@@ -333,7 +324,11 @@ function startGauntlet() {
   renderQuestion();
   setupEventListeners();
 
-  // Play Lil Tecca - DOPAMINE Album automatically on start!
+  // Make music player widget visible & start playing Lil Tecca - DOPAMINE Album!
+  const widget = document.getElementById('musicPlayerWidget');
+  if (widget) {
+    widget.classList.add('visible');
+  }
   if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
     ytPlayer.playVideo();
   }
