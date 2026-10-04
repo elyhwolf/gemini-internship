@@ -156,6 +156,36 @@ function initYTMusicPlayer() {
   }
 }
 
+function resetAndReinitYTPlayer() {
+  if (ytPlayer) {
+    try {
+      if (typeof ytPlayer.destroy === 'function') {
+        ytPlayer.destroy();
+      }
+    } catch (e) {}
+  }
+  ytPlayer = null;
+  isMusicPlaying = false;
+
+  const container = document.getElementById('ytAudioContainer');
+  if (container) {
+    container.innerHTML = '<div id="ytMusicPlayer"></div>';
+  }
+
+  if (window.YT && window.YT.Player) {
+    initYTMusicPlayer();
+  }
+}
+
+// BFCache & Browser Back/Forward Arrow Event Handlers
+window.addEventListener('pageshow', (event) => {
+  resetAndReinitYTPlayer();
+});
+
+window.addEventListener('popstate', () => {
+  resetAndReinitYTPlayer();
+});
+
 window.onYouTubeIframeAPIReady = function() {
   initYTMusicPlayer();
 };
@@ -178,7 +208,12 @@ if (window.YT && window.YT.Player) {
 }
 
 function onPlayerReady(event) {
-  // Ready - stays idle until user clicks 'start' to begin gauntlet
+  const gauntletActive = document.getElementById('gauntletStage').classList.contains('active');
+  if (gauntletActive) {
+    try {
+      event.target.playVideo();
+    } catch (e) {}
+  }
 }
 
 function onPlayerError(event) {
@@ -234,13 +269,18 @@ function toggleMusicPlay() {
   if (widget) widget.classList.add('visible');
 
   if (!ytPlayer || typeof ytPlayer.playVideo !== 'function') {
+    resetAndReinitYTPlayer();
     showToast("🎵 Lil Tecca Audio Player initializing...");
     return;
   }
-  if (isMusicPlaying) {
-    ytPlayer.pauseVideo();
-  } else {
-    ytPlayer.playVideo();
+  try {
+    if (isMusicPlaying) {
+      ytPlayer.pauseVideo();
+    } else {
+      ytPlayer.playVideo();
+    }
+  } catch (e) {
+    resetAndReinitYTPlayer();
   }
 }
 
