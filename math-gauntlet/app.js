@@ -135,7 +135,7 @@ window.onYouTubeIframeAPIReady = function() {
     width: '0',
     playerVars: {
       listType: 'playlist',
-      list: 'PLw-VjHDlEOgsT1v_V_7E5aYlU9tQ1xW1A', // Lil Tecca DOPAMINE / TEC Album Playlist
+      list: 'OLAK5uy_nhsNzPJhU9ZD8SFMR7Kh8y6CMV-IeWubM', // Lil Tecca DOPAMINE Album Playlist
       autoplay: 0,
       loop: 1,
       controls: 0
