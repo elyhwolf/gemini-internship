@@ -125,6 +125,76 @@ let selectedTileIndex = null;
 let currentTiles = [];
 let blurryTimeout = null;
 
+/* Lil Tecca - DOPAMINE Background Music Engine */
+let ytPlayer = null;
+let isMusicPlaying = false;
+
+window.onYouTubeIframeAPIReady = function() {
+  ytPlayer = new YT.Player('ytMusicPlayer', {
+    height: '0',
+    width: '0',
+    playerVars: {
+      listType: 'playlist',
+      list: 'PLw-VjHDlEOgsT1v_V_7E5aYlU9tQ1xW1A', // Lil Tecca DOPAMINE / TEC Album Playlist
+      autoplay: 0,
+      loop: 1,
+      controls: 0
+    },
+    events: {
+      'onReady': onPlayerReady,
+      'onStateChange': onPlayerStateChange
+    }
+  });
+};
+
+function onPlayerReady(event) {
+  // Ready
+}
+
+function onPlayerStateChange(event) {
+  const badge = document.getElementById('musicStatusBadge');
+  const btn = document.getElementById('btnPlayPause');
+  const disc = document.getElementById('discIcon');
+  const title = document.getElementById('musicTrackTitle');
+
+  if (event.data === YT.PlayerState.PLAYING) {
+    isMusicPlaying = true;
+    if (badge) { badge.textContent = "PLAYING"; badge.className = "album-badge"; }
+    if (btn) btn.textContent = "❚❚";
+    if (disc) disc.classList.remove("paused");
+
+    try {
+      const videoData = ytPlayer.getVideoData();
+      if (videoData && videoData.title) {
+        title.textContent = `Lil Tecca — ${videoData.title.replace(/lil tecca/gi, '').replace(/official/gi, '').trim()}`;
+      }
+    } catch (e) {}
+  } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+    isMusicPlaying = false;
+    if (badge) { badge.textContent = "PAUSED"; badge.className = "album-badge paused"; }
+    if (btn) btn.textContent = "▶";
+    if (disc) disc.classList.add("paused");
+  }
+}
+
+function toggleMusicPlay() {
+  if (!ytPlayer || typeof ytPlayer.playVideo !== 'function') {
+    showToast("🎵 Lil Tecca Audio Player initializing...");
+    return;
+  }
+  if (isMusicPlaying) {
+    ytPlayer.pauseVideo();
+  } else {
+    ytPlayer.playVideo();
+  }
+}
+
+function nextMusicTrack() {
+  if (ytPlayer && typeof ytPlayer.nextVideo === 'function') {
+    ytPlayer.nextVideo();
+  }
+}
+
 // Audio Synthesizer via Web Audio API
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -198,6 +268,11 @@ function startGauntlet() {
   startSpeedrunTimer();
   renderQuestion();
   setupEventListeners();
+
+  // Play Lil Tecca - DOPAMINE Album automatically on start!
+  if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
+    ytPlayer.playVideo();
+  }
 }
 
 function startSpeedrunTimer() {

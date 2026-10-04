@@ -124,10 +124,29 @@
 
   </main>
 
+  <!-- Lil Tecca - DOPAMINE Background Music Widget -->
+  <div class="music-player-widget" id="musicPlayerWidget">
+    <div class="disc-icon" id="discIcon">💿</div>
+    <div class="track-info">
+      <span class="track-title" id="musicTrackTitle">Lil Tecca — DOPAMINE</span>
+      <span class="album-badge" id="musicStatusBadge">PLAYING</span>
+    </div>
+    <div class="player-controls">
+      <button type="button" class="btn-music-ctrl" id="btnPlayPause" onclick="toggleMusicPlay()">❚❚</button>
+      <button type="button" class="btn-music-ctrl" id="btnMusicNext" onclick="nextMusicTrack()">⏭</button>
+    </div>
+  </div>
+
+  <!-- Hidden YouTube Iframe Audio Engine -->
+  <div id="ytAudioContainer" style="display:none; width:0; height:0; opacity:0; pointer-events:none;">
+    <div id="ytMusicPlayer"></div>
+  </div>
+
   <footer class="app-credit">
     Crafted by <strong>Ely Wolf</strong>
   </footer>
 
+  <script src="https://www.youtube.com/iframe_api"></script>
   <script src="app.js"></script>
 </body>
 </html>
