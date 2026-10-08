@@ -142,9 +142,25 @@
     <div id="ytMusicPlayer"></div>
   </div>
 
-  <footer class="app-credit">
+  <footer class="app-credit" onclick="openDevModal()" title="Click for Dev Access">
     Crafted by <strong>Ely Wolf</strong>
   </footer>
+
+  <!-- Dev Passcode Modal Overlay -->
+  <div id="devModal" class="modal-overlay" onclick="closeDevModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <button type="button" class="modal-close-btn" onclick="closeDevModal()">&times;</button>
+      <div class="modal-header">
+        <h3 class="modal-title">🔐 DEV OVERRIDE ACCESS</h3>
+        <p class="modal-subtitle">Enter 4-digit passcode to skip to Question 90</p>
+      </div>
+      <div class="code-bar-container">
+        <input type="password" id="devCodeInput" class="code-input" maxlength="4" placeholder="••••" autocomplete="off" oninput="handleDevCodeInput(event)" onkeydown="if(event.key==='Enter') submitDevCode()">
+      </div>
+      <div class="modal-error-msg" id="devModalError">ACCESS DENIED: Invalid Passcode</div>
+      <button type="button" class="modal-submit-btn" onclick="submitDevCode()">Unlock Passcode ↵</button>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>

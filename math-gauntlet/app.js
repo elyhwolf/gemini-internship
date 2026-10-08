@@ -951,3 +951,82 @@ function triggerLevel2Prank() {
 
   }, 2500);
 }
+
+/* Dev Passcode Modal Mechanics */
+function openDevModal() {
+  const modal = document.getElementById('devModal');
+  const input = document.getElementById('devCodeInput');
+  const err = document.getElementById('devModalError');
+
+  if (modal) {
+    modal.classList.add('active');
+  }
+  if (err) {
+    err.classList.remove('active');
+  }
+  if (input) {
+    input.value = '';
+    setTimeout(() => input.focus(), 100);
+  }
+}
+
+function closeDevModal(e) {
+  if (!e || e.target.id === 'devModal' || e.target.classList.contains('modal-close-btn')) {
+    const modal = document.getElementById('devModal');
+    if (modal) {
+      modal.classList.remove('active');
+    }
+  }
+}
+
+function handleDevCodeInput(e) {
+  const input = document.getElementById('devCodeInput');
+  const err = document.getElementById('devModalError');
+  if (err) err.classList.remove('active');
+
+  if (input && input.value.length === 4) {
+    submitDevCode();
+  }
+}
+
+function submitDevCode() {
+  const input = document.getElementById('devCodeInput');
+  const err = document.getElementById('devModalError');
+  const code = input ? input.value.trim() : '';
+
+  if (code === '0000') {
+    // 🔓 CORRECT PASSCODE! Fast-forward to Question 90
+    playTone(1200, 'sine', 0.15);
+    setTimeout(() => playTone(1600, 'sine', 0.25), 100);
+    triggerConfetti();
+
+    closeDevModal();
+    showToast("⚡ DEV OVERRIDE UNLOCKED! Jumped to Question 90 / 100 🚀", 3500);
+
+    // If currently on start stage, activate gauntlet stage
+    const startStage = document.getElementById('startStage');
+    const gauntletStage = document.getElementById('gauntletStage');
+    if (startStage && startStage.classList.contains('active')) {
+      startGauntlet();
+    } else if (gauntletStage && !gauntletStage.classList.contains('active')) {
+      const bbStage = document.getElementById('basketballStage');
+      const prankStage = document.getElementById('prankStage');
+      if (bbStage) bbStage.classList.remove('active');
+      if (prankStage) prankStage.classList.remove('active');
+      gauntletStage.classList.add('active');
+    }
+
+    // Set to Question 90 (0-indexed: index 89)
+    currentIndex = 89;
+    renderQuestion();
+
+  } else {
+    // ❌ INCORRECT PASSCODE
+    playTone(180, 'sawtooth', 0.3);
+    if (err) err.classList.add('active');
+    if (input) {
+      input.value = '';
+      input.focus();
+    }
+  }
+}
