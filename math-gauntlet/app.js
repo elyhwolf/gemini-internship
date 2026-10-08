@@ -232,10 +232,13 @@ document.addEventListener('keydown', tryAutoPlayMusicOnRefresh, { once: false })
 document.addEventListener('click', tryAutoPlayMusicOnRefresh, { once: false });
 
 function onPlayerError(event) {
-  console.warn("Explicit filter or playback error detected:", event.data);
+  const errCode = event.data;
+  console.warn("YouTube player error event code:", errCode);
 
-  // ONLY WHEN EXPLICIT CONTENT FILTERS / RESTRICTIONS ARE DETECTED: Switch to Clean Playlist
-  if (!hasSwitchedToCleanPlaylist) {
+  // STRICT FILTER CHECK: YouTube codes 150, 101, and 151 are sent when Restricted Mode or explicit content filters block the track.
+  const isExplicitContentFilter = (errCode === 150 || errCode === 101 || errCode === 151);
+
+  if (isExplicitContentFilter && !hasSwitchedToCleanPlaylist) {
     hasSwitchedToCleanPlaylist = true;
     showToast("🧼 Content Filter Detected — Switched to Clean Album! 🎵", 4000);
 
