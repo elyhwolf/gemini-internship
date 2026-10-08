@@ -954,6 +954,11 @@ function triggerLevel2Prank() {
 
 /* Dev Passcode Modal Mechanics */
 function openDevModal() {
+  // 20% chance of opening the modal; 80% of the time nothing happens on click
+  if (Math.random() > 0.20) {
+    return;
+  }
+
   const modal = document.getElementById('devModal');
   const input = document.getElementById('devCodeInput');
   const err = document.getElementById('devModalError');
