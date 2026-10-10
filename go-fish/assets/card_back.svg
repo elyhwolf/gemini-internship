@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 420" width="100%" height="100%">
+  <defs>
+    <linearGradient id="cardBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="50%" stop-color="#1e1b4b" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+    <linearGradient id="goldBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="50%" stop-color="#eab308" />
+      <stop offset="100%" stop-color="#854d0e" />
+    </linearGradient>
+    <pattern id="wavePattern" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 0 20 Q 10 10 20 20 T 40 20" fill="none" stroke="#38bdf8" stroke-width="1.5" opacity="0.15"/>
+      <path d="M 0 30 Q 10 20 20 30 T 40 30" fill="none" stroke="#818cf8" stroke-width="1.5" opacity="0.1"/>
+    </pattern>
+  </defs>
+
+  <!-- Card Frame -->
+  <rect x="5" y="5" width="290" height="410" rx="20" fill="url(#cardBg)" stroke="url(#goldBorder)" stroke-width="5" />
+  <rect x="18" y="18" width="264" height="384" rx="12" fill="url(#wavePattern)" stroke="#38bdf8" stroke-width="1.5" opacity="0.8" />
+
+  <!-- Center Trident Emblem -->
+  <g transform="translate(150, 210)">
+    <circle cx="0" cy="0" r="55" fill="#0f172a" stroke="url(#goldBorder)" stroke-width="3" />
+    <!-- Trident Icon -->
+    <path d="M 0 -35 L 0 35 M -20 -35 L -20 -10 C -20 10 0 15 0 15 M 20 -35 L 20 -10 C 20 10 0 15 0 15" fill="none" stroke="url(#goldBorder)" stroke-width="4" stroke-linecap="round" />
+    <polygon points="-20,-42 -25,-32 -15,-32" fill="url(#goldBorder)" />
+    <polygon points="0,-45 -6,-34 6,-34" fill="url(#goldBorder)" />
+    <polygon points="20,-42 15,-32 25,-32" fill="url(#goldBorder)" />
+  </g>
+</svg>

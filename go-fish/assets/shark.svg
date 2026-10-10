@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400" width="100%" height="100%">
+  <defs>
+    <!-- Ocean Shark Gradients -->
+    <linearGradient id="sharkBody" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="50%" stop-color="#1d4ed8" />
+      <stop offset="100%" stop-color="#1e3a8a" />
+    </linearGradient>
+    <linearGradient id="sharkBelly" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="eyeGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ef4444" />
+      <stop offset="100%" stop-color="#991b1b" />
+    </linearGradient>
+    <radialGradient id="waterGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0" />
+    </radialGradient>
+    <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#020617" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <!-- Aura Glow -->
+  <circle cx="250" cy="200" r="180" fill="url(#waterGlow)" />
+
+  <g filter="url(#dropShadow)" class="shark-anim-group">
+    <!-- Tail Fin -->
+    <path d="M 60 200 C 20 120 10 70 40 50 C 70 80 110 150 140 180 C 110 220 70 290 40 330 C 10 310 20 270 60 200 Z" fill="url(#sharkBody)" />
+
+    <!-- Main Shark Body -->
+    <path d="M 120 200 C 140 120 240 70 380 90 C 440 100 480 150 490 200 C 480 250 420 300 360 310 C 240 320 140 270 120 200 Z" fill="url(#sharkBody)" />
+
+    <!-- White Underbelly -->
+    <path d="M 170 230 C 220 260 320 290 420 260 C 460 240 485 210 490 200 C 470 225 410 275 350 280 C 240 290 170 250 170 230 Z" fill="url(#sharkBelly)" />
+
+    <!-- Dorsal Fin (Top) -->
+    <path d="M 260 90 C 280 20 340 10 330 50 C 320 80 310 88 310 92 Z" fill="url(#sharkBody)" />
+
+    <!-- Pectoral Fin (Bottom/Side) -->
+    <path d="M 310 275 C 330 350 370 370 360 330 C 350 300 340 285 330 280 Z" fill="url(#sharkBody)" />
+
+    <!-- Gill Slits -->
+    <line x1="330" y1="160" x2="325" y2="200" stroke="#0f172a" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+    <line x1="342" y1="162" x2="337" y2="198" stroke="#0f172a" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+    <line x1="354" y1="165" x2="349" y2="195" stroke="#0f172a" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+
+    <!-- Mouth & Razor Sharp Teeth -->
+    <path d="M 400 240 Q 440 250 475 220 Q 430 220 400 240 Z" fill="#7f1d1d" />
+    <!-- Upper Teeth -->
+    <polygon points="410,230 415,240 420,230" fill="#ffffff" />
+    <polygon points="425,227 430,239 435,227" fill="#ffffff" />
+    <polygon points="440,225 445,237 450,225" fill="#ffffff" />
+    <polygon points="455,223 460,234 465,223" fill="#ffffff" />
+
+    <!-- Eye & Eyebrow Threat Expression -->
+    <circle cx="430" cy="145" r="14" fill="#020617" />
+    <circle cx="430" cy="145" r="9" fill="url(#eyeGlow)" />
+    <circle cx="433" cy="142" r="3" fill="#ffffff" />
+    <!-- Angry Eyebrow -->
+    <path d="M 410 130 Q 435 138 450 142" stroke="#0f172a" stroke-width="5" stroke-linecap="round" fill="none" />
+
+    <!-- Scars & Ocean Details -->
+    <path d="M 380 120 L 395 135" stroke="#93c5fd" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+    <path d="M 388 118 L 398 128" stroke="#93c5fd" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+  </g>
+</svg>

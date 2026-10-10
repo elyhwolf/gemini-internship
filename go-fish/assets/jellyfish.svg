@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <defs>
+    <linearGradient id="jfCap" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#c084fc" />
+      <stop offset="100%" stop-color="#9333ea" />
+    </linearGradient>
+  </defs>
+  <!-- Jellyfish Cap -->
+  <path d="M 20 50 C 20 15 80 15 80 50 C 65 60 35 60 20 50 Z" fill="url(#jfCap)" stroke="#7e22ce" stroke-width="2" />
+  <!-- Glowing Inner Ring -->
+  <path d="M 30 45 C 35 30 65 30 70 45" fill="none" stroke="#e9d5ff" stroke-width="3" opacity="0.8"/>
+  <!-- Tentacles -->
+  <path d="M 30 54 Q 25 70 30 88 M 42 56 Q 48 72 40 90 M 55 56 Q 50 72 60 90 M 70 54 Q 75 70 70 88" fill="none" stroke="#a855f7" stroke-width="3" stroke-linecap="round"/>
+</svg>

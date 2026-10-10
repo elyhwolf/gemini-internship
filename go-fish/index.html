@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SHARK BAIT: Underwater Go Fish</title>
+  <meta name="description" content="Play Go Fish underwater against Captain Finley the Great White Shark in a high-graphics ocean card game.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Underwater Background FX Canvas -->
+  <canvas id="oceanCanvas"></canvas>
+  <canvas id="confettiCanvas"></canvas>
+
+  <div class="game-wrapper">
+
+    <!-- TOP BAR: Scores & Ambience Control -->
+    <header class="game-header">
+      <div class="logo-badge">
+        <span class="logo-icon">🦈</span>
+        <div class="logo-text">
+          <h1>SHARK BAIT</h1>
+          <span class="logo-sub">GO FISH UNDERWATER</span>
+        </div>
+      </div>
+
+      <div class="score-board">
+        <div class="score-card player-score">
+          <span class="score-label">YOU</span>
+          <span class="score-val" id="playerBooksCount">0</span>
+          <span class="score-unit">BOOKS</span>
+        </div>
+        <div class="score-vs">VS</div>
+        <div class="score-card shark-score">
+          <span class="score-label">FINLEY</span>
+          <span class="score-val" id="sharkBooksCount">0</span>
+          <span class="score-unit">BOOKS</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button type="button" class="btn-icon" id="btnAudio" onclick="toggleAudio()" title="Toggle Audio FX">🔊</button>
+        <button type="button" class="btn-icon" onclick="resetGame()" title="Restart Game">🔄</button>
+      </div>
+    </header>
+
+    <!-- MAIN OCEAN ARENA -->
+    <main class="ocean-arena">
+      
+      <!-- SHARK OPPONENT SECTION -->
+      <section class="shark-area">
+        <div class="shark-avatar-container">
+          <div class="shark-speech-bubble" id="sharkSpeech">
+            "Welcome to my reef, land-lubber! Click a card in your hand to ask me for a rank."
+          </div>
+          <div class="shark-avatar-box" id="sharkAvatar">
+            <img src="assets/shark.svg" alt="Captain Finley the Shark" class="shark-img" />
+          </div>
+          <div class="shark-info">
+            <span class="shark-name">CAPTAIN FINLEY</span>
+            <span class="shark-cards-badge" id="sharkCardsBadge">7 CARDS</span>
+          </div>
+        </div>
+
+        <!-- Shark Face-Down Hand Stack -->
+        <div class="shark-hand-display" id="sharkHandDisplay"></div>
+      </section>
+
+      <!-- CENTER TABLE: DRAW PILE & BOOKS REEF -->
+      <section class="table-center">
+        
+        <!-- Books Pile Left: Player Books -->
+        <div class="books-display player-books" id="playerBooksDisplay">
+          <span class="books-title">YOUR BOOKS</span>
+          <div class="books-list" id="playerBooksList"></div>
+        </div>
+
+        <!-- Ocean Draw Pile (Go Fish) -->
+        <div class="draw-pile-area" onclick="handleDrawPileClick()">
+          <div class="deck-stack" id="deckStack">
+            <img src="assets/card_back.svg" class="deck-card-top" alt="Ocean Deck" />
+          </div>
+          <div class="deck-info">
+            <span class="deck-label">OCEAN DECK</span>
+            <span class="deck-count" id="deckCountBadge">38 CARDS LEFT</span>
+          </div>
+        </div>
+
+        <!-- Books Pile Right: Shark Books -->
+        <div class="books-display shark-books" id="sharkBooksDisplay">
+          <span class="books-title">FINLEY'S BOOKS</span>
+          <div class="books-list" id="sharkBooksList"></div>
+        </div>
+
+      </section>
+
+      <!-- TURN & ACTION BANNER -->
+      <div class="turn-banner" id="turnBanner">
+        <span class="turn-indicator" id="turnIndicator">YOUR TURN</span>
+        <span class="turn-instruction" id="turnInstruction">Select a card from your hand to ask Captain Finley!</span>
+      </div>
+
+      <!-- PLAYER HAND SECTION -->
+      <section class="player-area">
+        <div class="player-hand" id="playerHand"></div>
+      </section>
+
+    </main>
+
+    <!-- ELY WOLF CREDIT FOOTER -->
+    <footer class="app-credit">
+      Crafted by <strong>Ely Wolf</strong>
+    </footer>
+
+  </div>
+
+  <!-- GAME OVER / VICTORY MODAL -->
+  <div class="modal-overlay" id="gameOverModal">
+    <div class="modal-card">
+      <h2 class="modal-title" id="gameOverTitle">YOU WIN! 🏆</h2>
+      <p class="modal-subtitle" id="gameOverSub">You outsmarted Captain Finley on the ocean floor!</p>
+      
+      <div class="final-score-box">
+        <div class="final-score-item">
+          <span class="final-label">YOUR BOOKS</span>
+          <span class="final-val" id="finalPlayerBooks">0</span>
+        </div>
+        <div class="final-score-item">
+          <span class="final-label">FINLEY'S BOOKS</span>
+          <span class="final-val" id="finalSharkBooks">0</span>
+        </div>
+      </div>
+
+      <button type="button" class="btn-primary" onclick="resetGame()">PLAY AGAIN 🌊</button>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATIONS -->
+  <div class="toast-banner" id="toastBanner"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
