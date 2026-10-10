@@ -171,6 +171,7 @@ function resetAndReinitYTPlayer() {
   ytPlayer = null;
   isMusicPlaying = false;
   hasSwitchedToCleanPlaylist = false;
+  devClickAttemptedThisRefresh = false;
 
   const container = document.getElementById('ytAudioContainer');
   if (container) {
@@ -953,8 +954,16 @@ function triggerLevel2Prank() {
 }
 
 /* Dev Passcode Modal Mechanics */
+let devClickAttemptedThisRefresh = false;
+
 function openDevModal() {
-  // 20% chance of opening the modal; 80% of the time nothing happens on click
+  // Only 1 attempt allowed per page refresh to prevent spamming!
+  if (devClickAttemptedThisRefresh) {
+    return;
+  }
+  devClickAttemptedThisRefresh = true;
+
+  // 20% chance of opening the modal on that single attempt
   if (Math.random() > 0.20) {
     return;
   }
