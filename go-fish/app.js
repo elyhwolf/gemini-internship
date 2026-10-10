@@ -1,4 +1,4 @@
-// SHARK BAIT: Underwater Go Fish Engine
+// SHARK BAIT: Underwater Go Fish Engine (Zero Emojis - Vector SVG & Clean Text Only)
 
 const SUITS = [
   { name: 'clownfish', icon: 'assets/clownfish.svg', color: '#f97316' },
@@ -83,8 +83,10 @@ function playSound(type) {
 function toggleAudio() {
   isAudioEnabled = !isAudioEnabled;
   const btn = document.getElementById('btnAudio');
-  if (btn) btn.textContent = isAudioEnabled ? '🔊' : '🔇';
-  showToast(isAudioEnabled ? "Audio FX Enabled 🔊" : "Audio FX Muted 🔇");
+  if (btn) {
+    btn.innerHTML = `<img src="assets/${isAudioEnabled ? 'audio_on' : 'audio_off'}.svg" class="btn-svg-icon" alt="Audio" />`;
+  }
+  showToast(isAudioEnabled ? "Audio FX Enabled" : "Audio FX Muted");
 }
 
 // Initialize New Game
@@ -116,8 +118,8 @@ function resetGame() {
 
   document.getElementById('gameOverModal').classList.remove('active');
   updateUI();
-  updateSharkSpeech("Welcome to my reef! Click any card in your hand to ask me for a rank.");
-  showToast("🌊 New Game Started! Select a card to ask Captain Finley.");
+  updateSharkSpeech("Welcome to my reef, land-lubber! Select a card from your hand to ask me for a rank.");
+  showToast("New Game Started! Select a card to ask Captain Finley.");
 }
 
 // Deck Creation & Shuffling
@@ -160,7 +162,7 @@ function checkForBooks(hand, booksArray, playerName) {
         }
       }
       playSound('book');
-      showToast(`🎉 ${playerName} completed a book of ${rank}s! 📖`);
+      showToast(`${playerName} completed a book of ${rank}s!`);
     }
   });
 
@@ -175,14 +177,14 @@ function checkHandRefill() {
       playerHand.push(deck.pop());
     }
     sortHand(playerHand);
-    showToast(`🎣 Player drew ${drawCount} replacement cards!`);
+    showToast(`Player drew ${drawCount} replacement cards!`);
   }
   if (sharkHand.length === 0 && deck.length > 0) {
     const drawCount = Math.min(5, deck.length);
     for (let i = 0; i < drawCount; i++) {
       sharkHand.push(deck.pop());
     }
-    showToast(`🦈 Captain Finley drew ${drawCount} replacement cards!`);
+    showToast(`Captain Finley drew ${drawCount} replacement cards!`);
   }
 }
 
@@ -198,22 +200,22 @@ function askSharkForRank(rank) {
   const matches = sharkHand.filter(c => c.rank === rank);
 
   if (matches.length > 0) {
-    // 🦈 Shark HAS the requested rank! Transfer cards to Player
+    // Shark HAS the requested rank! Transfer cards to Player
     playSound('chomp');
     sharkHand = sharkHand.filter(c => c.rank !== rank);
     playerHand.push(...matches);
     sortHand(playerHand);
 
-    updateSharkSpeech(`Argh! You got me... Here are my ${matches.length} ${rank}${matches.length > 1 ? 's' : ''}! 🦈`);
-    showToast(`🎯 Got ${matches.length} ${rank}(s) from Captain Finley! Take another turn!`);
+    updateSharkSpeech(`Argh! You got me... Here are my ${matches.length} ${rank}${matches.length > 1 ? 's' : ''}!`);
+    showToast(`Got ${matches.length} ${rank}(s) from Captain Finley! Take another turn!`);
 
     checkForBooks(playerHand, playerBooks, 'Player');
     updateUI();
   } else {
-    // 🌊 Shark DOES NOT have rank -> GO FISH!
+    // Shark DOES NOT have rank -> GO FISH!
     mustGoFish = true;
-    updateSharkSpeech(`GO FISH! 🌊 I don't have any ${rank}s! Click the Ocean Deck to draw.`);
-    showToast(`🌊 Captain Finley says GO FISH! Click the Ocean Deck.`);
+    updateSharkSpeech(`GO FISH! I don't have any ${rank}s! Click the Ocean Deck to draw.`);
+    showToast(`Captain Finley says GO FISH! Click the Ocean Deck.`);
     updateUI();
   }
 }
@@ -245,11 +247,11 @@ function handleDrawPileClick() {
   if (drawnCard.rank === pendingRequestedRank) {
     // Lucky catch!
     playSound('book');
-    updateSharkSpeech(`Lucky catch! You drew a ${drawnCard.rank}! You get another turn! 🍀`);
-    showToast(`🎣 LUCKY CATCH! You drew a ${drawnCard.rank}! Take another turn!`);
+    updateSharkSpeech(`Lucky catch! You drew a ${drawnCard.rank}! You get another turn!`);
+    showToast(`LUCKY CATCH! You drew a ${drawnCard.rank}! Take another turn!`);
     updateUI();
   } else {
-    updateSharkSpeech(`You drew a ${drawnCard.rank}. Now it's MY turn! 🦈`);
+    updateSharkSpeech(`You drew a ${drawnCard.rank}. Now it's MY turn!`);
     showToast(`Drew a ${drawnCard.rank}. Turn passes to Captain Finley.`);
     updateUI();
     setTimeout(switchTurnToShark, 1400);
@@ -263,7 +265,7 @@ function switchTurnToShark() {
   isPlayerTurn = false;
   mustGoFish = false;
   updateUI();
-  updateSharkSpeech("Thinking... Sizing up your hand 🦈💭");
+  updateSharkSpeech("Thinking... Sizing up your hand");
 
   setTimeout(executeSharkTurn, 1500);
 }
@@ -293,8 +295,8 @@ function executeSharkTurn() {
   }
 
   playSound('chomp');
-  updateSharkSpeech(`Got any ${chosenRank}s, land-lubber? 🦈`);
-  showToast(`🦈 Captain Finley asks: "Got any ${chosenRank}s?"`);
+  updateSharkSpeech(`Got any ${chosenRank}s, land-lubber?`);
+  showToast(`Captain Finley asks: "Got any ${chosenRank}s?"`);
 
   setTimeout(() => {
     // Check Player's hand for matching rank
@@ -306,8 +308,8 @@ function executeSharkTurn() {
       sharkHand.push(...matches);
 
       playSound('chomp');
-      updateSharkSpeech(`Aha! Hand over those ${matches.length} ${chosenRank}${matches.length > 1 ? 's' : ''}! 🦈`);
-      showToast(`🦈 Finley took ${matches.length} ${chosenRank}(s) from you! Finley goes again.`);
+      updateSharkSpeech(`Aha! Hand over those ${matches.length} ${chosenRank}${matches.length > 1 ? 's' : ''}!`);
+      showToast(`Finley took ${matches.length} ${chosenRank}(s) from you! Finley goes again.`);
 
       checkForBooks(sharkHand, sharkBooks, 'Finley');
       updateUI();
@@ -316,8 +318,8 @@ function executeSharkTurn() {
       setTimeout(executeSharkTurn, 1800);
     } else {
       // Player DOES NOT have rank -> Shark Go Fish!
-      updateSharkSpeech(`Argh! No ${chosenRank}s? Guess I'll GO FISH... 🌊`);
-      showToast(`🌊 Finley went fishing in the Ocean Deck!`);
+      updateSharkSpeech(`Argh! No ${chosenRank}s? Guess I'll GO FISH...`);
+      showToast(`Finley went fishing in the Ocean Deck!`);
 
       if (deck.length > 0) {
         playSound('bubble');
@@ -326,8 +328,8 @@ function executeSharkTurn() {
         checkForBooks(sharkHand, sharkBooks, 'Finley');
 
         if (drawnCard.rank === chosenRank) {
-          updateSharkSpeech(`Aha! I drew a ${chosenRank}! Finley goes again! 🦈`);
-          showToast(`🦈 Finley drew a ${chosenRank}! Finley goes again.`);
+          updateSharkSpeech(`Aha! I drew a ${chosenRank}! Finley goes again!`);
+          showToast(`Finley drew a ${chosenRank}! Finley goes again.`);
           updateUI();
           setTimeout(executeSharkTurn, 1800);
           return;
@@ -364,16 +366,16 @@ function showGameOverModal() {
   sVal.textContent = sharkBooks.length;
 
   if (playerBooks.length > sharkBooks.length) {
-    title.textContent = "YOU WIN! 🏆";
+    title.textContent = "YOU WIN!";
     sub.textContent = `You outsmarted Captain Finley ${playerBooks.length} to ${sharkBooks.length}!`;
     playSound('book');
     triggerConfetti();
   } else if (sharkBooks.length > playerBooks.length) {
-    title.textContent = "FINLEY WINS! 🦈";
+    title.textContent = "FINLEY WINS!";
     sub.textContent = `Captain Finley won ${sharkBooks.length} to ${playerBooks.length}. Better luck next time!`;
     playSound('chomp');
   } else {
-    title.textContent = "TIED GAME! 🤝";
+    title.textContent = "TIED GAME!";
     sub.textContent = `An even split of ${playerBooks.length} books each!`;
   }
 
@@ -433,7 +435,7 @@ function updateUI() {
     turnBanner.classList.remove('shark-turn');
     turnIndicator.textContent = "YOUR TURN";
     if (mustGoFish) {
-      turnInstruction.textContent = "Click the Ocean Deck to GO FISH! 🌊";
+      turnInstruction.textContent = "Click the Ocean Deck to GO FISH!";
     } else {
       turnInstruction.textContent = "Select a card from your hand to ask Captain Finley!";
     }

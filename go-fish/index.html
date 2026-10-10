@@ -21,7 +21,7 @@
     <!-- TOP BAR: Scores & Ambience Control -->
     <header class="game-header">
       <div class="logo-badge">
-        <span class="logo-icon">🦈</span>
+        <img src="assets/shark.svg" class="logo-shark-img" alt="Shark Bait Logo" />
         <div class="logo-text">
           <h1>SHARK BAIT</h1>
           <span class="logo-sub">GO FISH UNDERWATER</span>
@@ -43,8 +43,12 @@
       </div>
 
       <div class="header-actions">
-        <button type="button" class="btn-icon" id="btnAudio" onclick="toggleAudio()" title="Toggle Audio FX">🔊</button>
-        <button type="button" class="btn-icon" onclick="resetGame()" title="Restart Game">🔄</button>
+        <button type="button" class="btn-icon" id="btnAudio" onclick="toggleAudio()" title="Toggle Audio FX">
+          <img src="assets/audio_on.svg" class="btn-svg-icon" alt="Audio" />
+        </button>
+        <button type="button" class="btn-icon" onclick="resetGame()" title="Restart Game">
+          <img src="assets/reload.svg" class="btn-svg-icon" alt="Restart" />
+        </button>
       </div>
     </header>
 
@@ -121,7 +125,7 @@
   <!-- GAME OVER / VICTORY MODAL -->
   <div class="modal-overlay" id="gameOverModal">
     <div class="modal-card">
-      <h2 class="modal-title" id="gameOverTitle">YOU WIN! 🏆</h2>
+      <h2 class="modal-title" id="gameOverTitle">YOU WIN!</h2>
       <p class="modal-subtitle" id="gameOverSub">You outsmarted Captain Finley on the ocean floor!</p>
       
       <div class="final-score-box">
@@ -135,7 +139,7 @@
         </div>
       </div>
 
-      <button type="button" class="btn-primary" onclick="resetGame()">PLAY AGAIN 🌊</button>
+      <button type="button" class="btn-primary" onclick="resetGame()">PLAY AGAIN</button>
     </div>
   </div>
 
