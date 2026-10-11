@@ -134,65 +134,75 @@ const sfx = new SoundFX();
 // ==========================================================================
 const THEMES = [
   {
-    name: 'MYSTIC FOREST',
+    id: 'forest',
+    name: 'MYSTIC GROVE',
+    subName: 'Ancient Moss & Canopy',
     range: 'Levels 1–20',
     dotColor: '#10b981',
-    bgGradTop: '#041810',
-    bgGradBottom: '#07261a',
+    bgGradTop: '#03140e',
+    bgGradBottom: '#08261c',
     fogColor: 'rgba(16, 185, 129, 0.08)',
-    tileFill: '#0d3824',
+    tileFill: '#0a2f1e',
     tileBorder: '#10b981',
     tileAccent: '#34d399',
     particleType: 'leaf',
     particleColor: ['#10b981', '#34d399', '#6ee7b7', '#fef08a']
   },
   {
-    name: 'CRYSTAL CAVERNS',
+    id: 'glacial',
+    name: 'GLACIAL CAVERNS',
+    subName: 'Frost Spikes & Icicles',
     range: 'Levels 21–40',
-    dotColor: '#a855f7',
-    bgGradTop: '#0a0a1a',
-    bgGradBottom: '#180d2e',
-    fogColor: 'rgba(168, 85, 247, 0.08)',
-    tileFill: '#20133b',
-    tileBorder: '#a855f7',
-    tileAccent: '#c084fc',
-    particleType: 'gem',
-    particleColor: ['#a855f7', '#c084fc', '#38bdf8', '#818cf8']
+    dotColor: '#38bdf8',
+    bgGradTop: '#031024',
+    bgGradBottom: '#07243c',
+    fogColor: 'rgba(56, 189, 248, 0.08)',
+    tileFill: '#0c2e47',
+    tileBorder: '#38bdf8',
+    tileAccent: '#bae6fd',
+    particleType: 'frost',
+    particleColor: ['#38bdf8', '#7dd3fc', '#bae6fd', '#ffffff']
   },
   {
-    name: 'SUNKEN ATLANTIS',
+    id: 'atlantis',
+    name: 'SUNKEN TEMPLE',
+    subName: 'Classical Fluted Pillars',
     range: 'Levels 41–60',
     dotColor: '#06b6d4',
-    bgGradTop: '#031424',
-    bgGradBottom: '#082f49',
+    bgGradTop: '#021824',
+    bgGradBottom: '#073244',
     fogColor: 'rgba(6, 182, 212, 0.08)',
-    tileFill: '#0e3b52',
+    tileFill: '#0c384a',
     tileBorder: '#06b6d4',
     tileAccent: '#67e8f9',
     particleType: 'bubble',
     particleColor: ['#06b6d4', '#67e8f9', '#a5f3fc', '#ffffff']
   },
   {
-    name: 'VOLCANIC CITADEL',
+    id: 'cybercity',
+    name: 'NEO-CYBER METROPOLIS',
+    subName: 'Skyscrapers & Tech Circuits',
     range: 'Levels 61–80',
-    dotColor: '#f97316',
-    bgGradTop: '#1a0808',
-    bgGradBottom: '#2d0f0d',
-    fogColor: 'rgba(249, 115, 22, 0.08)',
-    tileFill: '#421612',
-    tileBorder: '#f97316',
-    tileAccent: '#fdba74',
-    particleType: 'ember',
-    particleColor: ['#f97316', '#ef4444', '#fbbf24', '#f59e0b']
+    dotColor: '#ec4899',
+    bgGradTop: '#0f0724',
+    bgGradBottom: '#220b3b',
+    fogColor: 'rgba(236, 72, 153, 0.08)',
+    tileFill: '#17112c',
+    tileBorder: '#ec4899',
+    tileAccent: '#06b6d4',
+    particleType: 'cyber',
+    particleColor: ['#ec4899', '#06b6d4', '#f43f5e', '#a855f7']
   },
   {
-    name: 'CELESTIAL PEAKS',
+    id: 'celestial',
+    name: 'CELESTIAL SANCTUARY',
+    subName: 'Cosmic Nebula & Divine Pillars',
     range: 'Levels 81–100',
     dotColor: '#fbbf24',
-    bgGradTop: '#0f0c24',
-    bgGradBottom: '#1e144a',
+    bgGradTop: '#0a0522',
+    bgGradBottom: '#190e47',
     fogColor: 'rgba(251, 191, 36, 0.08)',
-    tileFill: '#2a1f5e',
+    tileFill: '#221552',
     tileBorder: '#fbbf24',
     tileAccent: '#fde047',
     particleType: 'stardust',
@@ -1051,11 +1061,25 @@ class MazeGame {
     this.music = new MazeMusicPlayer(this);
 
     // Progress State
-    this.currentLevel = parseInt(localStorage.getItem('elywolf_maze_level') || '1', 10);
-    this.maxUnlockedLevel = parseInt(localStorage.getItem('elywolf_maze_max_unlocked') || '1', 10);
-    if (isNaN(this.currentLevel) || this.currentLevel < 1) this.currentLevel = 1;
-    if (this.currentLevel > 100) this.currentLevel = 100;
-    if (this.maxUnlockedLevel < this.currentLevel) this.maxUnlockedLevel = this.currentLevel;
+    let startLvl = 1;
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const paramLevel = parseInt(urlParams.get('level') || '', 10);
+      if (!isNaN(paramLevel) && paramLevel >= 1 && paramLevel <= 100) {
+        startLvl = paramLevel;
+      } else {
+        startLvl = parseInt(localStorage.getItem('elywolf_maze_level') || '1', 10);
+      }
+    } catch (e) {
+      startLvl = 1;
+    }
+
+    this.currentLevel = !isNaN(startLvl) && startLvl >= 1 && startLvl <= 100 ? startLvl : 1;
+    this.maxUnlockedLevel = Math.max(
+      this.currentLevel,
+      parseInt(localStorage.getItem('elywolf_maze_max_unlocked') || '100', 10)
+    );
+    if (this.maxUnlockedLevel > 100) this.maxUnlockedLevel = 100;
 
     this.theme = getThemeForLevel(this.currentLevel);
     this.particles = new ParticleSystem();
@@ -1378,12 +1402,10 @@ class MazeGame {
         <span class="lvl-stars">${isLocked ? '🔒' : '★★★'}</span>
       `;
 
-      if (!isLocked) {
-        btn.onclick = () => {
-          this.loadLevel(l);
-          if (this.levelSelectModal) this.levelSelectModal.classList.add('hidden');
-        };
-      }
+      btn.onclick = () => {
+        this.loadLevel(l);
+        if (this.levelSelectModal) this.levelSelectModal.classList.add('hidden');
+      };
 
       this.levelsGrid.appendChild(btn);
     }
@@ -1564,29 +1586,1057 @@ class MazeGame {
     }, 400);
   }
 
+  drawBackground(ctx, offset, now) {
+    const w = this.viewportW;
+    const h = this.viewportH;
+    const themeId = this.theme.id;
+    const camX = this.camera.x;
+
+    // Base atmospheric sky gradient
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
+    bgGrad.addColorStop(0, this.theme.bgGradTop);
+    bgGrad.addColorStop(1, this.theme.bgGradBottom);
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, w, h);
+
+    if (themeId === 'cybercity') {
+      // ======================================================================
+      // HIGH-QUALITY CYBERPUNK CITYSCAPE METROPOLIS
+      // ======================================================================
+
+      // 1. Sweeping Sky Searchlight Beams
+      ctx.save();
+      for (let s = 0; s < 3; s++) {
+        const sweepAngle = Math.sin(now * 0.0008 + s * 2.1) * 0.35 - 0.2;
+        const beamBaseX = (w * (0.25 + s * 0.3) - camX * 0.04) % (w + 200);
+        ctx.save();
+        ctx.translate(beamBaseX, h);
+        ctx.rotate(sweepAngle);
+        const beamGrad = ctx.createLinearGradient(0, 0, 0, -h * 1.2);
+        beamGrad.addColorStop(0, s === 1 ? 'rgba(236, 72, 153, 0.15)' : 'rgba(6, 182, 212, 0.12)');
+        beamGrad.addColorStop(0.7, s === 1 ? 'rgba(236, 72, 153, 0.04)' : 'rgba(6, 182, 212, 0.03)');
+        beamGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = beamGrad;
+        ctx.beginPath();
+        ctx.moveTo(-15, 0);
+        ctx.lineTo(-70, -h * 1.2);
+        ctx.lineTo(70, -h * 1.2);
+        ctx.lineTo(15, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+      ctx.restore();
+
+      // 2. Far Skyline Silhouettes (Parallax Factor: 0.04)
+      const farShift = (camX * 0.04) % 180;
+      ctx.fillStyle = '#0a0518';
+      for (let i = -1; i < Math.ceil(w / 120) + 2; i++) {
+        const bx = i * 120 - farShift;
+        const bHash = ((i * 1234567) ^ 0x9e3779b9) >>> 0;
+        const bh = 140 + (bHash % 160);
+        const bw = 85 + ((bHash >> 4) % 30);
+        const by = h - bh;
+        ctx.fillRect(bx, by, bw, bh);
+
+        // Tower spire with blinking red aircraft warning beacon
+        const spireH = 25 + ((bHash >> 8) % 35);
+        ctx.fillRect(bx + bw / 2 - 1.5, by - spireH, 3, spireH);
+        const blink = Math.sin(now * 0.004 + i) > 0.3;
+        if (blink) {
+          ctx.save();
+          ctx.fillStyle = '#ef4444';
+          ctx.shadowColor = '#ef4444';
+          ctx.shadowBlur = 8;
+          ctx.beginPath();
+          ctx.arc(bx + bw / 2, by - spireH, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // 3. Midground High-Tech Skyscrapers (Parallax Factor: 0.12)
+      const midShift = (camX * 0.12) % 240;
+      for (let i = -1; i < Math.ceil(w / 140) + 2; i++) {
+        const bx = i * 140 - midShift;
+        const bHash = ((i * 2654435761) ^ 0x85ebca6b) >>> 0;
+        const bh = 180 + (bHash % 220);
+        const bw = 95 + ((bHash >> 3) % 40);
+        const by = h - bh;
+
+        // Building Facade
+        ctx.fillStyle = '#120b24';
+        ctx.fillRect(bx, by, bw, bh);
+        ctx.strokeStyle = '#281a4a';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(bx, by, bw, bh);
+
+        // Angled architectural crown / roof cut
+        if (bHash % 2 === 0) {
+          ctx.beginPath();
+          ctx.moveTo(bx, by);
+          ctx.lineTo(bx + bw, by + 18);
+          ctx.lineTo(bx + bw, by);
+          ctx.closePath();
+          ctx.fillStyle = '#1c1038';
+          ctx.fill();
+        }
+
+        // Illuminated Window Grids (amber, cyan, pink, dark)
+        const cols = Math.floor(bw / 12);
+        const rows = Math.floor(bh / 16);
+        for (let wr = 2; wr < rows - 2; wr++) {
+          for (let wc = 1; wc < cols - 1; wc++) {
+            const winHash = ((bHash + wr * 31 + wc * 17) ^ 0xc2b2ae35) >>> 0;
+            const wx = bx + wc * 12 + 2;
+            const wy = by + wr * 16 + 2;
+            const winState = winHash % 10;
+            if (winState === 0) {
+              ctx.fillStyle = 'rgba(236, 72, 153, 0.75)'; // Neon Pink
+              ctx.fillRect(wx, wy, 6, 8);
+            } else if (winState === 1 || winState === 2) {
+              ctx.fillStyle = 'rgba(6, 182, 212, 0.7)'; // Neon Cyan
+              ctx.fillRect(wx, wy, 6, 8);
+            } else if (winState === 3 || winState === 4) {
+              ctx.fillStyle = 'rgba(245, 158, 11, 0.65)'; // Warm Amber
+              ctx.fillRect(wx, wy, 6, 8);
+            } else {
+              // Unlit / Dark Office
+              ctx.fillStyle = 'rgba(30, 20, 60, 0.4)';
+              ctx.fillRect(wx, wy, 6, 8);
+            }
+          }
+        }
+
+        // Glowing Vertical Elevator Shaft
+        if (bHash % 3 === 0) {
+          const shaftX = bx + bw - 10;
+          ctx.fillStyle = 'rgba(6, 182, 212, 0.15)';
+          ctx.fillRect(shaftX, by + 10, 6, bh - 20);
+          const carY = by + 10 + (Math.sin(now * 0.0015 + i) * 0.5 + 0.5) * (bh - 35);
+          ctx.fillStyle = '#38bdf8';
+          ctx.fillRect(shaftX, carY, 6, 8);
+        }
+      }
+
+      // 4. Overhead Monorail Girder & Fast Maglev Train (Parallax Factor: 0.18)
+      const railY = h - 220;
+      ctx.save();
+      // Concrete & Steel Transit Beam
+      ctx.fillStyle = '#18122c';
+      ctx.fillRect(0, railY, w, 8);
+      ctx.fillStyle = '#06b6d4';
+      ctx.globalAlpha = 0.3;
+      ctx.fillRect(0, railY + 2, w, 2);
+      ctx.restore();
+
+      // Maglev Bullet Train passing by horizontally
+      const trainSpeed = 0.35;
+      const trainCycle = w + 400;
+      const trainX = ((now * trainSpeed) % trainCycle) - 300;
+      if (trainX > -250 && trainX < w + 50) {
+        ctx.save();
+        // Train Body
+        ctx.fillStyle = '#e2e8f0';
+        ctx.shadowColor = '#06b6d4';
+        ctx.shadowBlur = 12;
+        ctx.fillRect(trainX, railY - 10, 160, 9);
+        // Aerodynamic Nose
+        ctx.beginPath();
+        ctx.moveTo(trainX + 160, railY - 10);
+        ctx.lineTo(trainX + 185, railY - 4);
+        ctx.lineTo(trainX + 160, railY - 1);
+        ctx.closePath();
+        ctx.fill();
+        // Glowing Cyan Passenger Windows
+        ctx.fillStyle = '#06b6d4';
+        for (let tw = 0; tw < 8; tw++) {
+          ctx.fillRect(trainX + 15 + tw * 16, railY - 8, 9, 4);
+        }
+        // Maglev propulsion light trail
+        const trailGrad = ctx.createLinearGradient(trainX, 0, trainX - 100, 0);
+        trailGrad.addColorStop(0, 'rgba(6, 182, 212, 0.6)');
+        trailGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = trailGrad;
+        ctx.fillRect(trainX - 100, railY - 5, 100, 3);
+        ctx.restore();
+      }
+
+      // 5. Holographic Neon Billboards & Aerial Utility Cables (Parallax Factor: 0.25)
+      const nearShift = (camX * 0.25) % 360;
+      for (let i = -1; i < Math.ceil(w / 300) + 2; i++) {
+        const boardX = i * 300 - nearShift;
+        const boardY = h - 290 - ((i * 53) % 60);
+
+        // Neon Billboard: "ELYWOLF CYBER"
+        ctx.save();
+        ctx.translate(boardX, boardY);
+        // Holo Frame
+        ctx.strokeStyle = 'rgba(236, 72, 153, 0.6)';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(0, 0, 120, 34);
+        ctx.fillStyle = 'rgba(15, 7, 36, 0.85)';
+        ctx.fillRect(0, 0, 120, 34);
+
+        // Holo Scanlines
+        ctx.fillStyle = 'rgba(236, 72, 153, 0.08)';
+        for (let l = 0; l < 34; l += 4) {
+          ctx.fillRect(0, l, 120, 2);
+        }
+
+        // Glowing Text with subtle neon flicker
+        const flicker = Math.sin(now * 0.007 + i) > -0.9 ? 1 : 0.4;
+        ctx.globalAlpha = flicker;
+        ctx.fillStyle = '#ec4899';
+        ctx.shadowColor = '#ec4899';
+        ctx.shadowBlur = 10;
+        ctx.font = '800 10px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(i % 2 === 0 ? 'ELYWOLF CYBER' : 'NEO ARCADE', 60, 16);
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = '600 7px "JetBrains Mono", monospace';
+        ctx.fillText('SYSTEM v3.8 ONLINE', 60, 26);
+        ctx.restore();
+
+        // Diagonal aerial utility cables drooping between towers
+        ctx.save();
+        ctx.strokeStyle = 'rgba(40, 25, 75, 0.7)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(boardX - 40, boardY + 50);
+        ctx.quadraticCurveTo(boardX + 100, boardY + 90, boardX + 240, boardY + 40);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+    } else if (themeId === 'glacial') {
+      // ======================================================================
+      // GLACIAL CAVERNS: AURORA BOREALIS & FROZEN MOUNTAIN PEAKS
+      // ======================================================================
+
+      // 1. Shimmering Aurora Borealis Ethereal Curtains
+      ctx.save();
+      for (let a = 0; a < 3; a++) {
+        const aColor = a === 0 ? 'rgba(16, 185, 129, 0.18)' : (a === 1 ? 'rgba(56, 189, 248, 0.22)' : 'rgba(129, 140, 248, 0.15)');
+        ctx.fillStyle = aColor;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        for (let x = 0; x <= w; x += 30) {
+          const wave = Math.sin(x * 0.004 + now * 0.0009 + a * 1.5) * 45 + Math.cos(x * 0.008 + now * 0.0006) * 25;
+          const y = 80 + a * 50 + wave;
+          ctx.lineTo(x, y);
+        }
+        ctx.lineTo(w, 0);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+
+      // 2. Distant Jagged Icy Mountain Peaks (Parallax Factor: 0.06)
+      const mtnShift = (camX * 0.06) % 220;
+      ctx.save();
+      for (let i = -1; i < Math.ceil(w / 180) + 2; i++) {
+        const mx = i * 180 - mtnShift;
+        const mh = 220 + ((i * 89) % 100);
+        const my = h - mh;
+
+        // Mountain Silhouette
+        ctx.fillStyle = '#061a2e';
+        ctx.beginPath();
+        ctx.moveTo(mx - 40, h);
+        ctx.lineTo(mx + 80, my);
+        ctx.lineTo(mx + 200, h);
+        ctx.closePath();
+        ctx.fill();
+
+        // Crystalline Glacial Facet Light Edge
+        ctx.fillStyle = '#0e385e';
+        ctx.beginPath();
+        ctx.moveTo(mx + 80, my);
+        ctx.lineTo(mx + 200, h);
+        ctx.lineTo(mx + 110, h);
+        ctx.closePath();
+        ctx.fill();
+
+        // Snow Cap on Peak
+        ctx.fillStyle = '#e0f2fe';
+        ctx.beginPath();
+        ctx.moveTo(mx + 80, my);
+        ctx.lineTo(mx + 105, my + 45);
+        ctx.lineTo(mx + 80, my + 38);
+        ctx.lineTo(mx + 60, my + 45);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+
+      // 3. Foreground Cavern Frost Silhouette (Parallax Factor: 0.15)
+      ctx.save();
+      ctx.fillStyle = 'rgba(12, 46, 71, 0.4)';
+      const cavShift = (camX * 0.15) % 260;
+      for (let i = -1; i < Math.ceil(w / 200) + 2; i++) {
+        const cx = i * 200 - cavShift;
+        ctx.beginPath();
+        ctx.moveTo(cx, 0);
+        ctx.lineTo(cx + 60, 90 + ((i * 47) % 60));
+        ctx.lineTo(cx + 120, 0);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+
+    } else if (themeId === 'atlantis') {
+      // ======================================================================
+      // SUNKEN TEMPLE / ATLANTIS: UNDERWATER CAUSTICS & SUBMERGED RUINS
+      // ======================================================================
+
+      // 1. Shimmering Underwater Caustic God-Rays
+      ctx.save();
+      for (let r = 0; r < 5; r++) {
+        const rayAngle = -0.15 + Math.sin(now * 0.001 + r * 1.3) * 0.05;
+        const rayX = (r * 180 - (camX * 0.05) % (w + 200));
+        ctx.save();
+        ctx.translate(rayX, 0);
+        ctx.rotate(rayAngle);
+        const rayGrad = ctx.createLinearGradient(0, 0, 0, h * 1.2);
+        rayGrad.addColorStop(0, 'rgba(34, 211, 238, 0.22)');
+        rayGrad.addColorStop(0.5, 'rgba(6, 182, 212, 0.08)');
+        rayGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = rayGrad;
+        ctx.beginPath();
+        ctx.moveTo(-20, 0);
+        ctx.lineTo(-80, h * 1.2);
+        ctx.lineTo(80, h * 1.2);
+        ctx.lineTo(20, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+      ctx.restore();
+
+      // 2. Distant Sunken Temple Colonnade & Pediments (Parallax Factor: 0.08)
+      const ruinShift = (camX * 0.08) % 320;
+      ctx.save();
+      ctx.fillStyle = '#062638';
+      for (let i = -1; i < Math.ceil(w / 280) + 2; i++) {
+        const rx = i * 280 - ruinShift;
+        const ry = h - 220;
+
+        // Submerged Temple Pediment (Triangular Gable)
+        ctx.beginPath();
+        ctx.moveTo(rx - 20, ry);
+        ctx.lineTo(rx + 90, ry - 55);
+        ctx.lineTo(rx + 200, ry);
+        ctx.closePath();
+        ctx.fill();
+        // Architrave beam
+        ctx.fillRect(rx - 15, ry, 210, 14);
+
+        // Colonnade Pillars
+        for (let col = 0; col < 5; col++) {
+          ctx.fillRect(rx + col * 42, ry + 14, 18, 206);
+        }
+      }
+      ctx.restore();
+
+      // 3. Giant Swaying Deep-Sea Kelp Fronds (Parallax Factor: 0.18)
+      const kelpShift = (camX * 0.18) % 180;
+      ctx.save();
+      ctx.fillStyle = 'rgba(6, 78, 92, 0.55)';
+      for (let k = -1; k < Math.ceil(w / 120) + 2; k++) {
+        const kx = k * 120 - kelpShift;
+        const sway = Math.sin(now * 0.002 + k * 1.1) * 25;
+        ctx.beginPath();
+        ctx.moveTo(kx, h);
+        ctx.quadraticCurveTo(kx + sway * 0.6, h - 120, kx + sway, h - 260);
+        ctx.quadraticCurveTo(kx + sway * 0.8 + 15, h - 130, kx + 18, h);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+
+    } else if (themeId === 'forest') {
+      // ======================================================================
+      // MYSTIC GROVE: ANCIENT CANOPY & TWILIGHT SILHOUETTES
+      // ======================================================================
+
+      // 1. Distant Twilight Moon / Celestial Orb
+      ctx.save();
+      const moonX = w * 0.75 - (camX * 0.02) % (w * 1.5);
+      const moonGrad = ctx.createRadialGradient(moonX, 100, 10, moonX, 100, 70);
+      moonGrad.addColorStop(0, 'rgba(209, 250, 229, 0.8)');
+      moonGrad.addColorStop(0.4, 'rgba(52, 211, 153, 0.2)');
+      moonGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = moonGrad;
+      ctx.beginPath();
+      ctx.arc(moonX, 100, 70, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // 2. Far Canopy Trees (Parallax Factor: 0.06)
+      const fShift = (camX * 0.06) % 240;
+      ctx.save();
+      ctx.fillStyle = '#061d14';
+      for (let i = -1; i < Math.ceil(w / 160) + 2; i++) {
+        const tx = i * 160 - fShift;
+        ctx.beginPath();
+        ctx.arc(tx + 80, h + 30, 180, Math.PI, 0);
+        ctx.fill();
+      }
+      ctx.restore();
+
+      // 3. Midground Massive Ancient Banyan / Redwood Trunks (Parallax Factor: 0.15)
+      const mShift = (camX * 0.15) % 300;
+      ctx.save();
+      ctx.fillStyle = '#09291b';
+      for (let i = -1; i < Math.ceil(w / 220) + 2; i++) {
+        const bx = i * 220 - mShift;
+        ctx.fillRect(bx + 40, h - 280, 55, 280);
+        ctx.beginPath();
+        ctx.moveTo(bx + 40, h - 220);
+        ctx.quadraticCurveTo(bx - 30, h - 290, bx - 80, h - 270);
+        ctx.lineTo(bx - 80, h - 250);
+        ctx.quadraticCurveTo(bx - 20, h - 270, bx + 40, h - 200);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#0f3f2b';
+        ctx.fillRect(bx - 40, h - 270, 2.5, 60);
+        ctx.fillRect(bx - 20, h - 260, 2.5, 45);
+        ctx.fillStyle = '#09291b';
+      }
+      ctx.restore();
+
+    } else if (themeId === 'celestial') {
+      // ======================================================================
+      // CELESTIAL SANCTUARY: COSMIC NEBULA & SACRED ASTRAL STARS
+      // ======================================================================
+
+      // 1. Cosmic Nebula Clusters
+      ctx.save();
+      for (let n = 0; n < 3; n++) {
+        const nx = (w * (0.2 + n * 0.35) - camX * 0.03) % (w + 200);
+        const ny = 120 + n * 60;
+        const nebGrad = ctx.createRadialGradient(nx, ny, 20, nx, ny, 180);
+        nebGrad.addColorStop(0, n === 1 ? 'rgba(236, 72, 153, 0.18)' : 'rgba(168, 85, 247, 0.22)');
+        nebGrad.addColorStop(0.6, 'rgba(99, 102, 241, 0.08)');
+        nebGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = nebGrad;
+        ctx.beginPath();
+        ctx.arc(nx, ny, 180, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+
+      // 2. Sparkling Constellations (Parallax Factor: 0.05)
+      ctx.save();
+      const starShift = (camX * 0.05) % 300;
+      for (let i = -1; i < Math.ceil(w / 180) + 2; i++) {
+        const sx = i * 180 - starShift;
+        const sHash = ((i * 719393) ^ 0x45d9f3b) >>> 0;
+        const s1x = sx + 30;
+        const s1y = 60 + (sHash % 90);
+        const s2x = sx + 80;
+        const s2y = 40 + ((sHash >> 3) % 80);
+        const s3x = sx + 130;
+        const s3y = 75 + ((sHash >> 6) % 100);
+
+        ctx.strokeStyle = 'rgba(251, 191, 36, 0.25)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(s1x, s1y);
+        ctx.lineTo(s2x, s2y);
+        ctx.lineTo(s3x, s3y);
+        ctx.stroke();
+
+        [ [s1x, s1y], [s2x, s2y], [s3x, s3y] ].forEach(([px, py]) => {
+          ctx.fillStyle = '#fde047';
+          ctx.shadowColor = '#fbbf24';
+          ctx.shadowBlur = 8;
+          ctx.beginPath();
+          ctx.arc(px, py, 2, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      }
+      ctx.restore();
+
+      // 3. Distant Floating Sacred Obelisks (Parallax Factor: 0.12)
+      const obShift = (camX * 0.12) % 320;
+      ctx.save();
+      ctx.fillStyle = '#1e1147';
+      for (let i = -1; i < Math.ceil(w / 240) + 2; i++) {
+        const ox = i * 240 - obShift;
+        const oy = h - 230 - ((i * 37) % 60);
+        ctx.beginPath();
+        ctx.moveTo(ox, oy);
+        ctx.lineTo(ox + 80, oy);
+        ctx.lineTo(ox + 40, oy + 55);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillRect(ox + 36, oy - 70, 8, 70);
+      }
+      ctx.restore();
+    }
+  }
+
+  drawSolidTile(ctx, screenX, screenY, ts, c, r, now) {
+    const grid = this.maze.grid;
+    const rows = this.maze.rows;
+    const cols = this.maze.cols;
+    const themeId = this.theme.id;
+
+    // Neighbor adjacency checks
+    const topOpen = r === 0 || grid[r - 1][c] !== 1;
+    const bottomOpen = r === rows - 1 || grid[r + 1][c] !== 1;
+    const leftOpen = c === 0 || grid[r][c - 1] !== 1;
+    const rightOpen = c === cols - 1 || grid[r][c + 1] !== 1;
+
+    // Is this a vertical pillar / column structure? (both sides open or standalone column)
+    const isPillar = leftOpen && rightOpen;
+
+    // Deterministic pseudo-random hash for this tile
+    const hash = ((c * 374761393 + r * 668265263) ^ 0x5bf03635) >>> 0;
+
+    ctx.save();
+
+    if (themeId === 'glacial') {
+      // ======================================================================
+      // GLACIAL REALM: FROST CRUST & SHARP TRANSLUCENT ICICLES
+      // ======================================================================
+
+      // Main Block Ice Core
+      const iceGrad = ctx.createLinearGradient(screenX, screenY, screenX, screenY + ts);
+      iceGrad.addColorStop(0, '#0c2e47');
+      iceGrad.addColorStop(1, '#071f33');
+      ctx.fillStyle = iceGrad;
+      ctx.fillRect(screenX, screenY, ts, ts);
+
+      // Crystalline internal fracture cracks
+      ctx.strokeStyle = 'rgba(125, 211, 252, 0.28)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      if (hash % 3 === 0) {
+        ctx.moveTo(screenX + 5, screenY + 4);
+        ctx.lineTo(screenX + ts * 0.55, screenY + ts * 0.45);
+        ctx.lineTo(screenX + ts - 6, screenY + ts * 0.75);
+      } else if (hash % 3 === 1) {
+        ctx.moveTo(screenX + ts - 6, screenY + 6);
+        ctx.lineTo(screenX + ts * 0.45, screenY + ts * 0.55);
+        ctx.lineTo(screenX + 6, screenY + ts - 6);
+      }
+      ctx.stroke();
+
+      // Glowing ice border
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(screenX + 0.5, screenY + 0.5, ts - 1, ts - 1);
+
+      // Top Edge: Snow Crust / Powder Snow Cap
+      if (topOpen) {
+        ctx.fillStyle = '#f0f9ff';
+        ctx.beginPath();
+        ctx.moveTo(screenX - 1, screenY);
+        // Soft undulating snow mounds
+        ctx.quadraticCurveTo(screenX + ts * 0.25, screenY + 4, screenX + ts * 0.5, screenY + 2);
+        ctx.quadraticCurveTo(screenX + ts * 0.75, screenY + 5, screenX + ts + 1, screenY);
+        ctx.lineTo(screenX + ts + 1, screenY - 3);
+        ctx.quadraticCurveTo(screenX + ts * 0.5, screenY - 5, screenX - 1, screenY - 3);
+        ctx.closePath();
+        ctx.fill();
+
+        // Specular snow highlight
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(screenX + 4, screenY - 2, ts - 8, 1.5);
+      }
+
+      // Bottom Edge: SHARP TRANSLUCENT ICICLES
+      if (bottomOpen) {
+        const numIcicles = 3;
+        const icicleSpacing = ts / numIcicles;
+
+        for (let i = 0; i < numIcicles; i++) {
+          const iHash = ((hash + i * 7919) ^ 0x45d9f3b) >>> 0;
+          const iLen = 8 + (iHash % 12); // Length between 8px and 19px
+          const iBaseX = screenX + i * icicleSpacing + 3;
+          const iWidth = icicleSpacing - 4;
+          const tipX = iBaseX + iWidth * 0.5 + ((iHash % 5) - 2);
+          const tipY = screenY + ts + iLen;
+
+          // Translucent sharp icicle body
+          const icicleGrad = ctx.createLinearGradient(iBaseX, screenY + ts, tipX, tipY);
+          icicleGrad.addColorStop(0, 'rgba(224, 242, 254, 0.95)');
+          icicleGrad.addColorStop(0.7, 'rgba(56, 189, 248, 0.65)');
+          icicleGrad.addColorStop(1, 'rgba(186, 230, 253, 0.35)');
+
+          ctx.fillStyle = icicleGrad;
+          ctx.beginPath();
+          ctx.moveTo(iBaseX, screenY + ts);
+          ctx.lineTo(tipX, tipY);
+          ctx.lineTo(iBaseX + iWidth, screenY + ts);
+          ctx.closePath();
+          ctx.fill();
+
+          // Central razor-sharp specular spine highlight
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(iBaseX + iWidth * 0.5, screenY + ts);
+          ctx.lineTo(tipX, tipY - 2);
+          ctx.stroke();
+
+          // Glistening tip water drip drop
+          if (iHash % 4 === 0) {
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(tipX, tipY + 1, 1.2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+
+    } else if (themeId === 'atlantis') {
+      // ======================================================================
+      // SUNKEN TEMPLE: FLUTED MARBLE PILLARS, IONIC CAPITALS & ATTIC BASES
+      // ======================================================================
+
+      if (isPillar) {
+        // --- COMPLEX GRECO-ROMAN PILLAR DESIGN ---
+        // Pillar Shaft Base Marble
+        const colGrad = ctx.createLinearGradient(screenX, screenY, screenX + ts, screenY);
+        colGrad.addColorStop(0, '#062d3d');
+        colGrad.addColorStop(0.5, '#0e465c');
+        colGrad.addColorStop(1, '#062d3d');
+        ctx.fillStyle = colGrad;
+        ctx.fillRect(screenX, screenY, ts, ts);
+
+        // Fluted Vertical Grooves (4 flutes giving deep cylindrical relief)
+        const flutes = 4;
+        const fluteW = ts / flutes;
+        for (let f = 0; f < flutes; f++) {
+          const fx = screenX + f * fluteW;
+          // Shadow channel
+          ctx.fillStyle = 'rgba(2, 24, 36, 0.6)';
+          ctx.fillRect(fx + 1, screenY, fluteW * 0.45, ts);
+          // Highlight ridge
+          ctx.fillStyle = 'rgba(103, 232, 249, 0.35)';
+          ctx.fillRect(fx + fluteW * 0.45, screenY, fluteW * 0.45, ts);
+        }
+
+        // Exposed Left/Right Pillar Edge Highlights
+        ctx.strokeStyle = '#06b6d4';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(screenX + 0.5, screenY);
+        ctx.lineTo(screenX + 0.5, screenY + ts);
+        ctx.moveTo(screenX + ts - 0.5, screenY);
+        ctx.lineTo(screenX + ts - 0.5, screenY + ts);
+        ctx.stroke();
+
+        // TOP OF PILLAR: ORNATE IONIC CAPITAL
+        if (topOpen) {
+          // Abacus slab extending slightly outward
+          ctx.fillStyle = '#0e4a60';
+          ctx.fillRect(screenX - 3, screenY - 5, ts + 6, 5);
+          ctx.strokeStyle = '#67e8f9';
+          ctx.lineWidth = 1.2;
+          ctx.strokeRect(screenX - 3, screenY - 5, ts + 6, 5);
+
+          // Ionic Volute Scroll Left
+          ctx.fillStyle = '#67e8f9';
+          ctx.beginPath();
+          ctx.arc(screenX, screenY - 1, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+          // Ionic Volute Scroll Right
+          ctx.beginPath();
+          ctx.arc(screenX + ts, screenY - 1, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Central decorative carved rosette
+          ctx.fillStyle = '#a5f3fc';
+          ctx.fillRect(screenX + ts * 0.5 - 2, screenY - 3, 4, 3);
+        }
+
+        // BOTTOM OF PILLAR: STEPPED ATTIC PLINTH BASE
+        if (bottomOpen) {
+          // Torus molding ring
+          ctx.fillStyle = '#0a3a4d';
+          ctx.fillRect(screenX - 2, screenY + ts, ts + 4, 4);
+          ctx.strokeStyle = '#22d3ee';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(screenX - 2, screenY + ts, ts + 4, 4);
+
+          // Stepped square plinth base
+          ctx.fillStyle = '#062635';
+          ctx.fillRect(screenX - 4, screenY + ts + 4, ts + 8, 4);
+          ctx.strokeStyle = '#06b6d4';
+          ctx.strokeRect(screenX - 4, screenY + ts + 4, ts + 8, 4);
+        }
+
+      } else {
+        // --- SUNKEN TEMPLE ASHLAR MASONRY WALL ---
+        ctx.fillStyle = '#0c384a';
+        ctx.fillRect(screenX, screenY, ts, ts);
+
+        // Beveled Stone Border
+        ctx.strokeStyle = '#06b6d4';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(screenX + 0.5, screenY + 0.5, ts - 1, ts - 1);
+
+        // Ancient Greek Key / Labyrinth Meander Carving
+        if (hash % 2 === 0) {
+          ctx.strokeStyle = 'rgba(103, 232, 249, 0.4)';
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.strokeRect(screenX + 6, screenY + 6, ts - 12, ts - 12);
+          ctx.moveTo(screenX + 10, screenY + 10);
+          ctx.lineTo(screenX + ts - 10, screenY + 10);
+          ctx.lineTo(screenX + ts - 10, screenY + ts - 10);
+          ctx.stroke();
+        } else {
+          // Glowing Sunken Cyan Rune
+          ctx.fillStyle = 'rgba(6, 182, 212, 0.35)';
+          ctx.beginPath();
+          ctx.arc(screenX + ts * 0.5, screenY + ts * 0.5, 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Top edge patina moss / water caustics
+        if (topOpen) {
+          ctx.fillStyle = '#22d3ee';
+          ctx.fillRect(screenX + 2, screenY, ts - 4, 2.5);
+        }
+      }
+
+    } else if (themeId === 'cybercity') {
+      // ======================================================================
+      // NEO-CYBER METROPOLIS: CARBON PLATES, CIRCUIT TRACES & CAUTION CHEVRONS
+      // ======================================================================
+
+      // Dark Carbon Composite Plate
+      ctx.fillStyle = '#17112c';
+      ctx.fillRect(screenX, screenY, ts, ts);
+
+      // Neon Magenta Outer Cyber Border
+      ctx.strokeStyle = '#ec4899';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(screenX + 0.5, screenY + 0.5, ts - 1, ts - 1);
+
+      // Printed Circuit Traces
+      ctx.strokeStyle = 'rgba(6, 182, 212, 0.65)';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      if (hash % 2 === 0) {
+        ctx.moveTo(screenX + 4, screenY + ts * 0.5);
+        ctx.lineTo(screenX + ts * 0.5, screenY + ts * 0.5);
+        ctx.lineTo(screenX + ts * 0.75, screenY + 5);
+      } else {
+        ctx.moveTo(screenX + ts * 0.5, screenY + ts - 5);
+        ctx.lineTo(screenX + ts * 0.5, screenY + ts * 0.35);
+        ctx.lineTo(screenX + ts - 5, screenY + ts * 0.35);
+      }
+      ctx.stroke();
+
+      // Microchip Logic Node Pad
+      ctx.fillStyle = '#06b6d4';
+      ctx.fillRect(screenX + ts * 0.5 - 2, screenY + ts * 0.5 - 2, 4, 4);
+
+      // Hexagonal Bolt Rivets in Corners
+      ctx.fillStyle = '#64748b';
+      [ [4, 4], [ts - 5, 4], [4, ts - 5], [ts - 5, ts - 5] ].forEach(([bx, by]) => {
+        ctx.fillRect(screenX + bx, screenY + by, 2, 2);
+      });
+
+      // Top Edge: Industrial Caution Chevron Stripes
+      if (topOpen) {
+        ctx.fillStyle = '#f59e0b'; // Amber Hazard
+        ctx.fillRect(screenX, screenY, ts, 3.5);
+        // Diagonal black hash stripes
+        ctx.fillStyle = '#0f172a';
+        for (let s = 0; s < ts; s += 8) {
+          ctx.beginPath();
+          ctx.moveTo(screenX + s, screenY);
+          ctx.lineTo(screenX + s + 4, screenY);
+          ctx.lineTo(screenX + s + 2, screenY + 3.5);
+          ctx.lineTo(screenX + s - 2, screenY + 3.5);
+          ctx.closePath();
+          ctx.fill();
+        }
+      }
+
+      // Bottom Edge: Dangling Fiber Optic / Cyber Cables
+      if (bottomOpen) {
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(screenX + 6, screenY + ts);
+        ctx.quadraticCurveTo(screenX + ts * 0.5, screenY + ts + 8, screenX + ts - 6, screenY + ts);
+        ctx.stroke();
+
+        // Blinking LED status indicator on cable
+        const ledBlink = Math.sin(now * 0.006 + hash) > 0;
+        ctx.fillStyle = ledBlink ? '#ec4899' : '#06b6d4';
+        ctx.fillRect(screenX + ts * 0.5 - 1.5, screenY + ts + 6, 3, 3);
+      }
+
+    } else if (themeId === 'forest') {
+      // ======================================================================
+      // MYSTIC GROVE: MOSSY STONEWORK, LUSH GRASS & ROOT TENDRILS
+      // ======================================================================
+
+      // Weathered Ancient Stone
+      ctx.fillStyle = '#0a2f1e';
+      ctx.fillRect(screenX, screenY, ts, ts);
+
+      // Emerald Moss Border
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(screenX + 0.5, screenY + 0.5, ts - 1, ts - 1);
+
+      // Embedded Moss Texture / Mortar Lines
+      ctx.fillStyle = '#041c11';
+      ctx.fillRect(screenX + 4, screenY + ts * 0.5, ts - 8, 1);
+      ctx.fillRect(screenX + ts * 0.5, screenY + 3, 1, ts * 0.5 - 3);
+
+      // Top Edge: Lush Grass & Turf
+      if (topOpen) {
+        ctx.fillStyle = '#10b981';
+        ctx.beginPath();
+        ctx.moveTo(screenX, screenY + 3);
+        // Grass tufts
+        for (let g = 0; g <= ts; g += 6) {
+          ctx.lineTo(screenX + g + 3, screenY - 3);
+          ctx.lineTo(screenX + g + 6, screenY + 3);
+        }
+        ctx.closePath();
+        ctx.fill();
+
+        // Tiny Flower Sprouts
+        if (hash % 3 === 0) {
+          ctx.fillStyle = '#fef08a';
+          ctx.beginPath();
+          ctx.arc(screenX + ts * 0.5, screenY - 2, 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Bottom Edge: Hanging Banyan Vines & Roots
+      if (bottomOpen) {
+        ctx.strokeStyle = '#064e3b';
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.moveTo(screenX + 8, screenY + ts);
+        ctx.quadraticCurveTo(screenX + 5, screenY + ts + 8, screenX + 10, screenY + ts + 13);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(screenX + ts - 8, screenY + ts);
+        ctx.quadraticCurveTo(screenX + ts - 6, screenY + ts + 6, screenX + ts - 11, screenY + ts + 10);
+        ctx.stroke();
+      }
+
+    } else if (themeId === 'celestial') {
+      // ======================================================================
+      // CELESTIAL SANCTUARY: OBSIDIAN MARBLE & RADIANT GOLD INLAYS
+      // ======================================================================
+
+      // Polished Obsidian Marble
+      ctx.fillStyle = '#221552';
+      ctx.fillRect(screenX, screenY, ts, ts);
+
+      // Radiant Gold Inlaid Border
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(screenX + 0.5, screenY + 0.5, ts - 1, ts - 1);
+
+      // Astral Star & Sacred Compass Inlay
+      ctx.strokeStyle = 'rgba(253, 224, 71, 0.45)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(screenX + ts * 0.5, screenY + 6);
+      ctx.lineTo(screenX + ts * 0.5, screenY + ts - 6);
+      ctx.moveTo(screenX + 6, screenY + ts * 0.5);
+      ctx.lineTo(screenX + ts - 6, screenY + ts * 0.5);
+      ctx.stroke();
+
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath();
+      ctx.arc(screenX + ts * 0.5, screenY + ts * 0.5, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Top Edge: Divine Floating Golden Crest
+      if (topOpen) {
+        ctx.fillStyle = '#fde047';
+        ctx.fillRect(screenX + 3, screenY - 2, ts - 6, 2.5);
+        ctx.beginPath();
+        ctx.arc(screenX + ts * 0.5, screenY - 2, 3, Math.PI, 0);
+        ctx.fill();
+      }
+
+      // Bottom Edge: Crystalline Gold Prism Stalactites
+      if (bottomOpen) {
+        ctx.fillStyle = 'rgba(251, 191, 36, 0.7)';
+        ctx.beginPath();
+        ctx.moveTo(screenX + ts * 0.5 - 3, screenY + ts);
+        ctx.lineTo(screenX + ts * 0.5, screenY + ts + 9);
+        ctx.lineTo(screenX + ts * 0.5 + 3, screenY + ts);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+
+    ctx.restore();
+  }
+
+  drawHazardTile(ctx, screenX, screenY, ts, c, r, now) {
+    const themeId = this.theme.id;
+    ctx.save();
+
+    if (themeId === 'glacial') {
+      // Razor-sharp Translucent Ice Stalagmites
+      ctx.fillStyle = '#e0f2fe';
+      ctx.beginPath();
+      ctx.moveTo(screenX + 3, screenY + ts);
+      ctx.lineTo(screenX + ts * 0.35, screenY + 4);
+      ctx.lineTo(screenX + ts * 0.65, screenY + ts);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath();
+      ctx.moveTo(screenX + ts * 0.45, screenY + ts);
+      ctx.lineTo(screenX + ts * 0.75, screenY + 7);
+      ctx.lineTo(screenX + ts - 3, screenY + ts);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+    } else if (themeId === 'atlantis') {
+      // Bronze Sunken Trident / Urchin Spines
+      ctx.fillStyle = '#0e7490';
+      ctx.fillRect(screenX + ts * 0.5 - 2, screenY + 8, 4, ts - 8);
+      ctx.fillStyle = '#22d3ee';
+      ctx.beginPath();
+      ctx.moveTo(screenX + ts * 0.5, screenY + 4);
+      ctx.lineTo(screenX + ts * 0.5 - 6, screenY + 14);
+      ctx.lineTo(screenX + ts * 0.5 + 6, screenY + 14);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = '#67e8f9';
+      ctx.stroke();
+
+    } else if (themeId === 'cybercity') {
+      // High-Voltage Plasma Laser Arc Trap
+      ctx.fillStyle = '#1e1b4b';
+      ctx.fillRect(screenX + 2, screenY + 8, 6, ts - 8);
+      ctx.fillRect(screenX + ts - 8, screenY + 8, 6, ts - 8);
+
+      ctx.fillStyle = '#ec4899';
+      ctx.fillRect(screenX + 2, screenY + 6, 6, 3);
+      ctx.fillRect(screenX + ts - 8, screenY + 6, 6, 3);
+
+      // Crackling violent plasma lightning arc
+      ctx.strokeStyle = '#38bdf8';
+      ctx.shadowColor = '#06b6d4';
+      ctx.shadowBlur = 10;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(screenX + 6, screenY + 7);
+      const midJitter = (Math.random() - 0.5) * 8;
+      ctx.lineTo(screenX + ts * 0.5, screenY + 7 + midJitter);
+      ctx.lineTo(screenX + ts - 6, screenY + 7);
+      ctx.stroke();
+
+    } else if (themeId === 'celestial') {
+      // Solar Sacred Lances
+      ctx.fillStyle = '#fde047';
+      ctx.shadowColor = '#fbbf24';
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.moveTo(screenX + 4, screenY + ts);
+      ctx.lineTo(screenX + ts * 0.5, screenY + 3);
+      ctx.lineTo(screenX + ts - 4, screenY + ts);
+      ctx.closePath();
+      ctx.fill();
+
+    } else {
+      // Forest: Thorny Briar Spikes
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.moveTo(screenX + 4, screenY + ts);
+      ctx.lineTo(screenX + ts * 0.5, screenY + 6);
+      ctx.lineTo(screenX + ts - 4, screenY + ts);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = '#fca5a5';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  drawJumpPadTile(ctx, screenX, screenY, ts, c, r, now) {
+    const themeId = this.theme.id;
+    ctx.save();
+
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(screenX + 2, screenY + ts - 10, ts - 4, 10);
+
+    if (themeId === 'cybercity') {
+      // Maglev Repulsor Pad with animated glowing chevron arrows
+      ctx.strokeStyle = '#ec4899';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(screenX + 2, screenY + ts - 10, ts - 4, 10);
+
+      const pulse = Math.sin(now * 0.008) * 0.3 + 0.7;
+      ctx.fillStyle = `rgba(6, 182, 212, ${pulse})`;
+      ctx.beginPath();
+      ctx.moveTo(screenX + ts * 0.5, screenY + ts - 16);
+      ctx.lineTo(screenX + ts * 0.25, screenY + ts - 10);
+      ctx.lineTo(screenX + ts * 0.75, screenY + ts - 10);
+      ctx.closePath();
+      ctx.fill();
+
+    } else if (themeId === 'glacial') {
+      // Arctic Frost Geyser Vent
+      ctx.fillStyle = '#0284c7';
+      ctx.fillRect(screenX + 4, screenY + ts - 10, ts - 8, 10);
+      ctx.fillStyle = '#bae6fd';
+      ctx.beginPath();
+      ctx.arc(screenX + ts * 0.5, screenY + ts - 10, 6, Math.PI, 0);
+      ctx.fill();
+
+    } else if (themeId === 'atlantis') {
+      // Hydro-kinetic Vortex Spring
+      ctx.fillStyle = '#0891b2';
+      ctx.fillRect(screenX + 4, screenY + ts - 10, ts - 8, 10);
+      ctx.strokeStyle = '#67e8f9';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(screenX + ts * 0.5, screenY + ts - 8, 7, 0, Math.PI);
+      ctx.stroke();
+
+    } else {
+      // Classic Kinetic Jump Spring
+      ctx.fillStyle = '#0284c7';
+      ctx.fillRect(screenX + 4, screenY + ts - 8, ts - 8, 8);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(screenX + 8, screenY + ts - 11, ts - 16, 3);
+    }
+
+    ctx.restore();
+  }
+
   render() {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.viewportW, this.viewportH);
     const offset = this.getOffset();
+    const now = performance.now();
 
-    // 1. Parallax Gradient Background
-    const bgGrad = ctx.createLinearGradient(0, 0, 0, this.viewportH);
-    bgGrad.addColorStop(0, this.theme.bgGradTop);
-    bgGrad.addColorStop(1, this.theme.bgGradBottom);
-    ctx.fillStyle = bgGrad;
-    ctx.fillRect(0, 0, this.viewportW, this.viewportH);
-
-    // Parallax Ambient Canopy / Mountain Hills
-    ctx.save();
-    ctx.fillStyle = this.theme.tileFill;
-    ctx.globalAlpha = 0.2;
-    for (let i = 0; i < 8; i++) {
-      const hillX = ((i * 300) - (this.camera.x * 0.2) % 300);
-      ctx.beginPath();
-      ctx.arc(hillX, this.viewportH + 60, 220, Math.PI, 0);
-      ctx.fill();
-    }
-    ctx.restore();
+    // 1. High-Fidelity Parallax Realm Background (Cityscape, Aurora, Underwater, Canopy, Nebula)
+    this.drawBackground(ctx, offset, now);
 
     // Outer Maze Floating Frame & Glow (anchors the labyrinth in center screen)
     ctx.save();
@@ -1608,7 +2658,7 @@ class MazeGame {
       ctx.restore();
     });
 
-    // 3. Render Maze Grid & Tiles
+    // 3. Render Sophisticated Maze Grid & Realm Tiles
     const ts = this.maze.tileSize;
     const startCol = Math.max(0, Math.floor(this.camera.x / ts));
     const endCol = Math.min(this.maze.cols - 1, Math.ceil((this.camera.x + this.viewportW) / ts));
@@ -1622,49 +2672,16 @@ class MazeGame {
         const screenY = r * ts - this.camera.y + offset.y;
 
         if (tile === 1) {
-          // Solid Block
-          ctx.save();
-          ctx.fillStyle = this.theme.tileFill;
-          ctx.fillRect(screenX, screenY, ts, ts);
-
-          // Glowing edge borders
-          ctx.strokeStyle = this.theme.tileBorder;
-          ctx.lineWidth = 1.5;
-          ctx.strokeRect(screenX + 0.5, screenY + 0.5, ts - 1, ts - 1);
-
-          // Inner bevel highlight
-          ctx.fillStyle = this.theme.tileAccent;
-          ctx.globalAlpha = 0.15;
-          ctx.fillRect(screenX + 2, screenY + 2, ts - 4, 3);
-          ctx.restore();
+          this.drawSolidTile(ctx, screenX, screenY, ts, c, r, now);
         } else if (tile === 2) {
-          // Hazard Spike
-          ctx.save();
-          ctx.fillStyle = '#ef4444';
-          ctx.beginPath();
-          ctx.moveTo(screenX + 4, screenY + ts);
-          ctx.lineTo(screenX + ts / 2, screenY + 6);
-          ctx.lineTo(screenX + ts - 4, screenY + ts);
-          ctx.closePath();
-          ctx.fill();
-          ctx.strokeStyle = '#fca5a5';
-          ctx.lineWidth = 1.5;
-          ctx.stroke();
-          ctx.restore();
+          this.drawHazardTile(ctx, screenX, screenY, ts, c, r, now);
         } else if (tile === 3) {
-          // Jump Pad
-          ctx.save();
-          ctx.fillStyle = '#0284c7';
-          ctx.fillRect(screenX + 4, screenY + ts - 8, ts - 8, 8);
-          ctx.fillStyle = '#38bdf8';
-          ctx.fillRect(screenX + 8, screenY + ts - 11, ts - 16, 3);
-          ctx.restore();
+          this.drawJumpPadTile(ctx, screenX, screenY, ts, c, r, now);
         }
       }
     }
 
     // 4. Render Keys / Relic Orbs
-    const now = performance.now();
     this.maze.keys.forEach(k => {
       if (!k.collected) {
         const kx = k.x - this.camera.x + offset.x;
@@ -1725,7 +2742,7 @@ class MazeGame {
     if (!allKeys) {
       // Locked Icon
       ctx.fillStyle = '#f87171';
-      ctx.font = '12px JetBrains Mono';
+      ctx.font = '12px "JetBrains Mono", monospace';
       ctx.textAlign = 'center';
       ctx.fillText('🔒', portalX, portalY + 4);
     }
