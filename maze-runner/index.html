@@ -46,6 +46,26 @@
       </div>
     </div>
 
+    <!-- NOW PLAYING MUSIC WIDGET (100 YouTube Songs) -->
+    <div class="hud-music-card" id="hudMusicCard" title="Now Playing YouTube Music">
+      <div class="equalizer-bars" id="musicEqualizer">
+        <span class="eq-bar bar-1"></span>
+        <span class="eq-bar bar-2"></span>
+        <span class="eq-bar bar-3"></span>
+      </div>
+      <div class="music-info-text">
+        <div class="music-track-title" id="musicTrackTitle">Song 1: Mist</div>
+        <div class="music-track-author" id="musicTrackAuthor">EsDeeKid</div>
+      </div>
+      <button class="music-ctrl-btn" id="btnMusicToggle" title="Play / Pause Track">
+        <svg id="musicPlayIcon" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+        <svg id="musicPauseIcon" class="hidden" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+      </button>
+      <a class="music-ctrl-btn music-link" id="btnMusicYtLink" href="https://music.youtube.com/playlist?list=PLT99ah7whMd4" target="_blank" rel="noopener" title="Open Song on YouTube Music">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+      </a>
+    </div>
+
     <div class="hud-right">
       <button class="hud-btn" id="btnMinimap" title="Toggle Minimap (M)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -132,6 +152,14 @@
         </div>
       </div>
 
+      <div class="victory-track-pill" id="victoryTrackPill">
+        <span class="v-track-icon">🎵</span>
+        <div class="v-track-info">
+          <span class="v-track-label">PUZZLE SONG CONQUERED:</span>
+          <span class="v-track-name" id="vTrackName">Song 1: Mist — EsDeeKid</span>
+        </div>
+      </div>
+
       <div class="modal-actions">
         <button class="modal-btn secondary" id="btnReplayLevel">RETRY</button>
         <button class="modal-btn primary" id="btnNextLevel">NEXT MAZE ➔</button>
@@ -167,6 +195,20 @@
     <span>ARROW KEYS or WASD to Run & Jump • UP to Double Jump • WALL SLIDE to Climb • R to Reset</span>
   </div>
 
+  <!-- Song Notification Toast -->
+  <div class="song-toast hidden" id="songToast">
+    <span class="toast-note">🎵</span>
+    <div class="toast-text">
+      <div class="toast-title" id="toastTitle">Now Playing Song 1</div>
+      <div class="toast-sub" id="toastSub">Mist — EsDeeKid</div>
+    </div>
+  </div>
+
+  <!-- YouTube Hidden Audio Stage (1px, off-screen, auto-playing) -->
+  <div id="ytPlayerContainer" class="yt-hidden-player"></div>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="songs.js"></script>
   <script src="game.js"></script>
 </body>
 </html>

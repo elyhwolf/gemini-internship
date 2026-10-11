@@ -715,6 +715,225 @@ class Player {
 }
 
 // ==========================================================================
+// YOUTUBE MUSIC CONTROLLER (100 UNIQUE SONGS FOR 100 PUZZLES)
+// ==========================================================================
+class MazeMusicPlayer {
+  constructor(game) {
+    this.game = game;
+    this.songs = window.MAZE_SONGS || [];
+    this.currentLevel = 1;
+    this.isPlaying = false;
+    this.isMuted = false;
+    this.volume = 80;
+    this.ytPlayer = null;
+    this.ytReady = false;
+    this.hasUserInteracted = false;
+    this.toastTimeout = null;
+
+    // DOM Elements
+    this.hudCard = document.getElementById('hudMusicCard');
+    this.titleEl = document.getElementById('musicTrackTitle');
+    this.authorEl = document.getElementById('musicTrackAuthor');
+    this.equalizer = document.getElementById('musicEqualizer');
+    this.btnToggle = document.getElementById('btnMusicToggle');
+    this.playIcon = document.getElementById('musicPlayIcon');
+    this.pauseIcon = document.getElementById('musicPauseIcon');
+    this.ytLink = document.getElementById('btnMusicYtLink');
+    this.toast = document.getElementById('songToast');
+    this.toastTitle = document.getElementById('toastTitle');
+    this.toastSub = document.getElementById('toastSub');
+
+    this.init();
+  }
+
+  init() {
+    // User interaction unlocker for browser autoplay policy
+    const userUnlock = () => {
+      if (!this.hasUserInteracted) {
+        this.hasUserInteracted = true;
+        this.playLevel(this.currentLevel, true);
+      }
+    };
+    window.addEventListener('keydown', userUnlock, { passive: true });
+    window.addEventListener('click', userUnlock, { passive: true });
+    window.addEventListener('touchstart', userUnlock, { passive: true });
+
+    // Play/Pause button
+    if (this.btnToggle) {
+      this.btnToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.hasUserInteracted = true;
+        this.togglePlay();
+      });
+    }
+
+    this.initYouTube();
+  }
+
+  initYouTube() {
+    const setupPlayer = () => {
+      if (!window.YT || !window.YT.Player) return;
+      if (this.ytPlayer) return;
+      try {
+        const firstSong = this.getSong(this.currentLevel);
+        this.ytPlayer = new YT.Player('ytPlayerContainer', {
+          height: '10',
+          width: '10',
+          videoId: firstSong.videoId,
+          playerVars: {
+            autoplay: 1,
+            controls: 0,
+            disablekb: 1,
+            fs: 0,
+            loop: 1,
+            playlist: firstSong.videoId,
+            modestbranding: 1,
+            playsinline: 1,
+            rel: 0
+          },
+          events: {
+            onReady: (event) => {
+              this.ytReady = true;
+              event.target.setVolume(this.volume);
+              if (this.hasUserInteracted) {
+                this.playLevel(this.currentLevel);
+              }
+            },
+            onStateChange: (event) => {
+              if (event.data === YT.PlayerState.PLAYING) {
+                this.isPlaying = true;
+                this.updateUI();
+              } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+                if (event.data === YT.PlayerState.ENDED) {
+                  // Loop current puzzle song
+                  event.target.playVideo();
+                } else {
+                  this.isPlaying = false;
+                  this.updateUI();
+                }
+              }
+            },
+            onError: (err) => {
+              console.warn('YouTube IFrame API warning:', err);
+              const song = this.getSong(this.currentLevel);
+              this.playFallbackEmbed(song.videoId);
+            }
+          }
+        });
+      } catch (err) {
+        console.warn('Could not initialize YT.Player:', err);
+      }
+    };
+
+    if (window.YT && window.YT.Player) {
+      setupPlayer();
+    } else {
+      window.onYouTubeIframeAPIReady = setupPlayer;
+    }
+  }
+
+  getSong(level) {
+    if (!this.songs || this.songs.length === 0) {
+      return {
+        level: level,
+        videoId: 'kK0Vd3daL_o',
+        title: `Maze ${level} Song`,
+        author: 'ElyWolf Music'
+      };
+    }
+    const idx = Math.max(0, Math.min(this.songs.length - 1, level - 1));
+    return this.songs[idx];
+  }
+
+  playLevel(level, force = false) {
+    const isNewLevel = (this.currentLevel !== level) || force;
+    this.currentLevel = level;
+    const song = this.getSong(level);
+
+    // Update HUD metadata
+    if (this.titleEl) this.titleEl.textContent = `Song ${level}: ${song.title}`;
+    if (this.authorEl) this.authorEl.textContent = song.author;
+    if (this.ytLink) this.ytLink.href = `https://music.youtube.com/watch?v=${song.videoId}`;
+
+    // Pop toast notification on level entry
+    if (isNewLevel) {
+      this.showToast(`MAZE ${level} SONG`, `${song.title} — ${song.author}`);
+    }
+
+    if (!this.hasUserInteracted) return;
+
+    if (this.ytReady && this.ytPlayer && typeof this.ytPlayer.loadVideoById === 'function') {
+      try {
+        this.ytPlayer.loadVideoById({
+          videoId: song.videoId,
+          suggestedQuality: 'small'
+        });
+        this.ytPlayer.playVideo();
+        this.isPlaying = true;
+      } catch (e) {
+        this.playFallbackEmbed(song.videoId);
+      }
+    } else {
+      this.playFallbackEmbed(song.videoId);
+    }
+
+    this.updateUI();
+  }
+
+  playFallbackEmbed(videoId) {
+    let iframe = document.getElementById('ytAudioFallbackIframe');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'ytAudioFallbackIframe';
+      iframe.className = 'yt-hidden-player';
+      iframe.setAttribute('allow', 'autoplay; encrypted-media');
+      iframe.setAttribute('tabindex', '-1');
+      document.body.appendChild(iframe);
+    }
+    iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1&loop=1&playlist=${videoId}`;
+    this.isPlaying = true;
+    this.updateUI();
+  }
+
+  togglePlay() {
+    if (this.isPlaying) {
+      if (this.ytReady && this.ytPlayer && typeof this.ytPlayer.pauseVideo === 'function') {
+        this.ytPlayer.pauseVideo();
+      }
+      const fallback = document.getElementById('ytAudioFallbackIframe');
+      if (fallback) fallback.src = 'about:blank';
+      this.isPlaying = false;
+    } else {
+      this.playLevel(this.currentLevel, true);
+    }
+    this.updateUI();
+  }
+
+  updateUI() {
+    if (this.hudCard) {
+      this.hudCard.classList.toggle('music-playing', this.isPlaying);
+    }
+    if (this.playIcon && this.pauseIcon) {
+      this.playIcon.classList.toggle('hidden', this.isPlaying);
+      this.pauseIcon.classList.toggle('hidden', !this.isPlaying);
+    }
+  }
+
+  showToast(title, sub) {
+    if (!this.toast) return;
+    if (this.toastTimeout) clearTimeout(this.toastTimeout);
+
+    if (this.toastTitle) this.toastTitle.textContent = title;
+    if (this.toastSub) this.toastSub.textContent = sub;
+    this.toast.classList.remove('hidden');
+
+    this.toastTimeout = setTimeout(() => {
+      this.toast.classList.add('hidden');
+    }, 4200);
+  }
+}
+
+// ==========================================================================
 // MAIN GAME CONTROLLER
 // ==========================================================================
 class MazeGame {
@@ -723,6 +942,9 @@ class MazeGame {
     this.ctx = this.canvas.getContext('2d');
     this.minimapCanvas = document.getElementById('minimapCanvas');
     this.minimapCtx = this.minimapCanvas ? this.minimapCanvas.getContext('2d') : null;
+
+    // YouTube Music Player
+    this.music = new MazeMusicPlayer(this);
 
     // Progress State
     this.currentLevel = parseInt(localStorage.getItem('elywolf_maze_level') || '1', 10);
@@ -781,6 +1003,7 @@ class MazeGame {
   }
 
   loadLevel(lvl) {
+    const prevLevel = this.currentLevel;
     this.currentLevel = Math.max(1, Math.min(100, lvl));
     localStorage.setItem('elywolf_maze_level', this.currentLevel);
     this.theme = getThemeForLevel(this.currentLevel);
@@ -795,6 +1018,11 @@ class MazeGame {
 
     this.updateHUD();
     this.renderMinimap();
+
+    // Play corresponding song for this maze puzzle
+    if (this.music) {
+      this.music.playLevel(this.currentLevel);
+    }
 
     if (this.levelClearModal) this.levelClearModal.classList.add('hidden');
     if (this.levelSelectModal) this.levelSelectModal.classList.add('hidden');
@@ -1012,11 +1240,14 @@ class MazeGame {
     for (let l = startLvl; l <= endLvl; l++) {
       const isLocked = l > this.maxUnlockedLevel;
       const isCurrent = l === this.currentLevel;
+      const song = this.music ? this.music.getSong(l) : { title: `Song ${l}`, author: '' };
 
       const btn = document.createElement('button');
       btn.className = `lvl-btn ${isLocked ? 'locked' : ''} ${isCurrent ? 'active-current' : ''}`;
+      btn.title = `Maze ${l}: ${song.title} by ${song.author}`;
       btn.innerHTML = `
         <span class="lvl-num">${l}</span>
+        <span class="lvl-song-name">🎵 ${song.title}</span>
         <span class="lvl-stars">${isLocked ? '🔒' : '★★★'}</span>
       `;
 
@@ -1164,6 +1395,14 @@ class MazeGame {
       if (clearTimeVal) clearTimeVal.textContent = this.hudTimerVal ? this.hudTimerVal.textContent : '00:00.0';
       if (clearDeathsVal) clearDeathsVal.textContent = this.deaths;
       if (clearUnlockedVal) clearUnlockedVal.textContent = `${this.maxUnlockedLevel} / 100`;
+
+      // Update cleared puzzle song in victory modal
+      const currentSong = this.music.getSong(this.currentLevel);
+      const nextSong = this.music.getSong(Math.min(100, this.currentLevel + 1));
+      const vTrackName = document.getElementById('vTrackName');
+      if (vTrackName) {
+        vTrackName.textContent = `Song ${this.currentLevel}: ${currentSong.title} — ${currentSong.author} (Next: ${nextSong.title})`;
+      }
 
       if (this.levelClearModal) this.levelClearModal.classList.remove('hidden');
     }, 400);
