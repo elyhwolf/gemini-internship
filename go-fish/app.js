@@ -21,64 +21,286 @@ let pendingRequestedRank = null;
 let sharkMemory = new Set();
 let isAudioEnabled = true;
 
-// Web Audio API Synthesizer
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+// Web Audio API High-Fidelity Sound Engine
+let audioCtx = null;
+
+function getAudioContext() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  return audioCtx;
+}
 
 function playSound(type) {
   if (!isAudioEnabled) return;
   try {
-    const now = audioCtx.currentTime;
-    if (type === 'bubble') {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
+    const ctx = getAudioContext();
+    const now = ctx.currentTime;
+
+    if (type === 'card') {
+      // Crisp card flick/snap with wood-table resonance
+      const bufferSize = ctx.sampleRate * 0.035;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.2));
+      }
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(1400, now);
+      filter.Q.setValueAtTime(2.5, now);
+
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.35, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+
+      noise.connect(filter);
+      filter.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+      noise.start(now);
+
+      // Low tactile body thud
+      const sub = ctx.createOscillator();
+      const subGain = ctx.createGain();
+      sub.type = 'sine';
+      sub.frequency.setValueAtTime(200, now);
+      sub.frequency.exponentialRampToValueAtTime(60, now + 0.04);
+      subGain.gain.setValueAtTime(0.2, now);
+      subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+
+      sub.connect(subGain);
+      subGain.connect(ctx.destination);
+      sub.start(now);
+      sub.stop(now + 0.04);
+    } else if (type === 'bubble') {
+      // Juicy underwater bubble pop
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const startFreq = 320 + Math.random() * 60;
+      const endFreq = 1100 + Math.random() * 250;
+
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(400, now);
-      osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
-      gain.gain.setValueAtTime(0.15, now);
-      gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+      osc.frequency.setValueAtTime(startFreq, now);
+      osc.frequency.exponentialRampToValueAtTime(endFreq, now + 0.08);
+
+      gain.gain.setValueAtTime(0.35, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.085);
+
       osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(now + 0.1);
-    } else if (type === 'card') {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(220, now);
-      gain.gain.setValueAtTime(0.1, now);
-      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(now + 0.08);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.085);
     } else if (type === 'chomp') {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(150, now);
-      osc.frequency.linearRampToValueAtTime(60, now + 0.2);
-      gain.gain.setValueAtTime(0.2, now);
-      gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(now + 0.2);
+      // Heavy shark bite & sub punch
+      const sub = ctx.createOscillator();
+      const subGain = ctx.createGain();
+      sub.type = 'triangle';
+      sub.frequency.setValueAtTime(180, now);
+      sub.frequency.exponentialRampToValueAtTime(40, now + 0.2);
+      subGain.gain.setValueAtTime(0.45, now);
+      subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+      sub.connect(subGain);
+      subGain.connect(ctx.destination);
+      sub.start(now);
+      sub.stop(now + 0.2);
+
+      // Gritty jaw bite snap
+      const bufferSize = ctx.sampleRate * 0.12;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.25));
+      }
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(900, now);
+      filter.frequency.linearRampToValueAtTime(250, now + 0.12);
+
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.4, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+      noise.connect(filter);
+      filter.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+      noise.start(now);
     } else if (type === 'book') {
-      [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
-        gain.gain.setValueAtTime(0.12, now + idx * 0.08);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.2);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(now + idx * 0.08);
-        osc.stop(now + idx * 0.08 + 0.2);
+      // Ultra-satisfying 4-of-a-kind triumph chime (Rich harmonic arpeggio + sub pulse)
+      const chord = [523.25, 659.25, 783.99, 1046.50, 1318.51]; // C5, E5, G5, C6, E6
+      chord.forEach((freq, idx) => {
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        const gain2 = ctx.createGain();
+
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(freq, now + idx * 0.055);
+
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(freq * 1.0025, now + idx * 0.055);
+
+        gain1.gain.setValueAtTime(0, now + idx * 0.055);
+        gain1.gain.linearRampToValueAtTime(0.2, now + idx * 0.055 + 0.015);
+        gain1.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.055 + 0.45);
+
+        gain2.gain.setValueAtTime(0, now + idx * 0.055);
+        gain2.gain.linearRampToValueAtTime(0.1, now + idx * 0.055 + 0.015);
+        gain2.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.055 + 0.45);
+
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+
+        osc1.start(now + idx * 0.055);
+        osc1.stop(now + idx * 0.055 + 0.5);
+        osc2.start(now + idx * 0.055);
+        osc2.stop(now + idx * 0.055 + 0.5);
       });
+    } else if (type === 'lucky') {
+      // Sparkly magical reward chime for drawing requested card
+      const scale = [659.25, 880, 1046.50, 1318.51, 1760];
+      scale.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.04);
+
+        gain.gain.setValueAtTime(0.2, now + idx * 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.04 + 0.35);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + idx * 0.04);
+        osc.stop(now + idx * 0.04 + 0.4);
+      });
+    } else if (type === 'win') {
+      // Epic Victory Fanfare
+      const notes = [
+        { f: 523.25, t: 0, d: 0.14 },
+        { f: 659.25, t: 0.14, d: 0.14 },
+        { f: 783.99, t: 0.28, d: 0.14 },
+        { f: 1046.50, t: 0.42, d: 0.7 }
+      ];
+      notes.forEach(n => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(n.f, now + n.t);
+        gain.gain.setValueAtTime(0.3, now + n.t);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + n.t + n.d);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + n.t);
+        osc.stop(now + n.t + n.d);
+      });
+    } else if (type === 'lose') {
+      // Deep ominous underwater defeat tone
+      const notes = [440, 415.30, 392, 349.23];
+      notes.forEach((f, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(f, now + idx * 0.18);
+        gain.gain.setValueAtTime(0.25, now + idx * 0.18);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.18 + 0.3);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + idx * 0.18);
+        osc.stop(now + idx * 0.18 + 0.3);
+      });
+    } else if (type === 'hover') {
+      // Subtle crisp UI hover tick
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(650, now);
+      osc.frequency.exponentialRampToValueAtTime(950, now + 0.02);
+
+      gain.gain.setValueAtTime(0.04, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.02);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.02);
     }
   } catch(e) {}
 }
+
+// YouTube Background Music Integration (Queue: HVN ON EARTH -> 500 lbs)
+const MUSIC_QUEUE = ['NSCZ5awmH1U', '35-MnoI1drY'];
+let ytPlayer = null;
+
+function initYTMusicPlayer() {
+  if (ytPlayer) return;
+  if (!window.YT || !window.YT.Player) return;
+
+  try {
+    ytPlayer = new YT.Player('ytMusicPlayer', {
+      height: '0',
+      width: '0',
+      playerVars: {
+        playlist: MUSIC_QUEUE.join(','),
+        autoplay: 1,
+        loop: 1,
+        controls: 0,
+        enablejsapi: 1
+      },
+      events: {
+        'onReady': (e) => {
+          try {
+            e.target.setVolume(50);
+            if (typeof e.target.loadPlaylist === 'function') {
+              e.target.loadPlaylist(MUSIC_QUEUE);
+              e.target.setLoop(true);
+            }
+            if (isAudioEnabled) {
+              e.target.unMute();
+              e.target.playVideo();
+            } else {
+              e.target.mute();
+            }
+          } catch(err) {}
+        }
+      }
+    });
+  } catch(e) {}
+}
+
+window.onYouTubeIframeAPIReady = function() {
+  initYTMusicPlayer();
+};
+
+if (window.YT && window.YT.Player) {
+  initYTMusicPlayer();
+}
+
+function startBackgroundMusicOnInteraction() {
+  if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
+    if (isAudioEnabled) {
+      try {
+        ytPlayer.unMute();
+        if (ytPlayer.getPlayerState() !== 1) { // 1 = playing
+          ytPlayer.playVideo();
+        }
+      } catch(err) {}
+    }
+  }
+}
+
+document.addEventListener('click', () => {
+  getAudioContext();
+  startBackgroundMusicOnInteraction();
+});
 
 function toggleAudio() {
   isAudioEnabled = !isAudioEnabled;
@@ -86,7 +308,17 @@ function toggleAudio() {
   if (btn) {
     btn.innerHTML = `<img src="assets/${isAudioEnabled ? 'audio_on' : 'audio_off'}.svg" class="btn-svg-icon" alt="Audio" />`;
   }
-  showToast(isAudioEnabled ? "Audio FX Enabled" : "Audio FX Muted");
+  if (ytPlayer && typeof ytPlayer.mute === 'function') {
+    try {
+      if (isAudioEnabled) {
+        ytPlayer.unMute();
+        ytPlayer.playVideo();
+      } else {
+        ytPlayer.mute();
+      }
+    } catch(err) {}
+  }
+  showToast(isAudioEnabled ? "Audio FX & Music Enabled" : "Audio FX & Music Muted");
 }
 
 // Initialize New Game
@@ -246,7 +478,7 @@ function handleDrawPileClick() {
 
   if (drawnCard.rank === pendingRequestedRank) {
     // Lucky catch!
-    playSound('book');
+    playSound('lucky');
     updateSharkSpeech(`Lucky catch! You drew a ${drawnCard.rank}! You get another turn!`);
     showToast(`LUCKY CATCH! You drew a ${drawnCard.rank}! Take another turn!`);
     updateUI();
@@ -368,15 +600,16 @@ function showGameOverModal() {
   if (playerBooks.length > sharkBooks.length) {
     title.textContent = "YOU WIN!";
     sub.textContent = `You outsmarted Captain Finley ${playerBooks.length} to ${sharkBooks.length}!`;
-    playSound('book');
+    playSound('win');
     triggerConfetti();
   } else if (sharkBooks.length > playerBooks.length) {
     title.textContent = "FINLEY WINS!";
     sub.textContent = `Captain Finley won ${sharkBooks.length} to ${playerBooks.length}. Better luck next time!`;
-    playSound('chomp');
+    playSound('lose');
   } else {
     title.textContent = "TIED GAME!";
     sub.textContent = `An even split of ${playerBooks.length} books each!`;
+    playSound('lucky');
   }
 
   modal.classList.add('active');
@@ -407,6 +640,7 @@ function updateUI() {
     const cardDiv = document.createElement('div');
     cardDiv.className = 'playing-card';
     cardDiv.onclick = () => askSharkForRank(card.rank);
+    cardDiv.onmouseenter = () => playSound('hover');
 
     cardDiv.innerHTML = `
       <div class="card-corner top">

@@ -368,8 +368,8 @@ class MazeGenerator {
       height: rows * TILE_SIZE,
       grid,
       playerSpawn: {
-        x: playerSpawn.x * TILE_SIZE + TILE_SIZE / 2,
-        y: playerSpawn.y * TILE_SIZE + TILE_SIZE / 2
+        x: playerSpawn.x * TILE_SIZE + Math.floor((TILE_SIZE - 18) / 2),
+        y: (playerSpawn.y + 1) * TILE_SIZE - 24
       },
       portal: {
         x: portalSpot.x * TILE_SIZE + TILE_SIZE / 2,
@@ -423,13 +423,15 @@ class ParticleSystem {
     }
   }
 
-  draw(ctx, camera) {
+  draw(ctx, camera, offset) {
+    const ox = offset ? offset.x : 0;
+    const oy = offset ? offset.y : 0;
     this.particles.forEach(p => {
       ctx.save();
       ctx.globalAlpha = Math.max(0, p.alpha);
       ctx.fillStyle = p.color;
       ctx.beginPath();
-      ctx.arc(p.x - camera.x, p.y - camera.y, p.size, 0, Math.PI * 2);
+      ctx.arc(p.x - camera.x + ox, p.y - camera.y + oy, p.size, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     });
@@ -448,61 +450,72 @@ class Player {
     this.vx = 0;
     this.vy = 0;
 
-    // Movement tuning
-    this.speed = 4.4;
-    this.accel = 0.85;
+    // Movement tuning (tight, responsive platformer feel)
+    this.speed = 4.5;
+    this.accel = 0.9;
     this.friction = 0.82;
-    this.gravity = 0.48;
-    this.jumpForce = -9.2;
-    this.doubleJumpForce = -8.4;
-    this.wallSlideMax = 1.8;
+    this.gravity = 0.46;
+    this.jumpForce = -9.0;
+    this.doubleJumpForce = -8.2;
+    this.wallSlideMax = 1.9;
 
-    this.grounded = false;
+    this.grounded = true;
     this.canDoubleJump = true;
     this.wallSliding = false;
     this.wallDir = 0; // -1 for left wall, 1 for right wall
     this.facing = 1; // 1 right, -1 left
+    this.wallJumpLock = 0;
+
+    // Forgiving platformer feel: coyote time & jump buffering
+    this.coyoteTimer = 0;
+    this.jumpBufferTimer = 0;
 
     this.trail = [];
   }
 
   update(keys, maze, particles, theme) {
+    // Grounded evaluation for this frame
+    this.grounded = this.checkGrounded(maze);
+
     // Left / Right movement
     let moveDir = 0;
     if (keys.left) moveDir -= 1;
     if (keys.right) moveDir += 1;
 
-    if (moveDir !== 0) {
-      this.facing = moveDir;
-      this.vx += moveDir * this.accel;
-      if (Math.abs(this.vx) > this.speed) {
-        this.vx = moveDir * this.speed;
-      }
-      // Running dust particles
-      if (this.grounded && Math.random() < 0.25) {
-        particles.emit(this.x + this.w / 2, this.y + this.h, 1, {
-          angle: moveDir === 1 ? Math.PI : 0,
-          speedMin: 0.5, speedMax: 2,
-          color: theme.tileAccent,
-          gravity: 0.02
-        });
-      }
+    if (this.wallJumpLock > 0) {
+      this.wallJumpLock--;
     } else {
-      this.vx *= this.friction;
-      if (Math.abs(this.vx) < 0.1) this.vx = 0;
+      if (moveDir !== 0) {
+        this.facing = moveDir;
+        this.vx += moveDir * this.accel;
+        if (Math.abs(this.vx) > this.speed) {
+          this.vx = moveDir * this.speed;
+        }
+        if (this.grounded && Math.random() < 0.25) {
+          particles.emit(this.x + this.w / 2, this.y + this.h, 1, {
+            angle: moveDir === 1 ? Math.PI : 0,
+            speedMin: 0.5, speedMax: 2,
+            color: theme.tileAccent,
+            gravity: 0.02
+          });
+        }
+      } else {
+        this.vx *= this.friction;
+        if (Math.abs(this.vx) < 0.1) this.vx = 0;
+      }
     }
 
-    // Wall Detection
+    // Wall Detection (test strictly adjacent to the wall)
     const checkWallLeft = this.checkSolid(this.x - 2, this.y + 4, maze) || this.checkSolid(this.x - 2, this.y + this.h - 4, maze);
     const checkWallRight = this.checkSolid(this.x + this.w + 2, this.y + 4, maze) || this.checkSolid(this.x + this.w + 2, this.y + this.h - 4, maze);
 
     this.wallSliding = false;
     this.wallDir = 0;
     if (!this.grounded && this.vy > 0) {
-      if (checkWallLeft && moveDir === -1) {
+      if (checkWallLeft && (moveDir === -1 || keys.left)) {
         this.wallSliding = true;
         this.wallDir = -1;
-      } else if (checkWallRight && moveDir === 1) {
+      } else if (checkWallRight && (moveDir === 1 || keys.right)) {
         this.wallSliding = true;
         this.wallDir = 1;
       }
@@ -510,8 +523,7 @@ class Player {
 
     // Gravity & Wall Sliding Speed
     if (this.wallSliding) {
-      this.vy = Math.min(this.vy + this.gravity * 0.3, this.wallSlideMax);
-      // Wall slide sparks
+      this.vy = Math.min(this.vy + this.gravity * 0.35, this.wallSlideMax);
       if (Math.random() < 0.3) {
         const sparkX = this.wallDir === -1 ? this.x : this.x + this.w;
         particles.emit(sparkX, this.y + this.h / 2, 1, {
@@ -523,30 +535,46 @@ class Player {
       }
     } else {
       this.vy += this.gravity;
-      if (this.vy > 14) this.vy = 14; // terminal velocity
+      if (this.vy > 12) this.vy = 12; // cap terminal velocity
     }
 
-    // Jump Input
+    // Timers
+    if (this.grounded) {
+      this.coyoteTimer = 6;
+      this.canDoubleJump = true;
+    } else if (this.coyoteTimer > 0) {
+      this.coyoteTimer--;
+    }
+
     if (keys.jumpPressed) {
       keys.jumpPressed = false;
+      this.jumpBufferTimer = 6;
+    } else if (this.jumpBufferTimer > 0) {
+      this.jumpBufferTimer--;
+    }
 
-      if (this.grounded) {
+    // Execute Jump
+    if (this.jumpBufferTimer > 0) {
+      if (this.coyoteTimer > 0 || this.grounded) {
         // Normal Jump
-        this.vy = this.jumpForce;
+        this.jumpBufferTimer = 0;
+        this.coyoteTimer = 0;
         this.grounded = false;
-        this.canDoubleJump = true;
+        this.vy = this.jumpForce;
         sfx.playJump(false);
         particles.emit(this.x + this.w / 2, this.y + this.h, 6, {
           angle: -Math.PI / 2, spread: 1.2,
           speedMin: 1.5, speedMax: 4,
           colors: theme.particleColor
         });
-      } else if (this.wallSliding || (checkWallLeft && keys.left) || (checkWallRight && keys.right)) {
+      } else if (this.wallSliding || checkWallLeft || checkWallRight) {
         // Wall Jump
+        this.jumpBufferTimer = 0;
         const jumpAwayDir = checkWallLeft ? 1 : -1;
-        this.vx = jumpAwayDir * 5.2;
+        this.vx = jumpAwayDir * 5.4;
         this.vy = this.jumpForce * 0.95;
         this.facing = jumpAwayDir;
+        this.wallJumpLock = 10;
         this.canDoubleJump = true;
         sfx.playWallJump();
         const wallX = checkWallLeft ? this.x : this.x + this.w;
@@ -557,6 +585,7 @@ class Player {
         });
       } else if (this.canDoubleJump) {
         // Double Jump
+        this.jumpBufferTimer = 0;
         this.vy = this.doubleJumpForce;
         this.canDoubleJump = false;
         sfx.playJump(true);
@@ -567,13 +596,61 @@ class Player {
       }
     }
 
-    // Horizontal Movement & Collisions
-    this.x += this.vx;
-    this.resolveHorizontalCollision(maze);
+    // Variable jump height: release jump button while rising to cut upward boost
+    if (!keys.up && this.vy < -2.5) {
+      this.vy *= 0.65;
+    }
 
-    // Vertical Movement & Collisions
-    this.y += this.vy;
-    this.resolveVerticalCollision(maze, particles, theme);
+    // 1. Move Horizontal with discrete collision sub-stepping
+    if (this.vx !== 0) {
+      const dirX = Math.sign(this.vx);
+      let remX = Math.abs(this.vx);
+      while (remX > 0) {
+        const step = Math.min(remX, 3);
+        this.x += dirX * step;
+        remX -= step;
+        if (this.resolveHorizontalCollision(maze, dirX)) {
+          this.vx = 0;
+          break;
+        }
+      }
+    }
+
+    // 2. Move Vertical with discrete collision sub-stepping
+    if (this.vy !== 0) {
+      const dirY = Math.sign(this.vy);
+      let remY = Math.abs(this.vy);
+      while (remY > 0) {
+        const step = Math.min(remY, 3);
+        this.y += dirY * step;
+        remY -= step;
+        if (this.resolveVerticalCollision(maze, dirY, particles, theme)) {
+          this.vy = 0;
+          break;
+        }
+      }
+    }
+
+    // 3. Grounded State Check
+    this.grounded = this.checkGrounded(maze);
+    if (this.grounded) {
+      this.canDoubleJump = true;
+    }
+
+    // Absolute Safety Boundary Clamp within Outer Maze Perimeter
+    const ts = maze.tileSize;
+    this.x = Math.max(ts, Math.min(maze.width - ts - this.w, this.x));
+    this.y = Math.max(ts, Math.min(maze.height - ts - this.h, this.y));
+
+    // Anti-clip fail-safe: If center is inside a solid block, snap safely to spawn
+    const centerTileX = Math.floor((this.x + this.w / 2) / ts);
+    const centerTileY = Math.floor((this.y + this.h / 2) / ts);
+    if (this.isTileSolid(centerTileX, centerTileY, maze)) {
+      this.x = maze.playerSpawn.x;
+      this.y = maze.playerSpawn.y;
+      this.vx = 0;
+      this.vy = 0;
+    }
 
     // Update Motion Trail
     this.trail.push({ x: this.x + this.w / 2, y: this.y + this.h / 2, alpha: 0.6 });
@@ -581,91 +658,118 @@ class Player {
     this.trail.forEach(t => t.alpha *= 0.85);
   }
 
-  checkSolid(px, py, maze) {
-    const tx = Math.floor(px / maze.tileSize);
-    const ty = Math.floor(py / maze.tileSize);
+  isTileSolid(tx, ty, maze) {
     if (tx < 0 || tx >= maze.cols || ty < 0 || ty >= maze.rows) return true;
     return maze.grid[ty][tx] === 1;
   }
 
-  resolveHorizontalCollision(maze) {
-    const ts = maze.tileSize;
-    const startX = Math.floor(this.x / ts);
-    const endX = Math.floor((this.x + this.w) / ts);
-    const startY = Math.floor(this.y / ts);
-    const endY = Math.floor((this.y + this.h) / ts);
+  checkSolid(px, py, maze) {
+    const tx = Math.floor(px / maze.tileSize);
+    const ty = Math.floor(py / maze.tileSize);
+    return this.isTileSolid(tx, ty, maze);
+  }
 
-    for (let ty = startY; ty <= endY; ty++) {
-      for (let tx = startX; tx <= endX; tx++) {
-        if (tx >= 0 && tx < maze.cols && ty >= 0 && ty < maze.rows) {
-          if (maze.grid[ty][tx] === 1) {
-            if (this.vx > 0) {
-              this.x = tx * ts - this.w;
-              this.vx = 0;
-            } else if (this.vx < 0) {
-              this.x = (tx + 1) * ts;
-              this.vx = 0;
-            }
-          }
+  checkGrounded(maze) {
+    const ts = maze.tileSize;
+    const footY = this.y + this.h + 0.5;
+    const tileY = Math.floor(footY / ts);
+    const left = this.x + 2;
+    const right = this.x + this.w - 2;
+    const startTileX = Math.floor(left / ts);
+    const endTileX = Math.floor(right / ts);
+
+    for (let tx = startTileX; tx <= endTileX; tx++) {
+      if (this.isTileSolid(tx, tileY, maze)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  resolveHorizontalCollision(maze, dirX) {
+    const ts = maze.tileSize;
+    // Inset top and bottom by 2px so floor and ceiling are excluded
+    const top = this.y + 2;
+    const bottom = this.y + this.h - 2;
+    const startTileY = Math.floor(top / ts);
+    const endTileY = Math.floor(bottom / ts);
+
+    if (dirX > 0) {
+      const right = this.x + this.w;
+      const tileX = Math.floor(right / ts);
+      for (let ty = startTileY; ty <= endTileY; ty++) {
+        if (this.isTileSolid(tileX, ty, maze)) {
+          this.x = tileX * ts - this.w;
+          return true;
+        }
+      }
+    } else if (dirX < 0) {
+      const left = this.x;
+      const tileX = Math.floor(left / ts);
+      for (let ty = startTileY; ty <= endTileY; ty++) {
+        if (this.isTileSolid(tileX, ty, maze)) {
+          this.x = (tileX + 1) * ts;
+          return true;
         }
       }
     }
+    return false;
   }
 
-  resolveVerticalCollision(maze, particles, theme) {
+  resolveVerticalCollision(maze, dirY, particles, theme) {
     const ts = maze.tileSize;
-    const startX = Math.floor(this.x / ts);
-    const endX = Math.floor((this.x + this.w) / ts);
-    const startY = Math.floor(this.y / ts);
-    const endY = Math.floor((this.y + this.h) / ts);
+    // Inset left and right by 2px so side walls are excluded
+    const left = this.x + 2;
+    const right = this.x + this.w - 2;
+    const startTileX = Math.floor(left / ts);
+    const endTileX = Math.floor(right / ts);
 
-    let onGround = false;
-
-    for (let ty = startY; ty <= endY; ty++) {
-      for (let tx = startX; tx <= endX; tx++) {
-        if (tx >= 0 && tx < maze.cols && ty >= 0 && ty < maze.rows) {
-          if (maze.grid[ty][tx] === 1) {
-            if (this.vy > 0) {
-              this.y = ty * ts - this.h;
-              // Landing impact dust
-              if (!this.grounded && this.vy > 4) {
-                particles.emit(this.x + this.w / 2, this.y + this.h, 5, {
-                  angle: -Math.PI / 2, spread: 1.5,
-                  speedMin: 1, speedMax: 3,
-                  colors: theme.particleColor
-                });
-              }
-              this.vy = 0;
-              onGround = true;
-            } else if (this.vy < 0) {
-              this.y = (ty + 1) * ts;
-              this.vy = 0;
-            }
+    if (dirY > 0) {
+      const bottom = this.y + this.h;
+      const tileY = Math.floor(bottom / ts);
+      for (let tx = startTileX; tx <= endTileX; tx++) {
+        if (this.isTileSolid(tx, tileY, maze)) {
+          this.y = tileY * ts - this.h;
+          if (!this.grounded && this.vy > 4) {
+            particles.emit(this.x + this.w / 2, this.y + this.h, 5, {
+              angle: -Math.PI / 2, spread: 1.5,
+              speedMin: 1, speedMax: 3,
+              colors: theme.particleColor
+            });
           }
+          return true;
+        }
+      }
+    } else if (dirY < 0) {
+      const top = this.y;
+      const tileY = Math.floor(top / ts);
+      for (let tx = startTileX; tx <= endTileX; tx++) {
+        if (this.isTileSolid(tx, tileY, maze)) {
+          this.y = (tileY + 1) * ts;
+          return true;
         }
       }
     }
-
-    this.grounded = onGround;
-    if (this.grounded) {
-      this.canDoubleJump = true;
-    }
+    return false;
   }
 
-  draw(ctx, camera, theme) {
+  draw(ctx, camera, theme, offset) {
+    const ox = offset ? offset.x : 0;
+    const oy = offset ? offset.y : 0;
+
     // Draw motion trail
     this.trail.forEach(t => {
       ctx.save();
       ctx.globalAlpha = t.alpha * 0.4;
       ctx.fillStyle = theme.tileBorder;
       ctx.beginPath();
-      ctx.arc(t.x - camera.x, t.y - camera.y, this.w / 2, 0, Math.PI * 2);
+      ctx.arc(t.x - camera.x + ox, t.y - camera.y + oy, this.w / 2, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     });
 
-    const drawX = this.x - camera.x;
-    const drawY = this.y - camera.y;
+    const drawX = this.x - camera.x + ox;
+    const drawY = this.y - camera.y + oy;
 
     // Emissive Aura / Bloom Halo
     ctx.save();
@@ -1062,7 +1166,7 @@ class MazeGame {
   }
 
   initControls() {
-    window.addEventListener('keydown', (e) => {
+    const handleKeyDown = (e) => {
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
         e.preventDefault();
       }
@@ -1072,36 +1176,59 @@ class MazeGame {
       if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') this.keys.down = true;
 
       if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === ' ' || e.key === 'z' || e.key === 'Z') {
+        if (!this.keys.up) {
+          this.keys.jumpPressed = true;
+        }
         this.keys.up = true;
-        this.keys.jumpPressed = true;
       }
 
       // Reset
       if (e.key === 'r' || e.key === 'R') {
         this.deaths++;
-        this.loadLevel(this.currentLevel);
+        this.player.x = this.maze.playerSpawn.x;
+        this.player.y = this.maze.playerSpawn.y;
+        this.player.vx = 0;
+        this.player.vy = 0;
+        this.updateHUD();
       }
 
       // Minimap Toggle
       if (e.key === 'm' || e.key === 'M') {
         this.toggleMinimap();
       }
-    });
+    };
 
-    window.addEventListener('keyup', (e) => {
+    const handleKeyUp = (e) => {
       if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') this.keys.left = false;
       if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') this.keys.right = false;
       if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') this.keys.down = false;
       if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === ' ' || e.key === 'z' || e.key === 'Z') {
         this.keys.up = false;
       }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    document.addEventListener('keyup', handleKeyUp);
+
+    window.addEventListener('blur', () => {
+      this.keys.left = false;
+      this.keys.right = false;
+      this.keys.up = false;
+      this.keys.down = false;
+      this.keys.jumpPressed = false;
     });
 
     // On-screen HUD buttons
     const btnRestart = document.getElementById('btnRestart');
     if (btnRestart) btnRestart.addEventListener('click', () => {
       this.deaths++;
-      this.loadLevel(this.currentLevel);
+      this.player.x = this.maze.playerSpawn.x;
+      this.player.y = this.maze.playerSpawn.y;
+      this.player.vx = 0;
+      this.player.vy = 0;
+      this.updateHUD();
     });
 
     const btnMinimap = document.getElementById('btnMinimap');
@@ -1262,8 +1389,23 @@ class MazeGame {
     }
   }
 
+  getOffset() {
+    const ox = this.viewportW > this.maze.width ? Math.floor((this.viewportW - this.maze.width) / 2) : 0;
+    let oy = 0;
+    if (this.viewportH > this.maze.height) {
+      const hudMargin = 72;
+      if (this.viewportH - this.maze.height >= hudMargin + 20) {
+        // Center in the playable region below the top HUD
+        oy = Math.floor(hudMargin + (this.viewportH - hudMargin - this.maze.height) / 2);
+      } else {
+        oy = Math.floor((this.viewportH - this.maze.height) / 2);
+      }
+    }
+    return { x: ox, y: oy };
+  }
+
   gameLoop(currentTime) {
-    const dt = Math.min((currentTime - this.lastFrameTime) / 1000, 0.1);
+    const dt = Math.max(0, Math.min((currentTime - this.lastFrameTime) / 1000, 0.1));
     this.lastFrameTime = currentTime;
 
     if (!this.isPaused && !this.isCompleted) {
@@ -1286,16 +1428,22 @@ class MazeGame {
     // Update Player
     this.player.update(this.keys, this.maze, this.particles, this.theme);
 
-    // Camera follow player smoothly
-    const targetCamX = this.player.x + this.player.w / 2 - this.viewportW / 2;
-    const targetCamY = this.player.y + this.player.h / 2 - this.viewportH / 2;
+    // Camera follow player smoothly or center maze if smaller than viewport
+    if (this.viewportW <= this.maze.width) {
+      const targetCamX = this.player.x + this.player.w / 2 - this.viewportW / 2;
+      this.camera.x += (targetCamX - this.camera.x) * 0.12;
+      this.camera.x = Math.max(0, Math.min(this.maze.width - this.viewportW, this.camera.x));
+    } else {
+      this.camera.x = 0;
+    }
 
-    this.camera.x += (targetCamX - this.camera.x) * 0.1;
-    this.camera.y += (targetCamY - this.camera.y) * 0.1;
-
-    // Clamp camera within maze boundaries
-    this.camera.x = Math.max(0, Math.min(this.maze.width - this.viewportW, this.camera.x));
-    this.camera.y = Math.max(0, Math.min(this.maze.height - this.viewportH, this.camera.y));
+    if (this.viewportH <= this.maze.height) {
+      const targetCamY = this.player.y + this.player.h / 2 - this.viewportH / 2;
+      this.camera.y += (targetCamY - this.camera.y) * 0.12;
+      this.camera.y = Math.max(0, Math.min(this.maze.height - this.viewportH, this.camera.y));
+    } else {
+      this.camera.y = 0;
+    }
 
     // Check Key / Orb pickups
     this.maze.keys.forEach(k => {
@@ -1313,37 +1461,45 @@ class MazeGame {
       }
     });
 
-    // Check Hazard Collisions (Spikes)
+    // Check Hazard Collisions (Spikes) & Jump Pads
     const px = this.player.x + this.player.w / 2;
     const py = this.player.y + this.player.h / 2;
+    const footY = this.player.y + this.player.h - 1;
+    const centerY = py;
     const tx = Math.floor(px / this.maze.tileSize);
-    const ty = Math.floor(py / this.maze.tileSize);
+    const tyFoot = Math.floor(footY / this.maze.tileSize);
+    const tyCenter = Math.floor(centerY / this.maze.tileSize);
 
-    if (tx >= 0 && tx < this.maze.cols && ty >= 0 && ty < this.maze.rows) {
-      if (this.maze.grid[ty][tx] === 2) {
-        // Hit Spike
-        sfx.playDeath();
-        this.deaths++;
-        this.particles.emit(px, py, 20, {
-          speedMin: 2, speedMax: 6,
-          colors: ['#ef4444', '#f87171', '#fff']
-        });
-        this.player.x = this.maze.playerSpawn.x;
-        this.player.y = this.maze.playerSpawn.y;
-        this.player.vx = 0;
-        this.player.vy = 0;
-        this.updateHUD();
-      } else if (this.maze.grid[ty][tx] === 3) {
-        // Jump Pad boost
-        this.player.vy = -14.5;
-        this.player.canDoubleJump = true;
-        sfx.playJump(true);
-        this.particles.emit(px, py + 10, 10, {
-          angle: -Math.PI / 2, spread: 0.8,
-          speedMin: 3, speedMax: 8,
-          colors: ['#38bdf8', '#818cf8', '#fff']
-        });
-      }
+    const hitSpike = (tx >= 0 && tx < this.maze.cols) && (
+      (tyFoot >= 0 && tyFoot < this.maze.rows && this.maze.grid[tyFoot][tx] === 2) ||
+      (tyCenter >= 0 && tyCenter < this.maze.rows && this.maze.grid[tyCenter][tx] === 2)
+    );
+    const hitPad = (tx >= 0 && tx < this.maze.cols) && (
+      (tyFoot >= 0 && tyFoot < this.maze.rows && this.maze.grid[tyFoot][tx] === 3) ||
+      (tyCenter >= 0 && tyCenter < this.maze.rows && this.maze.grid[tyCenter][tx] === 3)
+    );
+
+    if (hitSpike) {
+      sfx.playDeath();
+      this.deaths++;
+      this.particles.emit(px, footY, 20, {
+        speedMin: 2, speedMax: 6,
+        colors: ['#ef4444', '#f87171', '#fff']
+      });
+      this.player.x = this.maze.playerSpawn.x;
+      this.player.y = this.maze.playerSpawn.y;
+      this.player.vx = 0;
+      this.player.vy = 0;
+      this.updateHUD();
+    } else if (hitPad) {
+      this.player.vy = -11.5;
+      this.player.canDoubleJump = true;
+      sfx.playJump(true);
+      this.particles.emit(px, footY + 4, 10, {
+        angle: -Math.PI / 2, spread: 0.8,
+        speedMin: 3, speedMax: 8,
+        colors: ['#38bdf8', '#818cf8', '#fff']
+      });
     }
 
     // Check Portal Exit Trigger
@@ -1411,6 +1567,7 @@ class MazeGame {
   render() {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.viewportW, this.viewportH);
+    const offset = this.getOffset();
 
     // 1. Parallax Gradient Background
     const bgGrad = ctx.createLinearGradient(0, 0, 0, this.viewportH);
@@ -1423,12 +1580,21 @@ class MazeGame {
     ctx.save();
     ctx.fillStyle = this.theme.tileFill;
     ctx.globalAlpha = 0.2;
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 8; i++) {
       const hillX = ((i * 300) - (this.camera.x * 0.2) % 300);
       ctx.beginPath();
       ctx.arc(hillX, this.viewportH + 60, 220, Math.PI, 0);
       ctx.fill();
     }
+    ctx.restore();
+
+    // Outer Maze Floating Frame & Glow (anchors the labyrinth in center screen)
+    ctx.save();
+    ctx.strokeStyle = this.theme.tileBorder;
+    ctx.lineWidth = 2.5;
+    ctx.shadowColor = this.theme.tileBorder;
+    ctx.shadowBlur = 18;
+    ctx.strokeRect(offset.x - 1, offset.y - 1, this.maze.width + 2, this.maze.height + 2);
     ctx.restore();
 
     // 2. Weather Particles
@@ -1437,7 +1603,7 @@ class MazeGame {
       ctx.globalAlpha = wp.alpha;
       ctx.fillStyle = wp.color;
       ctx.beginPath();
-      ctx.arc(wp.x - this.camera.x, wp.y - this.camera.y, wp.size, 0, Math.PI * 2);
+      ctx.arc(wp.x - this.camera.x + offset.x, wp.y - this.camera.y + offset.y, wp.size, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     });
@@ -1452,8 +1618,8 @@ class MazeGame {
     for (let r = startRow; r <= endRow; r++) {
       for (let c = startCol; c <= endCol; c++) {
         const tile = this.maze.grid[r][c];
-        const screenX = c * ts - this.camera.x;
-        const screenY = r * ts - this.camera.y;
+        const screenX = c * ts - this.camera.x + offset.x;
+        const screenY = r * ts - this.camera.y + offset.y;
 
         if (tile === 1) {
           // Solid Block
@@ -1501,8 +1667,8 @@ class MazeGame {
     const now = performance.now();
     this.maze.keys.forEach(k => {
       if (!k.collected) {
-        const kx = k.x - this.camera.x;
-        const ky = k.y - this.camera.y + Math.sin(now * 0.004) * 4;
+        const kx = k.x - this.camera.x + offset.x;
+        const ky = k.y - this.camera.y + offset.y + Math.sin(now * 0.004) * 4;
 
         ctx.save();
         // Golden Key Glow
@@ -1529,8 +1695,8 @@ class MazeGame {
     });
 
     // 5. Render Exit Portal
-    const portalX = this.maze.portal.x - this.camera.x;
-    const portalY = this.maze.portal.y - this.camera.y;
+    const portalX = this.maze.portal.x - this.camera.x + offset.x;
+    const portalY = this.maze.portal.y - this.camera.y + offset.y;
     const allKeys = this.maze.keys.every(k => k.collected);
 
     ctx.save();
@@ -1566,10 +1732,10 @@ class MazeGame {
     ctx.restore();
 
     // 6. Draw Player
-    this.player.draw(ctx, this.camera, this.theme);
+    this.player.draw(ctx, this.camera, this.theme, offset);
 
     // 7. Draw Particles
-    this.particles.draw(ctx, this.camera);
+    this.particles.draw(ctx, this.camera, offset);
   }
 }
 

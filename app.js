@@ -1,1645 +1,598 @@
-// WebMCP Detection & Tools Configuration
-const modelContext = document.modelContext || navigator.modelContext;
-const isWebMCPSupported = !!(modelContext && typeof modelContext.registerTool === 'function');
+// ElyWolf Arcade — Hub Script, Firebase Auth, Real-Time Chat & Presence Engine
 
-// Translation Dictionary
-const TRANSLATIONS = {
-  en: {
-    langBtn: "🇪🇸 Switch to Español",
-    connectionSimulated: "Drive-Thru: Simulated",
-    connectionActive: "Drive-Thru: Active",
-    connectionConnected: "Drive-Thru Host: Connected",
-    tagline: "Based in Jersey City, ESTD 2026",
-    declarativeTitle: "📝 Declarative Ordering Tools (HTML Forms)",
-    declarativeDesc: "Native forms converted into AI ordering actions via HTML <code>toolname</code>, <code>tooldescription</code>, and <code>toolautosubmit</code> attributes.",
-    bucketSizeLabel: "Bucket Size",
-    spiceStyleLabel: "Spice Style",
-    sideDishLabel: "Select Side Dish",
-    btnPlaceBucket: "🍗 Place Bucket Order",
-    btnPlaceSandwich: "🥪 Place Sandwich Order ($10.99)",
-    customerNameLabel: "Customer Name",
-    btnSetOrderName: "👤 Set Order Name",
-    primarySauceLabel: "Primary Sauce",
-    secondarySauceLabel: "Secondary Sauce",
-    btnConfigureSauces: "🍯 Configure Sauces",
-    newSuggestionLabel: "New Menu Item or Flavor Suggestion",
-    btnSubmitSuggestion: "💡 Submit Suggestion",
-    loyaltyTitle: "👥 Crispy Rewards Loyalty Members",
-    voiceAssistantTitle: "🗣️ AI Drive-Thru Voice Assistant",
-    voiceAssistantDesc: "Order with natural language. The simulated Drive-Thru AI will match your request to active WebMCP schemas, fill forms, glow panels, and verify menu parameters.",
-    presetLabel: "Preset Customer Orders",
-    promptLabel: "Customer Prompt (e.g. \"I want a 10-piece bucket with coleslaw\")",
-    btnOrder: "Order",
-    terminalTitle: "drive-thru-assistant @ client-webmcp",
-    tttTitle: "🎮 Crispy-Tac-Toe AI Arena",
-    tttDesc: "Play against the Chef bots! You place Drumsticks (<strong style=\"color: var(--color-primary);\">🍗</strong>), Bots place Spicy Hot Chilis (<strong style=\"color: var(--color-purple);\">🌶️</strong>).",
-    tttDifficultyLabel: "Bot Difficulty",
-    tttResetBtn: "Reset",
-    tttStatus: "Your turn! Make a move.",
-    tttScorePlayer: "Player (🍗)",
-    tttScoreDraws: "Draws",
-    tttScoreBot: "Bot (🌶️)",
-    adminModeBtnLocked: "🔒 Cashier Admin Mode",
-    adminModeBtnUnlocked: "🔓 Cashier Admin: Unlocked",
-    adminPasscodeTitle: "Enter Admin Passcode",
-    adminSubmitBtn: "Submit",
-    adminCancelBtn: "Cancel",
-    adminDashboardTitle: "🔑 Cashier Control Dashboard (Active)",
-    adminLockBtn: "Lock",
-    adminLiveOrdersTitle: "Live Orders Feed",
-    adminLiveOrdersDesc: "Showing live order placements submitted via UI or AI Drive-Thru tool execution.",
-    adminRemoveRewardsTitle: "🗑️ Remove Rewards Member",
-    adminRemoveRewardsDesc: "Revokes and deletes an active rewards loyalty profile.",
-    adminRemoveSelectLabel: "Select Rewards Member to Remove",
-    adminRemoveBtn: "🗑️ Remove Member",
-    adminKitchenToolsTitle: "⚙️ Kitchen Controller Callback Tools",
-    adminKitchenToolsDesc: "Imperative JavaScript endpoints registered via <code>document.modelContext.registerTool()</code>.",
-    adminSuggestionsTitle: "💡 Customer Menu Suggestions",
-    adminSuggestionsDesc: "Feedback submitted by guests proposing new menu flavors or items.",
-    loyaltyMemberNameLabel: "Loyalty Member Name",
-    loyaltyFavoriteSideLabel: "Favorite side",
-    customerNamePlaceholder: "e.g. Ely Wolf",
-    suggestionPlaceholder: "Enter your suggestion here...",
-    loyaltyNamePlaceholder: "e.g. Alice Mercer",
-    loyaltyFavoritePlaceholder: "e.g. Waffle Fries",
-    agentPromptPlaceholder: "Say your order here...",
-    btnRegisterMember: "📋 Register Member",
-    btnRemoveMember: "🗑️ Remove Member",
-    tttYourTurn: "Your turn! Place a drumstick.",
-    tttCellFilled: "Cell already filled!",
-    tttChefCalculating: "Chef bot is calculating counter-move...",
-    tttYouWon: "🎉 You won! Tasty victory.",
-    tttDraw: "🤝 It is a draw! Bucket is empty.",
-    tttBotWon: "🌶️ Bot won! Too spicy for you.",
-    adminLoginError: "Invalid PIN! Try again."
-  },
-  es: {
-    langBtn: "🇺🇸 Cambiar a Inglés",
-    connectionSimulated: "Autoconsulta: Simulado",
-    connectionActive: "Autoconsulta: Activo",
-    connectionConnected: "Host de Autoconsulta: Conectado",
-    tagline: "Basado en Jersey City, ESTD 2026",
-    declarativeTitle: "📝 Herramientas de Pedido Declarativas (Formularios HTML)",
-    declarativeDesc: "Formularios nativos convertidos en acciones de pedido de IA mediante los atributos HTML <code>toolname</code>, <code>tooldescription</code> y <code>toolautosubmit</code>.",
-    bucketSizeLabel: "Tamaño del Balde",
-    spiceStyleLabel: "Estilo de Picante",
-    sideDishLabel: "Seleccionar Acompañamiento",
-    btnPlaceBucket: "🍗 Realizar Pedido de Balde",
-    btnPlaceSandwich: "🥪 Realizar Pedido de Sándwich ($10.99)",
-    customerNameLabel: "Nombre del Cliente",
-    btnSetOrderName: "👤 Establecer Nombre de Pedido",
-    primarySauceLabel: "Salsa Primaria",
-    secondarySauceLabel: "Salsa Secundaria",
-    btnConfigureSauces: "🍯 Configurar Salsas",
-    newSuggestionLabel: "Sugerencia de Nuevo Artículo o Sabor de Menú",
-    btnSubmitSuggestion: "💡 Enviar Sugerencia",
-    loyaltyTitle: "👥 Miembros del Programa Crispy Rewards",
-    voiceAssistantTitle: "🗣️ Asistente de Voz de Autoconsulta de IA",
-    voiceAssistantDesc: "Ordene con lenguaje natural. La IA de autoconsulta simulada coincidirá con su solicitud con esquemas WebMCP activos, completará formularios, iluminará paneles y verificará los parámetros del menú.",
-    presetLabel: "Pedidos Predeterminados de Clientes",
-    promptLabel: "Instrucción del Cliente (ej. \"Quiero un balde de 10 piezas con ensalada de col\")",
-    btnOrder: "Pedir",
-    terminalTitle: "asistente-autoconsulta @ client-webmcp",
-    tttTitle: "🎮 Arena de IA de Crispy-Tac-Toe",
-    tttDesc: "¡Juega contra los bots Chef! Tú colocas Muslos (<strong style=\"color: var(--color-primary);\">🍗</strong>), los Bots colocan Chiles Picantes (<strong style=\"color: var(--color-purple);\">🌶️</strong>).",
-    tttDifficultyLabel: "Dificultad del Bot",
-    tttResetBtn: "Reiniciar",
-    tttStatus: "¡Tu turno! Haz un movimiento.",
-    tttScorePlayer: "Jugador (🍗)",
-    tttScoreDraws: "Empates",
-    tttScoreBot: "Bot (🌶️)",
-    adminModeBtnLocked: "🔒 Modo Administrador del Cajero",
-    adminModeBtnUnlocked: "🔓 Admin del Cajero: Desbloqueado",
-    adminPasscodeTitle: "Ingresar Código de Administrador",
-    adminSubmitBtn: "Enviar",
-    adminCancelBtn: "Cancelar",
-    adminDashboardTitle: "🔑 Panel de Control del Cajero (Activo)",
-    adminLockBtn: "Bloquear",
-    adminLiveOrdersTitle: "Historial de Pedidos en Vivo",
-    adminLiveOrdersDesc: "Mostrando pedidos en vivo enviados a través de la interfaz de usuario o la ejecución de herramientas de IA.",
-    adminRemoveRewardsTitle: "🗑️ Eliminar Miembro de Recompensas",
-    adminRemoveRewardsDesc: "Revoca y elimina un perfil activo de fidelidad de recompensas.",
-    adminRemoveSelectLabel: "Seleccionar Miembro de Recompensa a Eliminar",
-    adminRemoveBtn: "🗑️ Eliminar Miembro",
-    adminKitchenToolsTitle: "⚙️ Herramientas de Retorno del Controlador de Cocina",
-    adminKitchenToolsDesc: "Puntos finales imperativos de JavaScript registrados a través de <code>document.modelContext.registerTool()</code>.",
-    adminSuggestionsTitle: "💡 Sugerencias de Menú de Clientes",
-    adminSuggestionsDesc: "Comentarios enviados por los clientes proponiendo nuevos sabores o artículos de menú.",
-    loyaltyMemberNameLabel: "Nombre del Miembro de Fidelidad",
-    loyaltyFavoriteSideLabel: "Acompañamiento favorito",
-    customerNamePlaceholder: "ej. Ely Wolf",
-    suggestionPlaceholder: "Ingrese su sugerencia aquí...",
-    loyaltyNamePlaceholder: "ej. Alice Mercer",
-    loyaltyFavoritePlaceholder: "ej. Papas Waffle",
-    agentPromptPlaceholder: "Diga su pedido aquí...",
-    btnRegisterMember: "📋 Registrar Miembro",
-    btnRemoveMember: "🗑️ Eliminar Miembro",
-    tttYourTurn: "¡Tu turno! Coloca un muslo.",
-    tttCellFilled: "¡La casilla ya está ocupada!",
-    tttChefCalculating: "El bot Chef está calculando su contraataque...",
-    tttYouWon: "🎉 ¡Ganaste! Sabrosa victoria.",
-    tttDraw: "🤝 ¡Es un empate! El balde está vacío.",
-    tttBotWon: "🌶️ ¡El bot ganó! Demasiado picante para ti.",
-    adminLoginError: "¡Código PIN inválido! Intente de nuevo."
-  },
-  he: {
-    langBtn: "🇮🇱 עברית",
-    connectionSimulated: "נסיעת שירות: מדומה",
-    connectionActive: "נסיעת שירות: פעילה",
-    connectionConnected: "מארח נסיעת שירות: מחובר",
-    tagline: "ממוקם בג'רזי סיטי, נוסד ב-2026",
-    declarativeTitle: "📝 כלי הזמנה דקלרטיביים (טפסי HTML)",
-    declarativeDesc: "טפסים טבעיים שהומרו לפעולות הזמנה של בינה מלאכותית באמצעות מאפייני HTML <code>toolname</code>, <code>tooldescription</code>, ו-<code>toolautosubmit</code>.",
-    bucketSizeLabel: "גודל הדלי",
-    spiceStyleLabel: "סגנון התיבול",
-    sideDishLabel: "בחר תוספת",
-    btnPlaceBucket: "🍗 בצע הזמנת דלי",
-    btnPlaceSandwich: "🥪 בצע הזמנת כריך ($10.99)",
-    customerNameLabel: "שם הלקוח",
-    btnSetOrderName: "👤 קבע שם להזמנה",
-    primarySauceLabel: "רוטב ראשון",
-    secondarySauceLabel: "רוטב שני",
-    btnConfigureSauces: "🍯 הגדר רטבים",
-    newSuggestionLabel: "הצעה לפריט תפריט או טעם חדש",
-    btnSubmitSuggestion: "💡 שלח הצעה",
-    loyaltyTitle: "👥 חברי מועדון Crispy Rewards",
-    voiceAssistantTitle: "🗣️ עוזר קולי של נסיעת שירות בינה מלאכותית",
-    voiceAssistantDesc: "הזמינו בשפה טבעית. הבינה המלאכותית המדומה של נסיעת השירות תתאים את בקשתכם לתוכניות WebMCP פעילות, תמלא טפסים, תאיר פאנלים ותאמת פרמטרים של התפריט.",
-    presetLabel: "הזמנות לקוחות קבועות מראש",
-    promptLabel: "הנחיית לקוח (למשל \"אני רוצה דלי של 10 חלקים עם סלט כרוב\")",
-    btnOrder: "הזמן",
-    terminalTitle: "עוזר-נסיעת-שירות @ לקוח-webmcp",
-    tttTitle: "🎮 זירת בינה מלאכותית של קריספי-איקס-עיגול",
-    tttDesc: "שחקו נגד שפי הבוט! אתם מניחים פולקעס (<strong style=\"color: var(--color-primary);\">🍗</strong>), הבוטים מניחים פלפלים חריפים (<strong style=\"color: var(--color-purple);\">🌶️</strong>).",
-    tttDifficultyLabel: "רמת קושי של הבוט",
-    tttResetBtn: "איפוס",
-    tttStatus: "תורך! בצע מהלך.",
-    tttScorePlayer: "שחקן (🍗)",
-    tttScoreDraws: "תיקו",
-    tttScoreBot: "בוט (🌶️)",
-    adminModeBtnLocked: "🔒 מצב מנהל קופאי",
-    adminModeBtnUnlocked: "🔓 מנהל קופאי: פתוח",
-    adminPasscodeTitle: "הזן קוד מנהל",
-    adminSubmitBtn: "שלח",
-    adminCancelBtn: "ביטול",
-    adminDashboardTitle: "🔑 לוח בקרה של הקופאי (פעיל)",
-    adminLockBtn: "נעילה",
-    adminLiveOrdersTitle: "עדכוני הזמנות חיים",
-    adminLiveOrdersDesc: "מציג עדכוני הזמנות חיים שנשלחו דרך ממשק המשתמש או הפעלת כלי בינה מלאכותית.",
-    adminRemoveRewardsTitle: "🗑️ הסר חבר מועדון",
-    adminRemoveRewardsDesc: "מבטל ומוחק פרופיל מועדון Crispy Rewards פעיל.",
-    adminRemoveSelectLabel: "בחר חבר מועדון להסרה",
-    adminRemoveBtn: "🗑️ הסר חבר",
-    adminKitchenToolsTitle: "⚙️ כלי פונקציות חוזרות של בקר המטבח",
-    adminKitchenToolsDesc: "נקודות קצה אימפרטיביות של JavaScript הרשומות באמצעות <code>document.modelContext.registerTool()</code>.",
-    adminSuggestionsTitle: "💡 הצעות לתפריט מצד לקוחות",
-    adminSuggestionsDesc: "משוב שנשלח על ידי אורחים המציעים טעמים או פריטים חדשים לתפריט.",
-    loyaltyMemberNameLabel: "שם חבר המועדון",
-    loyaltyFavoriteSideLabel: "תוספת מועדפת",
-    customerNamePlaceholder: "למשל אלי וולף",
-    suggestionPlaceholder: "הזן את ההצעה שלך כאן...",
-    loyaltyNamePlaceholder: "למשל אליס מרסר",
-    loyaltyFavoritePlaceholder: "למשל צ'יפס ואפל",
-    agentPromptPlaceholder: "אמור את ההזמנה שלך כאן...",
-    btnRegisterMember: "📋 רשום חבר",
-    btnRemoveMember: "🗑️ הסר חבר",
-    tttYourTurn: "תורך! הנח פולקע.",
-    tttCellFilled: "המשבצת כבר תפוסה!",
-    tttChefCalculating: "בוט השף מציב מהלך נגד...",
-    tttYouWon: "🎉 ניצחת! ניצחון טעים.",
-    tttDraw: "🤝 תיקו! הדלי ריק.",
-    tttBotWon: "🌶️ הבוט ניצח! חריף מדי בשבילך.",
-    adminLoginError: "קוד PIN לא חוקי! נסה שוב."
-  },
-  xh: {
-    langBtn: "🇿🇦 isiXhosa",
-    connectionSimulated: "Drive-Thru: Ilinganisiwe",
-    connectionActive: "Drive-Thru: Iyasebenza",
-    connectionConnected: "Uku-odola: Kuqhagamshelwe",
-    tagline: "Izinze eJersey City, Esekwe ngo-2026",
-    declarativeTitle: "📝 Izixhobo zoku-odola ezichazayo (IiFomu zeHTML)",
-    declarativeDesc: "IiFomu zomthonyama eziguqulelwe kwizenzo zoku-odola ze-AI ngesikhundla se-HTML <code>toolname</code>, <code>tooldescription</code>, kunye ne-<code>toolautosubmit</code>.",
-    bucketSizeLabel: "Ubungakanani beBhalkethi",
-    spiceStyleLabel: "Uhlobo lweSpayisi",
-    sideDishLabel: "Khetha iSide",
-    btnPlaceBucket: "🍗 Faka i-Odolo yeBhalkethi",
-    btnPlaceSandwich: "🥪 Faka i-Odolo yeSandwich ($10.99)",
-    customerNameLabel: "Igama loMthengi",
-    btnSetOrderName: "👤 Seta Igama le-Odolo",
-    primarySauceLabel: "I-Sosi ePhambili",
-    secondarySauceLabel: "I-Sosi yeSibini",
-    btnConfigureSauces: "🍯 Lungiselela iiSosi",
-    newSuggestionLabel: "Ingcebiso yeNto eNtsha yeMenyu okanye yeFlavour",
-    btnSubmitSuggestion: "💡 Ngenisa iNgcebiso",
-    loyaltyTitle: "👥 Amalungu weLoyalty yeCrispy Rewards",
-    voiceAssistantTitle: "🗣️ Umncedisi weLizwi we-AI Drive-Thru",
-    voiceAssistantDesc: "Oda ngolwimi lwemveli. I-AI elinganisiweyo ye-Drive-Thru iza kutshatisa isicelo sakho kwi-WebMCP esebenzayo, izalise iifomu, ikhanyise iiphaneli, kwaye iqinisekise iiparamitha zemenyu.",
-    presetLabel: "Ii-Odolo zabaThengi ezilungiselelwe kwangaphambili",
-    promptLabel: "Isikhuthazo soMthengi (umz. \"Ndifuna ibhalkethi yamaqhekeza ali-10 ane-coleslaw\")",
-    btnOrder: "Oda",
-    terminalTitle: "umncedisi-drive-thru @ client-webmcp",
-    tttTitle: "🎮 I-Arena ye-AI ye-Crispy-Tac-Toe",
-    tttDesc: "Dlalani ngokuchasene neebhothi zikaChef! Ubeka izinti zenkukhu (<strong style=\"color: var(--color-primary);\">🍗</strong>), iiBhothi zibeka iitshili ezishushu (<strong style=\"color: var(--color-purple);\">🌶️</strong>).",
-    tttDifficultyLabel: "Ubunzima beBhothi",
-    tttResetBtn: "Seta kabusha",
-    tttStatus: "Lithuba lakho! Yenza inyathelo.",
-    tttScorePlayer: "Umdlali (🍗)",
-    tttScoreDraws: "Ukulingana",
-    tttScoreBot: "IBhothi (🌶️)",
-    adminModeBtnLocked: "🔒 Imo yoMlawuli weKhanti",
-    adminModeBtnUnlocked: "🔓 Mlawuli weKhanti: Ivuliwe",
-    adminPasscodeTitle: "Faka iPhasiwedi yoMlawuli",
-    adminSubmitBtn: "Ngenisa",
-    adminCancelBtn: "Rhoxisa",
-    adminDashboardTitle: "🔑 Ibhodi yoLawulo yoMlawuli (Esebenzayo)",
-    adminLockBtn: "Tshixa",
-    adminLiveOrdersTitle: "Ukutya okuPhila kwee-Odolo",
-    adminLiveOrdersDesc: "Ibonisa upapasho oluphila lwee-odolo ezingeniswe nge-UI okanye ngokusetyenziswa kwesixhobo se-AI Drive-Thru.",
-    adminRemoveRewardsTitle: "🗑️ Susa iLungu leMivuzo",
-    adminRemoveRewardsDesc: "Ibhangisa kwaye icime iprofayili ye-loyalty yemivuzo esebenzayo.",
-    adminRemoveSelectLabel: "Khetha iLungu leMivuzo oza kuLisusa",
-    adminRemoveBtn: "🗑️ Susa iLungu",
-    adminKitchenToolsTitle: "⚙️ Izixhobo zokuBhala zeKhikhini yoMlawuli",
-    adminKitchenToolsDesc: "Iziphelo zeJavaScript eziyimfuneko ezibhaliswe ngo-<code>document.modelContext.registerTool()</code>.",
-    adminSuggestionsTitle: "💡 Iingcebiso zemenyu yabaThengi",
-    adminSuggestionsDesc: "Ingxelo engeniswe ziindwendwe eziphakamisa iincasa ezintsha okanye izinto zemenyu.",
-    loyaltyMemberNameLabel: "Igama leLungu leLoyalty",
-    loyaltyFavoriteSideLabel: "Icalamacala elithandwayo",
-    customerNamePlaceholder: "umz. Ely Wolf",
-    suggestionPlaceholder: "Faka ingcebiso yakho apha...",
-    loyaltyNamePlaceholder: "umz. Alice Mercer",
-    loyaltyFavoritePlaceholder: "umz. Waffle Fries",
-    agentPromptPlaceholder: "Thetha i-odolo yakho apha...",
-    btnRegisterMember: "📋 Bhalisa iLungu",
-    btnRemoveMember: "🗑️ Susa iLungu",
-    tttYourTurn: "Lithuba lakho! Beka isinti.",
-    tttCellFilled: "Iseli sele izaliswe!",
-    tttChefCalculating: "Ibhothi yompheki ibala inyathelo lokuchasa...",
-    tttYouWon: "🎉 Uwinile! Uloyiso olumnandi.",
-    tttDraw: "🤝 Kukulingana! Ibhalkethi ayinanto.",
-    tttBotWon: "🌶️ IBhothi iwinile! Kushushu kakhulu kuwe.",
-    adminLoginError: "IPIN engasebenziyo! Zama kwakhona."
+import { 
+  signUpWithEmail, 
+  signInWithEmail, 
+  signInWithGoogle, 
+  signOutUser, 
+  onAuthChange,
+  sendChatMessage,
+  sendChallenge,
+  onChatUpdate,
+  onOnlinePlayersUpdate,
+  getLocalSessionUser,
+  setActiveGameStatus
+} from './firebase-config.js';
+
+// Web Audio API Synthesizer for Hub FX
+let audioCtx = null;
+
+function getAudioContext() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   }
-};
-
-// Global mock state for the Fried Chicken Kitchen
-const STATE = {
-  language: localStorage.getItem('ely_hot_chicken_language') || 'en',
-  order: {
-    customerName: 'Guest',
-    bucketSize: '10-Piece Crispy Bucket',
-    spiceLevel: 'Classic Golden',
-    sides: 'Waffle Fries',
-    primarySauce: 'Creamy Honey Mustard',
-    secondarySauce: 'Smoky Chipotle BBQ',
-    totalPrice: 16.99
-  },
-  loyaltyMembers: [
-    { name: 'Ely Wolf', favoriteSide: 'Spicy Waffle Fries', joined: '2026-06-22' }
-  ],
-  suggestions: [],
-  menu: [
-    { id: '6-Piece Golden Tenders', price: 9.99 },
-    { id: '10-Piece Crispy Bucket', price: 16.99 },
-    { id: '20-Piece Spicy Feaster', price: 29.99 },
-    { id: 'Chicken Sandwich', price: 10.99 }
-  ],
-  ttt: {
-    board: Array(9).fill(null),
-    active: true,
-    turn: 'X',
-    scores: { player: 0, bot: 0, draws: 0 }
-  },
-  adminUnlocked: false,
-  placedOrders: []
-};
-
-// Tool schemas and execution logic for the simulator registry
-const SIMULATED_TOOLS = {
-  // Declarative Tools (HTML Forms)
-  'order_chicken_bucket': {
-    name: 'order_chicken_bucket',
-    type: 'declarative',
-    description: 'Places an order for a fried chicken bucket with custom size, spice, and sides.',
-    targetId: 'order-chicken-form',
-    execute: (input) => {
-      if (input.bucketSize) STATE.order.bucketSize = input.bucketSize;
-      if (input.spiceLevel) STATE.order.spiceLevel = input.spiceLevel;
-      if (input.sides) STATE.order.sides = input.sides;
-      
-      const menuItem = STATE.menu.find(m => m.id === STATE.order.bucketSize);
-      STATE.order.totalPrice = menuItem ? menuItem.price : 16.99;
-      
-      updateOrderUI();
-      
-      // Live order tracker logging
-      const isAgentSim = window.isAgentSimulating === true;
-      const customerLabel = STATE.order.customerName || (STATE.language === 'es' ? 'Invitado' : (STATE.language === 'he' ? 'אורח' : (STATE.language === 'xh' ? 'Undwendwe' : 'Guest')));
-      const sidesLabel = STATE.language === 'es' ? 'Acompañamientos' : (STATE.language === 'he' ? 'תוספות' : (STATE.language === 'xh' ? 'Amacala' : 'Sides'));
-      const dipsLabel = STATE.language === 'es' ? 'Salsas' : (STATE.language === 'he' ? 'רטבים' : (STATE.language === 'xh' ? 'IiSosi' : 'Dips'));
-      const originLabel = isAgentSim 
-        ? (STATE.language === 'es' ? '🤖 Autoconsulta de IA' : (STATE.language === 'he' ? '🤖 בינה מלאכותית של נסיעת שירות' : (STATE.language === 'xh' ? '🤖 I-AI ye-Drive-Thru' : '🤖 Drive-Thru AI')))
-        : (STATE.language === 'es' ? '👤 Clic de Cliente' : (STATE.language === 'he' ? '👤 לחיצת לקוח' : (STATE.language === 'xh' ? '👤 Ukunqakraza koMthengi' : '👤 Customer Click')));
-      const placedOrderRecord = {
-        id: `#ORD-${Math.floor(1000 + Math.random() * 9000)}`,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        details: `[${customerLabel}] ${STATE.order.bucketSize} (${STATE.order.spiceLevel}) - ${sidesLabel}: ${STATE.order.sides} - ${dipsLabel}: ${STATE.order.primarySauce}/${STATE.order.secondarySauce}`,
-        price: `$${(STATE.order.totalPrice * 1.08).toFixed(2)}`,
-        origin: originLabel
-      };
-      if (!STATE.placedOrders) STATE.placedOrders = [];
-      STATE.placedOrders.unshift(placedOrderRecord);
-      updateAdminOrdersUI();
-      
-      return {
-        status: 'order_placed',
-        orderSummary: STATE.order,
-        estimatedPrepTimeMinutes: STATE.order.bucketSize.includes('20') ? 15 : 10
-      };
-    }
-  },
-  'order_chicken_sandwich': {
-    name: 'order_chicken_sandwich',
-    type: 'declarative',
-    description: 'Places an order for a hot chicken sandwich with custom spice style and sides.',
-    targetId: 'order-sandwich-form',
-    execute: (input) => {
-      STATE.order.bucketSize = 'Chicken Sandwich';
-      if (input.spiceLevel) STATE.order.spiceLevel = input.spiceLevel;
-      if (input.sides) STATE.order.sides = input.sides;
-      
-      const menuItem = STATE.menu.find(m => m.id === 'Chicken Sandwich');
-      STATE.order.totalPrice = menuItem ? menuItem.price : 10.99;
-      
-      updateOrderUI();
-      
-      // Live order tracker logging
-      const isAgentSim = window.isAgentSimulating === true;
-      const customerLabel = STATE.order.customerName || (STATE.language === 'es' ? 'Invitado' : (STATE.language === 'he' ? 'אורח' : (STATE.language === 'xh' ? 'Undwendwe' : 'Guest')));
-      const sidesLabel = STATE.language === 'es' ? 'Acompañamientos' : (STATE.language === 'he' ? 'תוספות' : (STATE.language === 'xh' ? 'Amacala' : 'Sides'));
-      const dipsLabel = STATE.language === 'es' ? 'Salsas' : (STATE.language === 'he' ? 'רטבים' : (STATE.language === 'xh' ? 'IiSosi' : 'Dips'));
-      const originLabel = isAgentSim 
-        ? (STATE.language === 'es' ? '🤖 Autoconsulta de IA' : (STATE.language === 'he' ? '🤖 בינה מלאכותית של נסיעת שירות' : (STATE.language === 'xh' ? '🤖 I-AI ye-Drive-Thru' : '🤖 Drive-Thru AI')))
-        : (STATE.language === 'es' ? '👤 Clic de Cliente' : (STATE.language === 'he' ? '👤 לחיצת לקוח' : (STATE.language === 'xh' ? '👤 Ukunqakraza koMthengi' : '👤 Customer Click')));
-      const placedOrderRecord = {
-        id: `#ORD-${Math.floor(1000 + Math.random() * 9000)}`,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        details: `[${customerLabel}] Chicken Sandwich (${STATE.order.spiceLevel}) - ${sidesLabel}: ${STATE.order.sides} - ${dipsLabel}: ${STATE.order.primarySauce}/${STATE.order.secondarySauce}`,
-        price: `$${(STATE.order.totalPrice * 1.08).toFixed(2)}`,
-        origin: originLabel
-      };
-      if (!STATE.placedOrders) STATE.placedOrders = [];
-      STATE.placedOrders.unshift(placedOrderRecord);
-      updateAdminOrdersUI();
-      
-      return {
-        status: 'order_placed',
-        orderSummary: STATE.order,
-        estimatedPrepTimeMinutes: 8
-      };
-    }
-  },
-  'set_customer_name': {
-    name: 'set_customer_name',
-    type: 'declarative',
-    description: "Configures the customer's name for the active order.",
-    targetId: 'customer-name-form',
-    execute: (input) => {
-      if (input.customerName) STATE.order.customerName = input.customerName;
-      
-      updateOrderUI();
-      
-      return {
-        status: 'name_updated',
-        customerName: STATE.order.customerName
-      };
-    }
-  },
-  'choose_sauces': {
-    name: 'choose_sauces',
-    type: 'declarative',
-    description: 'Configures dip sauce combinations for the active order.',
-    targetId: 'sauces-form',
-    execute: (input) => {
-      if (input.primarySauce) STATE.order.primarySauce = input.primarySauce;
-      if (input.secondarySauce) STATE.order.secondarySauce = input.secondarySauce;
-      
-      updateOrderUI();
-      
-      return {
-        status: 'sauces_updated',
-        sauces: {
-          primary: STATE.order.primarySauce,
-          secondary: STATE.order.secondarySauce
-        }
-      };
-    }
-  },
-  'submit_menu_suggestion': {
-    name: 'submit_menu_suggestion',
-    type: 'declarative',
-    description: 'Submits a menu suggestion or flavor request to the restaurant kitchen managers.',
-    targetId: 'suggestion-form',
-    execute: (input) => {
-      const text = input.suggestionText || '';
-      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      
-      if (!STATE.suggestions) STATE.suggestions = [];
-      STATE.suggestions.unshift({ text, time });
-      
-      updateSuggestionsUI();
-      
-      const inputEl = document.getElementById('suggestion-input');
-      if (inputEl) inputEl.value = '';
-      
-      return {
-        status: 'suggestion_submitted',
-        suggestionText: text
-      };
-    }
-  },
-  'register_loyalty_member': {
-    name: 'register_loyalty_member',
-    type: 'declarative',
-    description: 'Registers a new rewards loyalty profile (Requires manager approval).',
-    targetId: 'loyalty-form',
-    execute: (input) => {
-      const newMember = {
-        name: input.name || 'Anonymous Guest',
-        favoriteSide: input.favoriteSide || 'Waffle Fries',
-        joined: new Date().toISOString().split('T')[0]
-      };
-      STATE.loyaltyMembers.push(newMember);
-      updateLoyaltyUI();
-      return {
-        status: 'member_registered',
-        member: newMember,
-        totalMembers: STATE.loyaltyMembers.length
-      };
-    }
-  },
-  'remove_loyalty_member': {
-    name: 'remove_loyalty_member',
-    type: 'declarative',
-    description: 'Removes a restaurant rewards loyalty profile.',
-    targetId: 'remove-loyalty-form',
-    execute: (input) => {
-      const index = STATE.loyaltyMembers.findIndex(m => m.name === input.name);
-      if (index !== -1) {
-        const removed = STATE.loyaltyMembers.splice(index, 1)[0];
-        updateLoyaltyUI();
-        return {
-          status: 'member_removed',
-          member: removed,
-          totalMembers: STATE.loyaltyMembers.length
-        };
-      }
-      return { error: 'Member not found' };
-    }
-  },
-  
-  // Imperative Tools
-  'get_kitchen_status': {
-    name: 'get_kitchen_status',
-    type: 'imperative',
-    description: 'Returns kitchen queue size, wait times, and active frying vat temperatures.',
-    schema: {
-      type: 'object',
-      properties: {}
-    },
-    execute: () => {
-      const queueSize = Math.floor(Math.random() * 4) + 1; // 1-5 orders
-      const waitTime = queueSize * 6; // 6 mins per order
-      const vatTemp1 = 345 + Math.floor(Math.random() * 15); // 345-360F
-      const vatTemp2 = 350 + Math.floor(Math.random() * 10); // 350-360F
-      
-      return {
-        kitchenHost: "Ely's Hot Chicken",
-        status: 'OPERATIONAL',
-        activeVats: 2,
-        queue: {
-          pendingOrders: queueSize,
-          estimatedWaitTime: `${waitTime} minutes`
-        },
-        telemetry: {
-          fryerVat1: `${vatTemp1}°F (Ready)`,
-          fryerVat2: `${vatTemp2}°F (Frying)`
-        }
-      };
-    }
-  },
-  'generate_receipt': {
-    name: 'generate_receipt',
-    type: 'imperative',
-    description: 'Produces a markdown formatted food receipt for the customer.',
-    schema: {
-      type: 'object',
-      properties: {
-        format: { type: 'string', description: 'Receipt print format (markdown, html)' }
-      }
-    },
-    execute: (input) => {
-      const format = input.format || 'markdown';
-      const tax = (STATE.order.totalPrice * 0.08).toFixed(2);
-      const total = (STATE.order.totalPrice * 1.08).toFixed(2);
-      
-      if (format === 'html') {
-        return `<h3>Ely's Hot Chicken Receipt</h3><p>Customer: ${STATE.order.customerName || 'Guest'}</p><p>Item: ${STATE.order.bucketSize}</p><p>Sauces: ${STATE.order.primarySauce} & ${STATE.order.secondarySauce}</p><p>Total: $${total}</p>`;
-      }
-      return `# ELY'S HOT CHICKEN RECEIPT\n\n- **Customer**: ${STATE.order.customerName || 'Guest'}\n- **Item**: ${STATE.order.bucketSize} (${STATE.order.spiceLevel})\n- **Side**: ${STATE.order.sides}\n- **Dips**: ${STATE.order.primarySauce} & ${STATE.order.secondarySauce}\n- **Subtotal**: $${STATE.order.totalPrice.toFixed(2)}\n- **Tax (8%)**: $${tax}\n- **Total Due**: $${total}\n\n*Thank you for ordering with Ely's Hot Chicken!*`;
-    }
-  },
-  'clear_order_logs': {
-    name: 'clear_order_logs',
-    type: 'imperative',
-    description: 'Clears the drive-thru terminal display logs.',
-    schema: {
-      type: 'object',
-      properties: {}
-    },
-    execute: () => {
-      const terminal = document.getElementById('terminal-body');
-      if (terminal) terminal.innerHTML = '';
-      return 'Drive-thru console logs wiped clean.';
-    }
-  },
-  'play_tic_tac_toe_move': {
-    name: 'play_tic_tac_toe_move',
-    type: 'imperative',
-    description: 'Executes a player move (🍗) on the Crispy-Tac-Toe board at a specified cell position.',
-    schema: {
-      type: 'object',
-      properties: {
-        cellIndex: { 
-          type: 'integer', 
-          minimum: 0, 
-          maximum: 8, 
-          description: 'The 0-indexed cell index on the grid (0-8, 0=top-left, 4=center, 8=bottom-right).' 
-        }
-      },
-      required: ['cellIndex']
-    },
-    execute: (input) => {
-      const cellIndex = parseInt(input.cellIndex);
-      if (isNaN(cellIndex) || cellIndex < 0 || cellIndex > 8) {
-        throw new Error('Invalid cellIndex. Must be between 0 and 8 inclusive.');
-      }
-      return makeTicTacToeMoveDirect(cellIndex);
-    }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
   }
-};
+  return audioCtx;
+}
 
-// Native WebMCP registration (runs if supported by the browser)
-if (isWebMCPSupported) {
+function playHubSound(type) {
   try {
-    modelContext.registerTool({
-      name: SIMULATED_TOOLS.get_kitchen_status.name,
-      description: SIMULATED_TOOLS.get_kitchen_status.description,
-      inputSchema: SIMULATED_TOOLS.get_kitchen_status.schema,
-      execute: SIMULATED_TOOLS.get_kitchen_status.execute
-    });
+    const ctx = getAudioContext();
+    const now = ctx.currentTime;
 
-    modelContext.registerTool({
-      name: SIMULATED_TOOLS.generate_receipt.name,
-      description: SIMULATED_TOOLS.generate_receipt.description,
-      inputSchema: SIMULATED_TOOLS.generate_receipt.schema,
-      execute: SIMULATED_TOOLS.generate_receipt.execute
-    });
-
-    modelContext.registerTool({
-      name: SIMULATED_TOOLS.clear_order_logs.name,
-      description: SIMULATED_TOOLS.clear_order_logs.description,
-      inputSchema: SIMULATED_TOOLS.clear_order_logs.schema,
-      execute: SIMULATED_TOOLS.clear_order_logs.execute
-    });
-
-    modelContext.registerTool({
-      name: SIMULATED_TOOLS.play_tic_tac_toe_move.name,
-      description: SIMULATED_TOOLS.play_tic_tac_toe_move.description,
-      inputSchema: SIMULATED_TOOLS.play_tic_tac_toe_move.schema,
-      execute: SIMULATED_TOOLS.play_tic_tac_toe_move.execute
-    });
-    
-    console.log('WebMCP Native: Chicken kitchen tools registered successfully!');
-  } catch (err) {
-    console.error('WebMCP Native registration failed:', err);
-  }
+    if (type === 'hover') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(500, now);
+      osc.frequency.exponentialRampToValueAtTime(850, now + 0.02);
+      gain.gain.setValueAtTime(0.02, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.02);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.02);
+    } else if (type === 'message') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(600, now);
+      osc.frequency.exponentialRampToValueAtTime(1200, now + 0.08);
+      gain.gain.setValueAtTime(0.05, now);
+      gain.gain.linearRampToValueAtTime(0.001, now + 0.08);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.08);
+    }
+  } catch (e) {}
 }
 
-// Startup hooks
-document.addEventListener('DOMContentLoaded', () => {
-  setupForms();
-  updateOrderUI();
-  updateLoyaltyUI();
-  updateSuggestionsUI();
-  updateConnectionStatus();
-  applyLanguage();
-  
-  logToTerminal('system', "Ely's Hot Chicken: Drive-thru system initialized.");
-  logToTerminal('system', `WebMCP Native support: ${isWebMCPSupported ? 'CONNECTED' : 'SIMULATED (Offline API Mode)'}`);
-  logToTerminal('system', 'Say or click an instruction to order.');
-});
+// Live Search Engine
+function filterGames() {
+  const searchInput = document.getElementById('searchInput');
+  const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+  const cards = document.querySelectorAll('.neal-card');
 
-// Intercept form submissions
-function setupForms() {
-  const forms = [
-    { id: 'order-chicken-form', toolName: 'order_chicken_bucket' },
-    { id: 'order-sandwich-form', toolName: 'order_chicken_sandwich' },
-    { id: 'customer-name-form', toolName: 'set_customer_name' },
-    { id: 'sauces-form', toolName: 'choose_sauces' },
-    { id: 'loyalty-form', toolName: 'register_loyalty_member' },
-    { id: 'remove-loyalty-form', toolName: 'remove_loyalty_member' },
-    { id: 'suggestion-form', toolName: 'submit_menu_suggestion' }
-  ];
-
-  forms.forEach(({ id, toolName }) => {
-    const formEl = document.getElementById(id);
-    if (!formEl) return;
-
-    formEl.addEventListener('submit', (event) => {
-      event.preventDefault();
-      
-      const formData = new FormData(event.target);
-      const data = Object.fromEntries(formData.entries());
-      
-      const tool = SIMULATED_TOOLS[toolName];
-      const result = tool ? tool.execute(data) : { error: 'Tool execution failed' };
-      
-      if (!event.agentInvoked) {
-        logToTerminal('system', `Manual order submission captured for [${toolName}]`);
-        logToTerminal('tool', `Receipt details: ${JSON.stringify(result, null, 2)}`);
-      }
-
-      if (event.agentInvoked && typeof event.respondWith === 'function') {
-        event.respondWith(Promise.resolve(JSON.stringify(result)));
-      }
-    });
-  });
-}
-
-// Sync UI inputs to matches
-function updateOrderUI() {
-  const sizeEl = document.getElementById('bucket-size');
-  const spiceEl = document.getElementById('spice-level');
-  const sidesEl = document.getElementById('side-dish');
-  const primaryEl = document.getElementById('sauce-primary');
-  const secondaryEl = document.getElementById('sauce-secondary');
-  
-  const sandwichSpiceEl = document.getElementById('sandwich-spice');
-  const sandwichSideEl = document.getElementById('sandwich-side');
-  
-  const customerNameEl = document.getElementById('order-customer-name');
-
-  if (customerNameEl) customerNameEl.value = STATE.order.customerName || '';
-
-  if (STATE.order.bucketSize === 'Chicken Sandwich') {
-    if (sandwichSpiceEl) sandwichSpiceEl.value = STATE.order.spiceLevel;
-    if (sandwichSideEl) sandwichSideEl.value = STATE.order.sides;
-  } else {
-    if (sizeEl) sizeEl.value = STATE.order.bucketSize;
-    if (spiceEl) spiceEl.value = STATE.order.spiceLevel;
-    if (sidesEl) sidesEl.value = STATE.order.sides;
-  }
-  
-  if (primaryEl) primaryEl.value = STATE.order.primarySauce;
-  if (secondaryEl) secondaryEl.value = STATE.order.secondarySauce;
-}
-
-function updateLoyaltyUI() {
-  const listEl = document.getElementById('interns-list');
-  if (!listEl) return;
-
-  const likesLabel = STATE.language === 'es' ? 'Le gusta' : (STATE.language === 'he' ? 'אוהב/ת' : (STATE.language === 'xh' ? 'Uthanda' : 'Likes'));
-  listEl.innerHTML = STATE.loyaltyMembers.map(m => `
-    <div style="background: rgba(245, 158, 11, 0.03); border: 1px solid rgba(245, 158, 11, 0.08); border-radius: 6px; padding: 0.5rem 0.75rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-top: 0.5rem;">
-      <div>
-        <div style="font-weight: 600; color: var(--color-primary);">${escapeHTML(m.name)}</div>
-        <div style="font-size: 0.75rem; color: var(--text-muted);">${likesLabel}: ${escapeHTML(m.favoriteSide)}</div>
-      </div>
-      <div style="font-size: 0.75rem; color: var(--text-dark);">${escapeHTML(m.joined)}</div>
-    </div>
-  `).join('');
-
-  const removeSelect = document.getElementById('remove-member-name');
-  if (removeSelect) {
-    if (STATE.loyaltyMembers.length === 0) {
-      const emptyMsg = STATE.language === 'es' ? 'No hay miembros registrados' : (STATE.language === 'he' ? 'אין חברים רשומים' : (STATE.language === 'xh' ? 'Akukho malungu abhalisiweyo' : 'No members registered'));
-      removeSelect.innerHTML = `<option value="">${emptyMsg}</option>`;
+  cards.forEach(card => {
+    const cardName = card.getAttribute('data-name') || '';
+    if (!query || cardName.includes(query)) {
+      card.style.display = 'flex';
     } else {
-      removeSelect.innerHTML = STATE.loyaltyMembers.map(m => `
-        <option value="${escapeHTML(m.name)}">${escapeHTML(m.name)}</option>
-      `).join('');
-    }
-  }
-}
-
-function updateSuggestionsUI() {
-  const feedEl = document.getElementById('admin-suggestions-feed');
-  if (!feedEl) return;
-  
-  if (!STATE.suggestions || STATE.suggestions.length === 0) {
-    const emptyMsg = STATE.language === 'es' ? 'No hay sugerencias enviadas aún.' : (STATE.language === 'he' ? 'אין הצעות שנשלחו עדיין.' : (STATE.language === 'xh' ? 'Akukho ngcebiso zingenisiweyo okwangoku' : 'No suggestions submitted yet.'));
-    feedEl.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-dark); text-align: center; padding: 1rem;">${emptyMsg}</div>`;
-    return;
-  }
-  
-  const feedbackLabel = STATE.language === 'es' ? 'Comentario Recibido' : (STATE.language === 'he' ? 'משוב שהתקבל' : (STATE.language === 'xh' ? 'Ingxelo eFunyenweyo' : 'Feedback Received'));
-  
-  feedEl.innerHTML = STATE.suggestions.map(sug => `
-    <div style="background: rgba(10, 4, 1, 0.3); border: 1px solid rgba(245, 158, 11, 0.12); border-radius: 6px; padding: 0.6rem 0.8rem; display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; margin-bottom: 0.5rem;">
-      <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-dark);">
-        <span>${feedbackLabel}</span>
-        <span>${escapeHTML(sug.time)}</span>
-      </div>
-      <div style="color: var(--text-main); font-weight: 500;">"${escapeHTML(sug.text)}"</div>
-    </div>
-  `).join('');
-}
-
-function updateConnectionStatus() {
-  const statusBadge = document.getElementById('connection-status');
-  if (statusBadge) {
-    const lang = STATE.language || 'en';
-    const t = TRANSLATIONS[lang];
-    statusBadge.innerHTML = isWebMCPSupported 
-      ? `<span class="status-dot"></span>${t.connectionActive}`
-      : `<span class="status-dot" style="background-color: var(--color-warning); box-shadow: 0 0 8px var(--color-warning);"></span>${t.connectionSimulated}`;
-  }
-}
-
-// Language translation updater
-function applyLanguage() {
-  const lang = STATE.language || 'en';
-  localStorage.setItem('ely_hot_chicken_language', lang);
-
-  const t = TRANSLATIONS[lang];
-  if (!t) return;
-
-  // Handle document direction (RTL for Hebrew)
-  document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
-  document.documentElement.lang = lang;
-
-  // Update active segmented button styles
-  const langs = ['en', 'es', 'he', 'xh'];
-  langs.forEach(l => {
-    const btn = document.getElementById(`lang-btn-${l}`);
-    if (btn) {
-      if (l === lang) {
-        btn.style.background = 'var(--color-primary)';
-        btn.style.color = '#000000';
-      } else {
-        btn.style.background = 'transparent';
-        btn.style.color = 'var(--text-muted)';
-      }
+      card.style.display = 'none';
     }
   });
-
-  const tagline = document.getElementById('app-tagline');
-  if (tagline) tagline.textContent = t.tagline;
-
-  updateConnectionStatus();
-
-  const decTitle = document.getElementById('declarative-title');
-  if (decTitle) decTitle.innerHTML = t.declarativeTitle;
-
-  const decDesc = document.getElementById('declarative-desc');
-  if (decDesc) decDesc.innerHTML = t.declarativeDesc;
-
-  const labels = {
-    'label[for="bucket-size"]': t.bucketSizeLabel,
-    'label[for="spice-level"]': t.spiceStyleLabel,
-    'label[for="side-dish"]': t.sideDishLabel,
-    'label[for="sandwich-spice"]': t.spiceStyleLabel,
-    'label[for="sandwich-side"]': t.sideDishLabel,
-    'label[for="order-customer-name"]': t.customerNameLabel,
-    'label[for="sauce-primary"]': t.primarySauceLabel,
-    'label[for="sauce-secondary"]': t.secondarySauceLabel,
-    'label[for="suggestion-input"]': t.newSuggestionLabel,
-    'label[for="member-name"]': t.loyaltyMemberNameLabel,
-    'label[for="member-favorite"]': t.loyaltyFavoriteSideLabel,
-    'label[for="remove-member-name"]': t.adminRemoveSelectLabel
-  };
-
-  for (const [selector, text] of Object.entries(labels)) {
-    const el = document.querySelector(selector);
-    if (el) el.textContent = text;
-  }
-
-  const submitBtns = {
-    'order-chicken-submit': t.btnPlaceBucket,
-    'order-sandwich-submit': t.btnPlaceSandwich,
-    'customer-name-submit': t.btnSetOrderName,
-    'sauces-submit': t.btnConfigureSauces,
-    'suggestion-submit': t.btnSubmitSuggestion,
-    'loyalty-submit': t.btnRegisterMember,
-    'remove-loyalty-submit': t.btnRemoveMember
-  };
-
-  for (const [id, text] of Object.entries(submitBtns)) {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = text;
-  }
-
-  const placeholders = {
-    'order-customer-name': t.customerNamePlaceholder,
-    'suggestion-input': t.suggestionPlaceholder,
-    'member-name': t.loyaltyNamePlaceholder,
-    'member-favorite': t.loyaltyFavoritePlaceholder,
-    'agent-prompt': t.agentPromptPlaceholder
-  };
-
-  for (const [id, text] of Object.entries(placeholders)) {
-    const el = document.getElementById(id);
-    if (el) el.placeholder = text;
-  }
-
-  const loyaltyTitle = document.getElementById('loyalty-title');
-  if (loyaltyTitle) loyaltyTitle.innerHTML = t.loyaltyTitle;
-
-  const voiceTitle = document.getElementById('voice-title');
-  if (voiceTitle) voiceTitle.innerHTML = t.voiceAssistantTitle;
-
-  const voiceDesc = document.getElementById('voice-desc');
-  if (voiceDesc) voiceDesc.textContent = t.voiceAssistantDesc;
-
-  const presetLabel = document.getElementById('preset-label');
-  if (presetLabel) presetLabel.textContent = t.presetLabel;
-
-  const promptLabel = document.getElementById('prompt-label');
-  if (promptLabel) promptLabel.textContent = t.promptLabel;
-
-  const promptSubmit = document.getElementById('agent-prompt-submit');
-  if (promptSubmit) promptSubmit.textContent = t.btnOrder;
-
-  const termTitle = document.getElementById('terminal-title');
-  if (termTitle) termTitle.textContent = t.terminalTitle;
-
-  const tttTitle = document.getElementById('ttt-title');
-  if (tttTitle) tttTitle.innerHTML = t.tttTitle;
-
-  const tttDesc = document.getElementById('ttt-desc');
-  if (tttDesc) tttDesc.innerHTML = t.tttDesc;
-
-  const tttDiffLabel = document.getElementById('ttt-diff-label');
-  if (tttDiffLabel) tttDiffLabel.textContent = t.tttDifficultyLabel;
-
-  const tttReset = document.getElementById('ttt-reset');
-  if (tttReset) tttReset.textContent = t.tttResetBtn;
-
-  const statusEl = document.getElementById('ttt-status');
-  if (statusEl) {
-    const currentText = statusEl.textContent.trim();
-    let matchedKey = null;
-    for (const l of ['en', 'es', 'he', 'xh']) {
-      const key = Object.keys(TRANSLATIONS[l]).find(k => TRANSLATIONS[l][k] === currentText);
-      if (key) {
-        matchedKey = key;
-        break;
-      }
-    }
-    if (matchedKey && t[matchedKey]) {
-      statusEl.textContent = t[matchedKey];
-    } else if (currentText === 'Your turn! Make a move.' || currentText === '¡Tu turno! Haz un movimiento.' || currentText === 'תורך! בצע מהלך.' || currentText === 'Lithuba lakho! Yenza inyathelo.') {
-      statusEl.textContent = t.tttStatus;
-    }
-  }
-
-  const tttPlayerLabel = document.getElementById('ttt-stat-player-label');
-  if (tttPlayerLabel) tttPlayerLabel.textContent = t.tttScorePlayer;
-
-  const tttDrawsLabel = document.getElementById('ttt-stat-draws-label');
-  if (tttDrawsLabel) tttDrawsLabel.textContent = t.tttScoreDraws;
-
-  const tttBotLabel = document.getElementById('ttt-stat-bot-label');
-  if (tttBotLabel) tttBotLabel.textContent = t.tttScoreBot;
-
-  const adminBtn = document.getElementById('admin-mode-btn');
-  if (adminBtn) {
-    adminBtn.textContent = STATE.adminUnlocked ? t.adminModeBtnUnlocked : t.adminModeBtnLocked;
-  }
-
-  const loginTitle = document.getElementById('admin-login-title');
-  if (loginTitle) loginTitle.textContent = t.adminPasscodeTitle;
-
-  const loginSubmit = document.getElementById('admin-login-submit');
-  if (loginSubmit) loginSubmit.textContent = t.adminSubmitBtn;
-
-  const loginCancel = document.getElementById('admin-login-cancel');
-  if (loginCancel) loginCancel.textContent = t.adminCancelBtn;
-
-  const loginError = document.getElementById('admin-login-error');
-  if (loginError) loginError.textContent = t.adminLoginError;
-
-  const dashboardTitle = document.getElementById('admin-dashboard-title');
-  if (dashboardTitle) dashboardTitle.innerHTML = t.adminDashboardTitle;
-
-  const dashboardLock = document.getElementById('admin-dashboard-lock');
-  if (dashboardLock) dashboardLock.textContent = t.adminLockBtn;
-
-  const liveOrdersDesc = document.getElementById('admin-live-orders-desc');
-  if (liveOrdersDesc) liveOrdersDesc.textContent = t.adminLiveOrdersDesc;
-
-  const regRewardsTitle = document.getElementById('admin-register-rewards-title');
-  if (regRewardsTitle) regRewardsTitle.innerHTML = t.adminRegisterRewardsTitle;
-
-  const regRewardsDesc = document.getElementById('admin-register-rewards-desc');
-  if (regRewardsDesc) regRewardsDesc.textContent = t.adminRegisterRewardsDesc;
-
-  const removeTitle = document.getElementById('admin-remove-rewards-title');
-  if (removeTitle) removeTitle.innerHTML = t.adminRemoveRewardsTitle;
-
-  const removeDesc = document.getElementById('admin-remove-rewards-desc');
-  if (removeDesc) removeDesc.textContent = t.adminRemoveRewardsDesc;
-
-  const kitchenTitle = document.getElementById('admin-kitchen-tools-title');
-  if (kitchenTitle) kitchenTitle.innerHTML = t.adminKitchenToolsTitle;
-
-  const kitchenDesc = document.getElementById('admin-kitchen-tools-desc');
-  if (kitchenDesc) kitchenDesc.textContent = t.adminKitchenToolsDesc;
-
-  const sugTitle = document.getElementById('admin-suggestions-title');
-  if (sugTitle) sugTitle.innerHTML = t.adminSuggestionsTitle;
-
-  const sugDesc = document.getElementById('admin-suggestions-desc');
-  if (sugDesc) sugDesc.textContent = t.adminSuggestionsDesc;
 }
 
-function toggleLanguage() {
-  if (STATE.language === 'en') STATE.language = 'es';
-  else if (STATE.language === 'es') STATE.language = 'he';
-  else if (STATE.language === 'he') STATE.language = 'xh';
-  else STATE.language = 'en';
-  applyLanguage();
-}
-function setLanguage(lang) {
-  STATE.language = lang;
-  applyLanguage();
-}
-window.toggleLanguage = toggleLanguage;
-window.setLanguage = setLanguage;
+window.filterGames = filterGames;
 
-// Drive-Thru Assistant Console logger
-function logToTerminal(type, text) {
-  const terminal = document.getElementById('terminal-body');
-  if (!terminal) return;
+// Ambient Background Particle Canvas
+function initBgCanvas() {
+  const canvas = document.getElementById('hubBgCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
 
-  const entry = document.createElement('div');
-  entry.className = 'log-entry';
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
 
-  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  const timeSpan = `<span class="log-time">[${time}]</span>`;
-
-  let content = '';
-  if (type === 'agent') {
-    content = `${timeSpan} <span class="log-agent">🗣️ Assistant:</span> ${escapeHTML(text)}`;
-  } else if (type === 'system') {
-    content = `${timeSpan} <span class="log-system">🍽️ Kitchen:</span> ${escapeHTML(text)}`;
-  } else if (type === 'tool') {
-    content = `${timeSpan} <span class="log-tool">🍟 OrderData:</span> <pre style="background: rgba(0,0,0,0.6); padding: 0.5rem; margin-top: 0.25rem; border-radius: 4px; overflow-x: auto; color: var(--color-primary); font-size: 0.8rem;">${escapeHTML(text)}</pre>`;
-  } else if (type === 'error') {
-    content = `${timeSpan} <span class="log-error">❌ OrderError:</span> <span style="color: var(--color-danger);">${escapeHTML(text)}</span>`;
-  } else if (type === 'success') {
-    content = `${timeSpan} <span class="log-success">🍳 Success:</span> <span style="color: var(--color-warning);">${escapeHTML(text)}</span>`;
+  const particles = [];
+  for (let i = 0; i < 40; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      radius: Math.random() * 2 + 1,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      alpha: Math.random() * 0.4 + 0.1
+    });
   }
 
-  entry.innerHTML = content;
-  terminal.appendChild(entry);
-  terminal.scrollTop = terminal.scrollHeight;
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width) p.x = 0;
+      if (p.y < 0) p.y = canvas.height;
+      if (p.y > canvas.height) p.y = 0;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha * 0.25})`;
+      ctx.fill();
+    });
+
+    requestAnimationFrame(animate);
+  }
+  animate();
 }
 
-function showThinking(text) {
-  const terminal = document.getElementById('terminal-body');
-  if (!terminal) return null;
+// ==========================================================================
+// AUTH & MULTIPLAYER LOBBY CONTROLLER
+// ==========================================================================
+let isSignUpMode = true;
 
-  const thinkingEl = document.createElement('div');
-  thinkingEl.className = 'log-entry log-thinking';
-  thinkingEl.innerHTML = `<span class="spinner"></span> <span>${escapeHTML(text)}</span>`;
-  terminal.appendChild(thinkingEl);
-  terminal.scrollTop = terminal.scrollHeight;
-  return thinkingEl;
+const openAuthModalBtn = document.getElementById('openAuthModalBtn');
+const closeAuthModalBtn = document.getElementById('closeAuthModalBtn');
+const authModal = document.getElementById('authModal');
+const userProfilePill = document.getElementById('userProfilePill');
+const userAvatar = document.getElementById('userAvatar');
+const userNameDisplay = document.getElementById('userNameDisplay');
+const signOutBtn = document.getElementById('signOutBtn');
+
+const tabSignUp = document.getElementById('tabSignUp');
+const tabSignIn = document.getElementById('tabSignIn');
+const groupDisplayName = document.getElementById('groupDisplayName');
+const submitAuthBtn = document.getElementById('submitAuthBtn');
+const authForm = document.getElementById('authForm');
+const googleAuthBtn = document.getElementById('googleAuthBtn');
+const authAlert = document.getElementById('authAlert');
+
+const inputDisplayName = document.getElementById('inputDisplayName');
+const inputEmail = document.getElementById('inputEmail');
+const inputPassword = document.getElementById('inputPassword');
+
+// Presence & Chat Elements
+const onlineCountText = document.getElementById('onlineCountText');
+const onlinePlayersList = document.getElementById('onlinePlayersList');
+const toggleChatBtn = document.getElementById('toggleChatBtn');
+const closeChatBtn = document.getElementById('closeChatBtn');
+const chatDrawer = document.getElementById('chatDrawer');
+const chatFeed = document.getElementById('chatFeed');
+const chatForm = document.getElementById('chatForm');
+const chatInput = document.getElementById('chatInput');
+const chatBadgeCount = document.getElementById('chatBadgeCount');
+
+// Fullscreen In-Arcade Game Stage Elements
+const gameStageOverlay = document.getElementById('gameStageOverlay');
+const gameStageIframe = document.getElementById('gameStageIframe');
+const exitGameBtn = document.getElementById('exitGameBtn');
+const stageGameName = document.getElementById('stageGameName');
+const stageGameTag = document.getElementById('stageGameTag');
+const hudOnlineCount = document.getElementById('hudOnlineCount');
+const hudPlayersList = document.getElementById('hudPlayersList');
+const stageChatToggleBtn = document.getElementById('stageChatToggleBtn');
+const hudChatBadge = document.getElementById('hudChatBadge');
+
+let currentActiveGame = null;
+
+export function launchGame(gameName, gameUrl, gameTag) {
+  if (!gameStageOverlay || !gameStageIframe) return;
+  currentActiveGame = gameName;
+  if (stageGameName) stageGameName.textContent = gameName;
+  if (stageGameTag) stageGameTag.textContent = gameTag || '1v1 MULTIPLAYER';
+
+  // Load game directly inside arcade fullscreen viewport
+  gameStageIframe.src = gameUrl;
+  gameStageOverlay.classList.remove('hidden');
+  gameStageOverlay.setAttribute('aria-hidden', 'false');
+
+  // Hide the main arcade lobby chat button so only the top-bar button shows
+  const chatWidgetWrapper = document.querySelector('.chat-widget-wrapper');
+  if (chatWidgetWrapper) chatWidgetWrapper.classList.add('in-game');
+  if (toggleChatBtn) toggleChatBtn.classList.add('hidden');
+
+  // Broadcast presence status update: e.g. "Playing Shark Bait"
+  setActiveGameStatus(`Playing ${gameName}`);
+  playHubSound('hover');
 }
 
-// Main simulated Agent inference and tool-execution router
-async function simulateAgentExecution(prompt) {
-  if (!prompt || prompt.trim() === '') return;
-  
-  window.isAgentSimulating = true;
-  logToTerminal('agent', `Customer request: "${prompt}"`);
-  
-  const thinking = showThinking('Parsing order intent and consulting active menu tools...');
-  await sleep(1200);
-  if (thinking) thinking.remove();
+export function exitGame() {
+  if (!gameStageOverlay || !gameStageIframe) return;
+  gameStageOverlay.classList.add('hidden');
+  gameStageOverlay.setAttribute('aria-hidden', 'true');
+  gameStageIframe.src = 'about:blank';
+  currentActiveGame = null;
 
-  const lowerPrompt = prompt.toLowerCase();
-  let matchedTool = null;
-  let compiledParams = {};
+  // Restore the main arcade lobby chat button on the home screen
+  const chatWidgetWrapper = document.querySelector('.chat-widget-wrapper');
+  if (chatWidgetWrapper) chatWidgetWrapper.classList.remove('in-game');
+  if (toggleChatBtn) toggleChatBtn.classList.remove('hidden');
 
-  if (lowerPrompt.includes('kitchen') || lowerPrompt.includes('fryer') || lowerPrompt.includes('queue') || lowerPrompt.includes('status')) {
-    matchedTool = SIMULATED_TOOLS.get_kitchen_status;
-  } else if (lowerPrompt.includes('receipt') || lowerPrompt.includes('bill') || lowerPrompt.includes('subtotal') || lowerPrompt.includes('total')) {
-    matchedTool = SIMULATED_TOOLS.generate_receipt;
-    compiledParams = { format: lowerPrompt.includes('html') ? 'html' : 'markdown' };
-  } else if (lowerPrompt.includes('suggest') || lowerPrompt.includes('suggestion') || lowerPrompt.includes('recommend adding') || lowerPrompt.includes('feedback')) {
-    matchedTool = SIMULATED_TOOLS.submit_menu_suggestion;
-    
-    let text = 'Mango Habanero seasoning';
-    const suggestIdx = lowerPrompt.indexOf('suggest');
-    const addIdx = lowerPrompt.indexOf('recommend adding');
-    
-    if (suggestIdx !== -1) {
-      text = prompt.substring(suggestIdx + 7).trim();
-    } else if (addIdx !== -1) {
-      text = prompt.substring(addIdx + 16).trim();
-    }
-    
-    if (text.toLowerCase().startsWith('adding')) {
-      text = text.substring(6).trim();
-    }
-    text = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "").trim();
-    compiledParams = { suggestionText: text };
-  } else if (lowerPrompt.includes('name is') || lowerPrompt.includes('called') || (lowerPrompt.includes('set') && lowerPrompt.includes('name'))) {
-    matchedTool = SIMULATED_TOOLS.set_customer_name;
-    
-    let name = 'Guest';
-    const nameIsIdx = lowerPrompt.indexOf('name is');
-    const calledIdx = lowerPrompt.indexOf('called');
-    const setToIdx = lowerPrompt.indexOf('name to');
-    
-    if (nameIsIdx !== -1) {
-      name = prompt.substring(nameIsIdx + 7).trim();
-    } else if (calledIdx !== -1) {
-      name = prompt.substring(calledIdx + 6).trim();
-    } else if (setToIdx !== -1) {
-      name = prompt.substring(setToIdx + 7).trim();
-    }
-    
-    name = name.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "").trim();
-    compiledParams = { customerName: name };
-  } else if (lowerPrompt.includes('sandwich')) {
-    matchedTool = SIMULATED_TOOLS.order_chicken_sandwich;
-    
-    let spice = 'Classic Golden';
-    if (lowerPrompt.includes('mild') || lowerPrompt.includes('honey')) spice = 'Honey Glazed (Mild)';
-    else if (lowerPrompt.includes('nashville') || lowerPrompt.includes('blast') || lowerPrompt.includes('spicy')) spice = 'Spicy Nashville Blast';
-    else if (lowerPrompt.includes('ghost') || lowerPrompt.includes('pepper') || lowerPrompt.includes('nuclear')) spice = 'Ghost Pepper Flame';
+  // Reset status back to arcade hub
+  setActiveGameStatus(null);
+  playHubSound('hover');
+}
 
-    let side = 'Waffle Fries';
-    if (lowerPrompt.includes('french') || (lowerPrompt.includes('fries') && !lowerPrompt.includes('waffle'))) side = 'French Fries';
-    else if (lowerPrompt.includes('waffle')) side = 'Waffle Fries';
-    else if (lowerPrompt.includes('coleslaw') || lowerPrompt.includes('slaw')) side = 'Coleslaw';
-    else if (lowerPrompt.includes('mac') || lowerPrompt.includes('cheese')) side = 'Mac and Cheese';
-    else if (lowerPrompt.includes('collard') || lowerPrompt.includes('greens')) side = 'Collard Greens';
-    else if (lowerPrompt.includes('onion') || lowerPrompt.includes('rings')) side = 'Onion Rings';
-    else if (lowerPrompt.includes('caesar') || lowerPrompt.includes('salad')) side = 'Caesar Salad';
-    
-    compiledParams = { spiceLevel: spice, sides: side };
-  } else if (lowerPrompt.includes('order') || lowerPrompt.includes('bucket') || lowerPrompt.includes('tenders') || lowerPrompt.includes('chicken') || lowerPrompt.includes('piece')) {
-    matchedTool = SIMULATED_TOOLS.order_chicken_bucket;
-    
-    let size = '10-Piece Crispy Bucket';
-    if (lowerPrompt.includes('6-piece') || lowerPrompt.includes('6 piece') || lowerPrompt.includes('tenders')) size = '6-Piece Golden Tenders';
-    else if (lowerPrompt.includes('20-piece') || lowerPrompt.includes('20 piece') || lowerPrompt.includes('feaster')) size = '20-Piece Spicy Feaster';
-    
-    let spice = 'Classic Golden';
-    if (lowerPrompt.includes('mild') || lowerPrompt.includes('honey')) spice = 'Honey Glazed (Mild)';
-    else if (lowerPrompt.includes('nashville') || lowerPrompt.includes('blast') || lowerPrompt.includes('spicy')) spice = 'Spicy Nashville Blast';
-    else if (lowerPrompt.includes('ghost') || lowerPrompt.includes('pepper') || lowerPrompt.includes('nuclear')) spice = 'Ghost Pepper Flame';
+window.launchGame = launchGame;
+window.exitGame = exitGame;
 
-    let side = 'Waffle Fries';
-    if (lowerPrompt.includes('french') || (lowerPrompt.includes('fries') && !lowerPrompt.includes('waffle'))) side = 'French Fries';
-    else if (lowerPrompt.includes('waffle')) side = 'Waffle Fries';
-    else if (lowerPrompt.includes('coleslaw') || lowerPrompt.includes('slaw')) side = 'Coleslaw';
-    else if (lowerPrompt.includes('mac') || lowerPrompt.includes('cheese')) side = 'Mac and Cheese';
-    else if (lowerPrompt.includes('collard') || lowerPrompt.includes('greens')) side = 'Collard Greens';
-    else if (lowerPrompt.includes('onion') || lowerPrompt.includes('rings')) side = 'Onion Rings';
-    else if (lowerPrompt.includes('caesar') || lowerPrompt.includes('salad')) side = 'Caesar Salad';
-    
-    compiledParams = { bucketSize: size, spiceLevel: spice, sides: side };
-  } else if (lowerPrompt.includes('sauce') || lowerPrompt.includes('dip') || lowerPrompt.includes('bbq') || lowerPrompt.includes('mustard') || lowerPrompt.includes('mayo') || lowerPrompt.includes('chili')) {
-    matchedTool = SIMULATED_TOOLS.choose_sauces;
-    
-    let primary = 'Creamy Honey Mustard';
-    if (lowerPrompt.includes('bbq') || lowerPrompt.includes('chipotle')) primary = 'Smoky Chipotle BBQ';
-    else if (lowerPrompt.includes('garlic') || lowerPrompt.includes('mayo')) primary = 'Spicy Garlic Mayo';
-    else if (lowerPrompt.includes('chili') || lowerPrompt.includes('sweet')) primary = 'Sweet Hot Chili';
+function showAlert(msg, type = 'error') {
+  authAlert.textContent = msg;
+  authAlert.className = `auth-alert ${type}`;
+  authAlert.classList.remove('hidden');
+}
 
-    let secondary = 'Smoky Chipotle BBQ';
-    if (lowerPrompt.includes('mustard') && primary !== 'Creamy Honey Mustard') secondary = 'Creamy Honey Mustard';
-    else if (lowerPrompt.includes('mayo') && primary !== 'Spicy Garlic Mayo') secondary = 'Spicy Garlic Mayo';
-    else if (lowerPrompt.includes('chili') && primary !== 'Sweet Hot Chili') secondary = 'Sweet Hot Chili';
-    
-    compiledParams = { primarySauce: primary, secondarySauce: secondary };
-  } else if ((lowerPrompt.includes('remove') || lowerPrompt.includes('delete') || lowerPrompt.includes('revoke')) && (lowerPrompt.includes('loyalty') || lowerPrompt.includes('rewards') || lowerPrompt.includes('member'))) {
-    matchedTool = SIMULATED_TOOLS.remove_loyalty_member;
-    
-    let name = 'Alice Mercer';
-    if (lowerPrompt.includes('jane')) name = 'Jane Doe';
-    else if (lowerPrompt.includes('ely')) name = 'Ely Wolf';
-    compiledParams = { name: name };
-  } else if (lowerPrompt.includes('loyalty') || lowerPrompt.includes('rewards') || lowerPrompt.includes('register') || lowerPrompt.includes('member')) {
-    matchedTool = SIMULATED_TOOLS.register_loyalty_member;
-    
-    let name = 'Alice Mercer';
-    if (lowerPrompt.includes('jane')) name = 'Jane Doe';
-    else if (lowerPrompt.includes('ely')) name = 'Ely Wolf';
-    compiledParams = { name: name, favoriteSide: 'Spicy Waffle Fries' };
-  } else if (lowerPrompt.includes('clear') || lowerPrompt.includes('wipe')) {
-    matchedTool = SIMULATED_TOOLS.clear_order_logs;
-  } else if (lowerPrompt.includes('tic') || lowerPrompt.includes('tictactoe') || lowerPrompt.includes('ttt') || lowerPrompt.includes('game') || lowerPrompt.includes('play')) {
-    matchedTool = SIMULATED_TOOLS.play_tic_tac_toe_move;
-    
-    let cellIndex = 4; // default center
-    if (lowerPrompt.includes('top left') || lowerPrompt.includes('top-left') || lowerPrompt.includes('0')) cellIndex = 0;
-    else if (lowerPrompt.includes('top center') || lowerPrompt.includes('top middle') || lowerPrompt.includes('top-center') || lowerPrompt.includes('1')) cellIndex = 1;
-    else if (lowerPrompt.includes('top right') || lowerPrompt.includes('top-right') || lowerPrompt.includes('2')) cellIndex = 2;
-    else if (lowerPrompt.includes('middle left') || lowerPrompt.includes('left middle') || lowerPrompt.includes('middle-left') || lowerPrompt.includes('3')) cellIndex = 3;
-    else if (lowerPrompt.includes('middle right') || lowerPrompt.includes('right middle') || lowerPrompt.includes('middle-right') || lowerPrompt.includes('5')) cellIndex = 5;
-    else if (lowerPrompt.includes('bottom left') || lowerPrompt.includes('bottom-left') || lowerPrompt.includes('6')) cellIndex = 6;
-    else if (lowerPrompt.includes('bottom center') || lowerPrompt.includes('bottom-center') || lowerPrompt.includes('7')) cellIndex = 7;
-    else if (lowerPrompt.includes('bottom right') || lowerPrompt.includes('bottom-right') || lowerPrompt.includes('8')) cellIndex = 8;
-    else {
-      const emptyIdx = STATE.ttt.board.findIndex(c => c === null);
-      if (emptyIdx !== -1) cellIndex = emptyIdx;
-    }
-    compiledParams = { cellIndex: cellIndex };
-  }
+function hideAlert() {
+  authAlert.classList.add('hidden');
+}
 
-  if (!matchedTool) {
-    logToTerminal('error', 'Assistant could not understand order request. Please order standard bucket combos or check wait times.');
-    return;
-  }
-
-  logToTerminal('agent', `Resolved Menu Action: "${matchedTool.name}"`);
-  
-  // Visual glow highlighting
-  let elementToHighlight = null;
-  if (matchedTool.type === 'declarative' && matchedTool.targetId) {
-    elementToHighlight = document.getElementById(matchedTool.targetId);
+function toggleAuthModal(show) {
+  if (show) {
+    authModal.classList.remove('hidden');
+    authModal.setAttribute('aria-hidden', 'false');
+    hideAlert();
   } else {
-    const toolHeaderEl = Array.from(document.querySelectorAll('.tool-name')).find(el => el.textContent.trim() === matchedTool.name);
-    if (toolHeaderEl) {
-      elementToHighlight = toolHeaderEl.closest('.tool-item');
-    }
+    authModal.classList.add('hidden');
+    authModal.setAttribute('aria-hidden', 'true');
+  }
+}
+
+function setAuthMode(signUp) {
+  isSignUpMode = signUp;
+  hideAlert();
+  if (signUp) {
+    tabSignUp.classList.add('active');
+    tabSignIn.classList.remove('active');
+    groupDisplayName.classList.remove('hidden');
+    submitAuthBtn.textContent = 'CREATE ACCOUNT';
+  } else {
+    tabSignIn.classList.add('active');
+    tabSignUp.classList.remove('active');
+    groupDisplayName.classList.add('hidden');
+    submitAuthBtn.textContent = 'SIGN IN';
+  }
+}
+
+// Chat Drawer Toggle
+let unreadMessageCount = 0;
+let lastSeenMessageCount = 0;
+
+function updateBadgeUI() {
+  const countStr = unreadMessageCount > 0 ? String(unreadMessageCount) : '0';
+  const showBadge = unreadMessageCount > 0;
+
+  if (chatBadgeCount) {
+    chatBadgeCount.textContent = countStr;
+    chatBadgeCount.classList.toggle('hidden', !showBadge);
+  }
+  if (hudChatBadge) {
+    hudChatBadge.textContent = countStr;
+    hudChatBadge.classList.toggle('hidden', !showBadge);
+  }
+}
+
+function toggleChatDrawer(show) {
+  if (show) {
+    chatDrawer.classList.remove('hidden');
+    chatInput.focus();
+    scrollChatToBottom();
+    // Clear unread count when opening drawer
+    unreadMessageCount = 0;
+    updateBadgeUI();
+  } else {
+    chatDrawer.classList.add('hidden');
+  }
+}
+
+function scrollChatToBottom() {
+  if (chatFeed) {
+    chatFeed.scrollTop = chatFeed.scrollHeight;
+  }
+}
+
+// Render Presence Bar (Hub & In-Game Fullscreen HUD)
+function renderOnlinePlayers(players) {
+  const user = getLocalSessionUser();
+  const currentName = (user ? (user.displayName || user.email.split('@')[0]) : '').trim().toLowerCase();
+  const currentUid = user ? user.uid : '';
+
+  // Strict filter: you should NEVER be able to see or challenge yourself
+  const otherPlayers = players.filter(p => {
+    if (p.isSelf) return false;
+    const pName = (p.displayName || '').trim().toLowerCase();
+    if (currentName && pName && pName === currentName) return false;
+    if (currentUid && p.uid && p.uid === currentUid) return false;
+    return true;
+  });
+
+  // Update Hub text and HUD count
+  if (onlineCountText) {
+    onlineCountText.textContent = `OTHER PLAYERS ONLINE (${otherPlayers.length})`;
+  }
+  if (hudOnlineCount) {
+    hudOnlineCount.textContent = `OTHER PLAYERS ONLINE (${otherPlayers.length})`;
   }
 
-  if (elementToHighlight) {
-    elementToHighlight.classList.add('tool-form-active');
-  }
+  // 1. Render Hub Presence List
+  if (onlinePlayersList) {
+    onlinePlayersList.innerHTML = '';
+    if (otherPlayers.length === 0) {
+      onlinePlayersList.innerHTML = `<span style="font-size:0.8rem; color:var(--text-subtle); font-style:italic;">No other players online right now. Open another tab or share the link to play together!</span>`;
+    } else {
+      otherPlayers.forEach(p => {
+        const chip = document.createElement('div');
+        chip.className = 'player-chip';
+        chip.innerHTML = `
+          <span class="chip-avatar">${p.avatar || 'P'}</span>
+          <div style="display:flex; flex-direction:column; line-height:1.2;">
+            <span class="chip-name">${p.displayName}</span>
+            <span style="font-size:0.62rem; color:#a1a1aa; font-family:var(--font-mono);">${p.status || 'Online'}</span>
+          </div>
+          <button class="chip-challenge-btn" title="Challenge ${p.displayName} to a match">CHALLENGE ⚔️</button>
+        `;
 
-  const paramsThinking = showThinking(`Staging ingredients/parameters for [${matchedTool.name}]...`);
-  await sleep(1000);
-  if (paramsThinking) paramsThinking.remove();
-  
-  logToTerminal('agent', `Parameters registered: ${JSON.stringify(compiledParams)}`);
-
-  // Handle flow state
-  if (matchedTool.type === 'declarative') {
-    const formEl = document.getElementById(matchedTool.targetId);
-    
-    // Loyalty profile review simulation
-    if (matchedTool.name === 'register_loyalty_member') {
-      logToTerminal('system', 'Form missing [toolautosubmit]. Manager approval required.');
-      
-      const submitBtn = formEl ? formEl.querySelector('button[type="submit"]') : null;
-      if (submitBtn) submitBtn.classList.add('tool-submit-active');
-      
-      const approvalThinking = showThinking('Awaiting manager cashier checkout... (Submit form manually to override)');
-      
-      await new Promise((resolve) => {
-        const handler = () => {
-          if (submitBtn) submitBtn.classList.remove('tool-submit-active');
-          if (approvalThinking) approvalThinking.remove();
-          formEl.removeEventListener('submit', handler);
-          resolve();
-        };
-        formEl.addEventListener('submit', handler);
-        
-        setTimeout(() => {
-          logToTerminal('system', 'Rewards Club Manager override code entered.');
-          handler();
-        }, 4000);
+        const btn = chip.querySelector('.chip-challenge-btn');
+        if (btn) {
+          btn.addEventListener('click', () => {
+            const gameToChallenge = currentActiveGame || 'Shark Bait';
+            sendChallenge(p.displayName, `${gameToChallenge} 1v1`);
+            toggleChatDrawer(true);
+          });
+        }
+        onlinePlayersList.appendChild(chip);
       });
+    }
+  }
+
+  // 2. Render In-Game Topbar HUD Strip
+  if (hudPlayersList) {
+    hudPlayersList.innerHTML = '';
+    if (otherPlayers.length === 0) {
+      hudPlayersList.innerHTML = `<span class="hud-empty">No other players online right now.</span>`;
     } else {
-      logToTerminal('system', 'Form features [toolautosubmit]. Auto-sending parameters.');
-      await sleep(600);
-    }
+      otherPlayers.forEach(p => {
+        const hudChip = document.createElement('div');
+        hudChip.className = 'hud-player-chip';
+        hudChip.innerHTML = `
+          <span class="hud-avatar">${p.avatar || 'P'}</span>
+          <span class="hud-name">${p.displayName}</span>
+          <span class="hud-status">${p.status || 'Online'}</span>
+          <button class="hud-challenge-btn" title="Challenge ${p.displayName} to 1v1">CHALLENGE ⚔️</button>
+        `;
 
-    const result = matchedTool.execute(compiledParams);
-    logToTerminal('success', `Cashier response: respondWith(Promise.resolve(data))`);
-    logToTerminal('tool', JSON.stringify(result, null, 2));
-
-  } else {
-    // Imperative tool direct execution
-    const runThinking = showThinking(`Triggering kitchen callback for [${matchedTool.name}]...`);
-    await sleep(800);
-    if (runThinking) runThinking.remove();
-
-    try {
-      const result = matchedTool.execute(compiledParams);
-      logToTerminal('success', 'Kitchen callback returned successfully.');
-      logToTerminal('tool', typeof result === 'object' ? JSON.stringify(result, null, 2) : result);
-    } catch (e) {
-      logToTerminal('error', `Kitchen vat error: ${e.message}`);
-    }
-  }
-
-  // Cleanup highlights
-  if (elementToHighlight) {
-    await sleep(500);
-    elementToHighlight.classList.remove('tool-form-active');
-  }
-  window.isAgentSimulating = false;
-}
-
-// Drive-Thru helper
-function submitAgentPrompt() {
-  const promptInput = document.getElementById('agent-prompt');
-  if (!promptInput) return;
-  const prompt = promptInput.value;
-  simulateAgentExecution(prompt);
-  promptInput.value = '';
-}
-
-window.submitAgentPrompt = submitAgentPrompt;
-window.simulateAgentExecution = simulateAgentExecution;
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function escapeHTML(str) {
-  if (typeof str !== 'string') return String(str);
-  return str.replace(/[&<>'"]/g, 
-    tag => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      "'": '&#39;',
-      '"': '&quot;'
-    }[tag] || tag)
-  );
-}
-
-// ==========================================
-// Crispy-Tac-Toe AI Arena Core Mechanics
-// ==========================================
-
-function checkWinner(board) {
-  const winLines = [
-    [0, 1, 2], [3, 4, 5], [6, 7, 8],
-    [0, 3, 6], [1, 4, 7], [2, 5, 8],
-    [0, 4, 8], [2, 4, 6]
-  ];
-
-  for (let line of winLines) {
-    const [a, b, c] = line;
-    if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-      return { winner: board[a], line: line };
+        const hudBtn = hudChip.querySelector('.hud-challenge-btn');
+        if (hudBtn) {
+          hudBtn.addEventListener('click', () => {
+            const gameToChallenge = currentActiveGame || 'Shark Bait';
+            sendChallenge(p.displayName, `${gameToChallenge} 1v1`);
+            toggleChatDrawer(true);
+          });
+        }
+        hudPlayersList.appendChild(hudChip);
+      });
     }
   }
-  return null;
 }
 
-function resetTicTacToe() {
-  STATE.ttt.board.fill(null);
-  STATE.ttt.active = true;
-  STATE.ttt.turn = 'X';
+// Format chat time to user's actual local time (e.g. 8:15 PM, not 00:15)
+function formatChatTime(m) {
+  if (m.isSystem) return m.time || 'System';
+
+  // 1. If timestamp property exists
+  if (m.timestamp) {
+    const d = new Date(Number(m.timestamp));
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    }
+  }
+
+  // 2. If id contains epoch timestamp
+  if (m.id && typeof m.id === 'string' && m.id.startsWith('msg_')) {
+    const rawNum = m.id.split('_')[1];
+    const num = parseInt(rawNum, 10);
+    if (!isNaN(num) && num > 1600000000000) {
+      const d = new Date(num);
+      return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    }
+  }
+
+  // 3. If time is UTC formatted like "00:15"
+  if (m.time && m.time !== 'System') {
+    if (/^\d{1,2}:\d{2}$/.test(m.time)) {
+      const parts = m.time.split(':');
+      const d = new Date();
+      d.setUTCHours(parseInt(parts[0], 10), parseInt(parts[1], 10), 0, 0);
+      return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    }
+    return m.time;
+  }
+
+  return new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+}
+
+// Render Chat Feed
+function renderChatFeed(messages) {
+  if (!chatFeed) return;
   
-  const cells = document.querySelectorAll('.tictactoe-cell');
-  cells.forEach(cell => {
-    cell.textContent = '';
-    cell.className = 'tictactoe-cell';
+  const isDrawerOpen = !chatDrawer.classList.contains('hidden');
+  const newDiff = lastSeenMessageCount > 0 ? (messages.length - lastSeenMessageCount) : 0;
+  lastSeenMessageCount = messages.length;
+
+  if (newDiff > 0) {
+    if (!isDrawerOpen) {
+      unreadMessageCount += newDiff;
+      updateBadgeUI();
+      playHubSound('message');
+    }
+  }
+
+  chatFeed.innerHTML = '';
+
+  messages.forEach(m => {
+    const item = document.createElement('div');
+    item.className = `chat-item ${m.isSystem ? 'system-msg' : ''}`;
+    const displayTime = formatChatTime(m);
+    item.innerHTML = `
+      <div class="chat-item-meta">
+        <span class="chat-sender">${m.sender}</span>
+        <span class="chat-time">${displayTime}</span>
+      </div>
+      <div class="chat-text">${m.text}</div>
+    `;
+    chatFeed.appendChild(item);
   });
 
-  updateTTTStatusUI(TRANSLATIONS[STATE.language].tttYourTurn);
+  scrollChatToBottom();
 }
 
-// Emojis mapping: X = 🍗 (Player), O = 🌶️ (Bot)
-function updateTTTBoardUI() {
-  const cells = document.querySelectorAll('.tictactoe-cell');
-  cells.forEach((cell, idx) => {
-    const val = STATE.ttt.board[idx];
-    cell.className = 'tictactoe-cell';
-    
-    if (val === 'X') {
-      cell.textContent = '🍗';
-      cell.classList.add('cell-x');
-    } else if (val === 'O') {
-      cell.textContent = '🌶️';
-      cell.classList.add('cell-o');
-    } else {
-      cell.textContent = '';
-    }
+// Register DOM Events
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('a, button, .neal-card').forEach(el => {
+    el.addEventListener('mouseenter', () => playHubSound('hover'));
+  });
+  initBgCanvas();
+
+  if (openAuthModalBtn) openAuthModalBtn.addEventListener('click', () => toggleAuthModal(true));
+  if (closeAuthModalBtn) closeAuthModalBtn.addEventListener('click', () => toggleAuthModal(false));
+
+  if (tabSignUp) tabSignUp.addEventListener('click', () => setAuthMode(true));
+  if (tabSignIn) tabSignIn.addEventListener('click', () => setAuthMode(false));
+
+  if (toggleChatBtn) toggleChatBtn.addEventListener('click', () => toggleChatDrawer(chatDrawer.classList.contains('hidden')));
+  if (closeChatBtn) closeChatBtn.addEventListener('click', () => toggleChatDrawer(false));
+
+  // Quick Emotes
+  document.querySelectorAll('.emote-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const emote = btn.getAttribute('data-emote');
+      sendChatMessage(emote);
+    });
   });
 
-  const winResult = checkWinner(STATE.ttt.board);
-  if (winResult) {
-    winResult.line.forEach(winIdx => {
-      const cell = document.querySelector(`.tictactoe-cell[data-index="${winIdx}"]`);
-      if (cell) cell.classList.add('winning-cell');
+  // Chat Form Submit
+  if (chatForm) {
+    chatForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const text = chatInput.value.trim();
+      if (!text) return;
+      sendChatMessage(text);
+      chatInput.value = '';
     });
   }
-}
 
-function updateTTTStatusUI(text, isError = false) {
-  const statusEl = document.getElementById('ttt-status');
-  if (statusEl) {
-    statusEl.textContent = text;
-    statusEl.style.color = isError ? 'var(--color-danger)' : 'var(--color-primary)';
-  }
-}
+  // Auth Form Submit Handler
+  if (authForm) {
+    authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideAlert();
 
-function updateTTTScoresUI() {
-  const pEl = document.getElementById('ttt-score-player');
-  const dEl = document.getElementById('ttt-score-draws');
-  const bEl = document.getElementById('ttt-score-bot');
+      const email = inputEmail.value.trim();
+      const password = inputPassword.value;
+      const displayName = inputDisplayName.value.trim();
 
-  if (pEl) pEl.textContent = STATE.ttt.scores.player;
-  if (dEl) dEl.textContent = STATE.ttt.scores.draws;
-  if (bEl) bEl.textContent = STATE.ttt.scores.bot;
-}
+      if (!email || !password) {
+        showAlert("Please fill out all required fields.");
+        return;
+      }
 
-function makeTicTacToeMove(index) {
-  if (!STATE.ttt.active || STATE.ttt.turn !== 'X') return;
-  
-  if (STATE.ttt.board[index] !== null) {
-    updateTTTStatusUI(TRANSLATIONS[STATE.language].tttCellFilled, true);
-    return;
-  }
+      submitAuthBtn.disabled = true;
+      submitAuthBtn.textContent = "Processing...";
 
-  executePlayerMove(index);
-}
-
-function executePlayerMove(index) {
-  STATE.ttt.board[index] = 'X';
-  updateTTTBoardUI();
-  
-  const winResult = checkWinner(STATE.ttt.board);
-  if (winResult) {
-    STATE.ttt.active = false;
-    STATE.ttt.scores.player++;
-    updateTTTScoresUI();
-    updateTTTStatusUI(TRANSLATIONS[STATE.language].tttYouWon);
-    return;
+      try {
+        if (isSignUpMode) {
+          await signUpWithEmail(email, password, displayName || email.split('@')[0]);
+          showAlert("Account created successfully! Welcome to ElyWolf Arcade.", "success");
+        } else {
+          await signInWithEmail(email, password);
+          showAlert("Signed in successfully!", "success");
+        }
+        setTimeout(() => {
+          toggleAuthModal(false);
+          submitAuthBtn.disabled = false;
+          setAuthMode(isSignUpMode);
+        }, 800);
+      } catch (err) {
+        submitAuthBtn.disabled = false;
+        setAuthMode(isSignUpMode);
+        showAlert(err.message || "Authentication failed. Check your credentials.");
+      }
+    });
   }
 
-  if (STATE.ttt.board.every(cell => cell !== null)) {
-    STATE.ttt.active = false;
-    STATE.ttt.scores.draws++;
-    updateTTTScoresUI();
-    updateTTTStatusUI(TRANSLATIONS[STATE.language].tttDraw);
-    return;
+  // Google Auth Button
+  if (googleAuthBtn) {
+    googleAuthBtn.addEventListener('click', async () => {
+      hideAlert();
+      try {
+        await signInWithGoogle();
+        showAlert("Google Sign In successful!", "success");
+        setTimeout(() => toggleAuthModal(false), 800);
+      } catch (err) {
+        if (err.code !== 'auth/popup-closed-by-user') {
+          showAlert(err.message || "Google Sign-In failed.");
+        }
+      }
+    });
   }
 
-  STATE.ttt.turn = 'O';
-  updateTTTStatusUI(TRANSLATIONS[STATE.language].tttChefCalculating);
-  
-  setTimeout(() => {
-    makeBotMove();
-  }, 600);
-}
-
-function makeBotMove() {
-  if (!STATE.ttt.active) return;
-
-  const difficultySelect = document.getElementById('ttt-difficulty');
-  const difficulty = difficultySelect ? difficultySelect.value : 'medium';
-  
-  let bestIndex = -1;
-
-  if (difficulty === 'easy') {
-    bestIndex = getRandomTTTMove();
-  } else if (difficulty === 'medium') {
-    bestIndex = getMediumTTTMove();
-  } else {
-    bestIndex = getHardTTTMove();
+  // Sign Out Button
+  if (signOutBtn) {
+    signOutBtn.addEventListener('click', async () => {
+      await signOutUser();
+    });
   }
 
-  if (bestIndex !== -1) {
-    STATE.ttt.board[bestIndex] = 'O';
-    updateTTTBoardUI();
+  // Subscribe to Presence & Chat updates
+  onOnlinePlayersUpdate(renderOnlinePlayers);
+  onChatUpdate(renderChatFeed);
 
-    const winResult = checkWinner(STATE.ttt.board);
-    if (winResult) {
-      STATE.ttt.active = false;
-      STATE.ttt.scores.bot++;
-      updateTTTScoresUI();
-      updateTTTStatusUI(TRANSLATIONS[STATE.language].tttBotWon);
-      return;
-    }
+  // Intercept game card clicks to launch fullscreen inside arcade
+  document.querySelectorAll('.neal-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      e.preventDefault();
+      const gameName = card.getAttribute('data-game') || 'Shark Bait';
+      const gameUrl = card.getAttribute('data-url') || card.getAttribute('href');
+      const gameTag = card.getAttribute('data-tag') || '1v1 MULTIPLAYER';
+      launchGame(gameName, gameUrl, gameTag);
+    });
+  });
 
-    if (STATE.ttt.board.every(cell => cell !== null)) {
-      STATE.ttt.active = false;
-      STATE.ttt.scores.draws++;
-      updateTTTScoresUI();
-      updateTTTStatusUI(TRANSLATIONS[STATE.language].tttDraw);
-      return;
-    }
+  // Exit Game Button
+  if (exitGameBtn) {
+    exitGameBtn.addEventListener('click', exitGame);
   }
 
-  STATE.ttt.turn = 'X';
-  updateTTTStatusUI(TRANSLATIONS[STATE.language].tttYourTurn);
-}
-
-function getRandomTTTMove() {
-  const empties = STATE.ttt.board.map((val, idx) => val === null ? idx : null).filter(val => val !== null);
-  if (empties.length === 0) return -1;
-  return empties[Math.floor(Math.random() * empties.length)];
-}
-
-function getMediumTTTMove() {
-  for (let i = 0; i < 9; i++) {
-    if (STATE.ttt.board[i] === null) {
-      STATE.ttt.board[i] = 'O';
-      const isWin = checkWinner(STATE.ttt.board);
-      STATE.ttt.board[i] = null;
-      if (isWin) return i;
-    }
+  // In-Game Topbar Chat Toggle Button
+  if (stageChatToggleBtn) {
+    stageChatToggleBtn.addEventListener('click', () => {
+      toggleChatDrawer(chatDrawer.classList.contains('hidden'));
+    });
   }
 
-  for (let i = 0; i < 9; i++) {
-    if (STATE.ttt.board[i] === null) {
-      STATE.ttt.board[i] = 'X';
-      const isBlock = checkWinner(STATE.ttt.board);
-      STATE.ttt.board[i] = null;
-      if (isBlock) return i;
-    }
-  }
-
-  return getRandomTTTMove();
-}
-
-function getHardTTTMove() {
-  let bestScore = -Infinity;
-  let bestMove = -1;
-
-  for (let i = 0; i < 9; i++) {
-    if (STATE.ttt.board[i] === null) {
-      STATE.ttt.board[i] = 'O';
-      let score = minimax(STATE.ttt.board, 0, false);
-      STATE.ttt.board[i] = null;
-      if (score > bestScore) {
-        bestScore = score;
-        bestMove = i;
+  // Keyboard shortcut: ESC to exit game or close modal/chat
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (gameStageOverlay && !gameStageOverlay.classList.contains('hidden')) {
+        exitGame();
+      } else if (authModal && !authModal.classList.contains('hidden')) {
+        toggleAuthModal(false);
+      } else if (chatDrawer && !chatDrawer.classList.contains('hidden')) {
+        toggleChatDrawer(false);
       }
     }
-  }
-  return bestMove;
-}
+  });
 
-function minimax(board, depth, isMaximizing) {
-  const result = checkWinner(board);
-  if (result) {
-    return result.winner === 'O' ? 10 - depth : depth - 10;
-  }
-  if (board.every(cell => cell !== null)) {
-    return 0;
-  }
+  // Observe Auth State Changes
+  onAuthChange((user) => {
+    if (user) {
+      const name = user.displayName || user.email.split('@')[0];
+      userNameDisplay.textContent = name;
+      userAvatar.textContent = name.charAt(0).toUpperCase();
 
-  if (isMaximizing) {
-    let bestScore = -Infinity;
-    for (let i = 0; i < 9; i++) {
-      if (board[i] === null) {
-        board[i] = 'O';
-        let score = minimax(board, depth + 1, false);
-        board[i] = null;
-        bestScore = Math.max(score, bestScore);
-      }
+      openAuthModalBtn.classList.add('hidden');
+      userProfilePill.classList.remove('hidden');
+    } else {
+      openAuthModalBtn.classList.remove('hidden');
+      userProfilePill.classList.add('hidden');
     }
-    return bestScore;
-  } else {
-    let bestScore = Infinity;
-    for (let i = 0; i < 9; i++) {
-      if (board[i] === null) {
-        board[i] = 'X';
-        let score = minimax(board, depth + 1, true);
-        board[i] = null;
-        bestScore = Math.min(score, bestScore);
-      }
-    }
-    return bestScore;
-  }
-}
-
-function makeTicTacToeMoveDirect(index) {
-  if (!STATE.ttt.active) {
-    return { status: 'game_over', message: 'Game has ended. Click reset to start a new game.' };
-  }
-  if (STATE.ttt.turn !== 'X') {
-    return { status: 'waiting_for_bot', message: 'Chef bot turn in progress.' };
-  }
-  if (STATE.ttt.board[index] !== null) {
-    return { status: 'error', message: `Cell ${index} is already filled.` };
-  }
-
-  executePlayerMove(index);
-
-  return {
-    status: 'move_registered',
-    cellPlayed: index,
-    boardState: STATE.ttt.board,
-    active: STATE.ttt.active,
-    turn: STATE.ttt.turn,
-    winResult: checkWinner(STATE.ttt.board)
-  };
-}
-
-window.makeTicTacToeMove = makeTicTacToeMove;
-window.resetTicTacToe = resetTicTacToe;
-
-// ==========================================
-// Cashier Admin Mode Authentication & Live Tracker
-// ==========================================
-
-function toggleAdminMode() {
-  const modal = document.getElementById('admin-login-modal');
-  if (!modal) return;
-  
-  if (STATE.adminUnlocked) {
-    lockAdminMode();
-  } else {
-    modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
-    const input = document.getElementById('admin-passcode-input');
-    if (input) {
-      input.value = '';
-      input.focus();
-    }
-    const errorEl = document.getElementById('admin-login-error');
-    if (errorEl) errorEl.style.display = 'none';
-  }
-}
-
-function closeAdminLogin() {
-  const modal = document.getElementById('admin-login-modal');
-  if (modal) modal.style.display = 'none';
-}
-
-function submitAdminPasscode() {
-  const input = document.getElementById('admin-passcode-input');
-  const errorEl = document.getElementById('admin-login-error');
-  if (!input) return;
-  
-  if (input.value === '2806') {
-    STATE.adminUnlocked = true;
-    closeAdminLogin();
-    
-    const panel = document.getElementById('admin-panel');
-    if (panel) panel.style.display = 'block';
-    
-    const btn = document.getElementById('admin-mode-btn');
-    if (btn) btn.textContent = TRANSLATIONS[STATE.language].adminModeBtnUnlocked;
-    
-    updateAdminOrdersUI();
-    logToTerminal('system', STATE.language === 'es' ? 'Acceso de seguridad autorizado. Modo Administrador de Cajero autenticado.' : (STATE.language === 'he' ? 'גישת אבטחה אושרה. מצב מנהל קופאי מאומת.' : 'Security access cleared. Cashier Admin Mode authenticated.'));
-  } else {
-    if (errorEl) errorEl.style.display = 'block';
-    input.value = '';
-    input.focus();
-  }
-}
-
-function lockAdminMode() {
-  STATE.adminUnlocked = false;
-  
-  const panel = document.getElementById('admin-panel');
-  if (panel) panel.style.display = 'none';
-  
-  const btn = document.getElementById('admin-mode-btn');
-  if (btn) btn.textContent = TRANSLATIONS[STATE.language].adminModeBtnLocked;
-  
-  closeAdminLogin();
-  logToTerminal('system', STATE.language === 'es' ? 'Modo Administrador de Cajero bloqueado.' : (STATE.language === 'he' ? 'מצב מנהל קופאי נעול.' : 'Cashier Admin Mode locked.'));
-}
-
-function updateAdminOrdersUI() {
-  const feedEl = document.getElementById('admin-orders-feed');
-  if (!feedEl) return;
-  
-  if (!STATE.placedOrders || STATE.placedOrders.length === 0) {
-    const emptyMsg = STATE.language === 'es' ? 'No hay pedidos realizados aún.' : (STATE.language === 'he' ? 'אין הזמנות שבוצעו עדיין.' : 'No orders placed yet.');
-    feedEl.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-dark); text-align: center; padding: 1rem;">${emptyMsg}</div>`;
-    return;
-  }
-  
-  feedEl.innerHTML = STATE.placedOrders.map(ord => `
-    <div style="background: rgba(10, 4, 1, 0.5); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 8px; padding: 0.75rem 1rem; display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.85rem; margin-bottom: 0.5rem; animation: fade-in 0.2s ease-out forwards;">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-weight: 700; color: var(--color-primary);">${ord.id}</span>
-        <span style="font-size: 0.75rem; color: var(--text-dark);">${ord.time}</span>
-      </div>
-      <div style="color: var(--text-main); font-weight: 500;">${escapeHTML(ord.details)}</div>
-      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed rgba(245,158,11,0.1); padding-top: 0.4rem; font-size: 0.75rem; margin-top: 0.2rem;">
-        <span style="color: var(--text-muted); font-size: 0.75rem;">${STATE.language === 'es' ? 'Origen:' : (STATE.language === 'he' ? 'מקור:' : 'Source:')} ${ord.origin}</span>
-        <span style="font-weight: 600; color: var(--color-accent); font-family: 'Fira Code', monospace; font-size: 0.85rem;">${ord.price}</span>
-      </div>
-    </div>
-  `).join('');
-}
-
-window.makeTicTacToeMove = makeTicTacToeMove;
-window.resetTicTacToe = resetTicTacToe;
-window.toggleAdminMode = toggleAdminMode;
-window.closeAdminLogin = closeAdminLogin;
-window.submitAdminPasscode = submitAdminPasscode;
-window.lockAdminMode = lockAdminMode;
-window.updateAdminOrdersUI = updateAdminOrdersUI;
+  });
+});

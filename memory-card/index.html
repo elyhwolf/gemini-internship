@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Album Cover Memory Match | ElyWolf Arcade</title>
+  <meta name="description" content="Flip cards and match iconic album covers in this high-fidelity music memory challenge by Ely Wolf.">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Ambient Sound & Background Particle Canvas -->
+  <canvas id="ambientCanvas"></canvas>
+
+  <div class="game-wrapper">
+
+    <!-- HEADER / NAVIGATION BAR -->
+    <header class="game-header">
+      <a href="../" class="back-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>Arcade Hub</span>
+      </a>
+
+      <h1 class="game-title">
+        <span class="title-main">ALBUM COVER</span>
+        <span class="title-sub">MEMORY MATCH</span>
+      </h1>
+
+      <div class="header-actions">
+        <button id="soundToggleBtn" class="icon-btn" aria-label="Toggle Sound" title="Toggle Sound FX">
+          <svg id="soundIconOn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+          <svg id="soundIconOff" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          </svg>
+        </button>
+
+        <button id="restartBtn" class="icon-btn" aria-label="Restart Game" title="Restart Match">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- SCOREBAR / METRICS -->
+    <div class="stats-bar">
+      <div class="stat-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span class="stat-label">TIME</span>
+        <span id="timerDisplay" class="stat-val">00:00</span>
+      </div>
+
+      <div class="stat-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+        </svg>
+        <span class="stat-label">MOVES</span>
+        <span id="movesDisplay" class="stat-val">0</span>
+      </div>
+
+      <div class="stat-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+        </svg>
+        <span class="stat-label">MATCHES</span>
+        <span id="matchesDisplay" class="stat-val">0 / 6</span>
+      </div>
+    </div>
+
+    <!-- MEMORY CARDS GRID -->
+    <main class="memory-grid" id="memoryGrid" aria-label="Album Memory Cards"></main>
+
+    <!-- FOOTER -->
+    <footer class="game-footer">
+      <span>Crafted by <strong>Ely Wolf</strong></span>
+    </footer>
+
+  </div>
+
+  <!-- VICTORY OVERLAY MODAL -->
+  <div id="winModal" class="modal-backdrop hidden" aria-hidden="true">
+    <div class="modal-card">
+      <canvas id="confettiCanvas"></canvas>
+      
+      <div class="modal-header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+          <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+          <path d="M4 22h16"></path>
+          <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+          <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+          <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+        </svg>
+      </div>
+
+      <h2 class="modal-title">COLLECTION COMPLETE!</h2>
+      <p class="modal-subtitle">You matched all 6 album cover sleeves.</p>
+
+      <!-- STAR RATING SVG -->
+      <div class="star-rating" id="starRating">
+        <svg class="star-svg filled" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <svg class="star-svg filled" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <svg class="star-svg filled" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </div>
+
+      <div class="modal-stats">
+        <div class="m-stat">
+          <span class="m-label">Final Time</span>
+          <span id="finalTime" class="m-val">00:45</span>
+        </div>
+        <div class="m-stat-divider"></div>
+        <div class="m-stat">
+          <span class="m-label">Total Moves</span>
+          <span id="finalMoves" class="m-val">9</span>
+        </div>
+      </div>
+
+      <div class="modal-buttons">
+        <button id="modalPlayAgainBtn" class="btn-primary">PLAY AGAIN</button>
+        <a href="../" class="btn-secondary">ARCADE HUB</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

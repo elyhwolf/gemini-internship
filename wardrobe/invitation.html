@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formal Capstone Presentation Invitation — DripVault AI Smart Wardrobe</title>
+  <meta name="description" content="You are cordially invited to the Senior Capstone Defense and Live Demonstration of DripVault — Smart Wardrobe & AI Outfit Builder Engine presented by Ely Wolf.">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Custom Invitation Styles */
+    .invite-hero {
+      text-align: center;
+      padding: 3rem 1.5rem 2rem;
+      background: radial-gradient(circle at top center, rgba(139, 92, 246, 0.25) 0%, rgba(9, 13, 22, 0) 70%);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-card);
+      margin-bottom: 2.5rem;
+      backdrop-filter: blur(16px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .badge-capstone {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: rgba(234, 179, 8, 0.15);
+      border: 1px solid rgba(234, 179, 8, 0.4);
+      color: #facc15;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
+    }
+
+    .invite-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.15;
+      margin-bottom: 0.75rem;
+      background: linear-gradient(135deg, #ffffff 30%, var(--accent-purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .invite-subtitle {
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      max-width: 680px;
+      margin: 0 auto 1.75rem;
+      line-height: 1.6;
+    }
+
+    .presenter-card {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 10px 20px;
+      border-radius: 30px;
+      margin-bottom: 2rem;
+    }
+
+    .presenter-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-purple), #ec4899);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: white;
+    }
+
+    /* Countdown Timer Grid */
+    .timer-grid {
+      display: flex;
+      justify-content: center;
+      gap: 1.25rem;
+      margin-top: 1rem;
+    }
+
+    .timer-box {
+      background: rgba(15, 21, 36, 0.8);
+      border: 1px solid var(--accent-purple);
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.25rem;
+      min-width: 85px;
+      text-align: center;
+    }
+
+    .timer-val {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1;
+    }
+
+    .timer-lbl {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+    }
+
+    /* Layout Grid */
+    .invite-grid {
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    @media (max-width: 960px) {
+      .invite-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Poster Card Showcase */
+    .poster-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card-glow);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .poster-img-wrap {
+      position: relative;
+      width: 100%;
+      background: #090d16;
+    }
+
+    .poster-img-wrap img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+    }
+
+    .poster-content {
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .event-meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      background: rgba(9, 13, 22, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-lg);
+      padding: 1rem;
+    }
+
+    .event-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .event-meta-icon {
+      font-size: 1.4rem;
+    }
+
+    .event-meta-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .event-meta-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .event-meta-val {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    /* Features Pillar Grid */
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .pillar-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      transition: var(--transition);
+    }
+
+    .pillar-item:hover {
+      border-color: var(--accent-purple);
+      transform: translateY(-3px);
+      background: rgba(139, 92, 246, 0.06);
+    }
+
+    .pillar-icon {
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+    }
+
+    .pillar-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+
+    .pillar-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* RSVP Form Card */
+    .rsvp-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card-glow);
+      border-radius: var(--radius-xl);
+      padding: 2rem;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      height: fit-content;
+      position: sticky;
+      top: 2rem;
+    }
+
+    .rsvp-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .rsvp-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .attendee-badge {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      color: #4ade80;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    /* Schedule Agenda List */
+    .agenda-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .agenda-item {
+      display: flex;
+      gap: 1rem;
+      background: rgba(9, 13, 22, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 1rem;
+      border-radius: var(--radius-lg);
+    }
+
+    .agenda-time {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      color: var(--accent-amber);
+      font-size: 0.9rem;
+      min-width: 70px;
+    }
+
+    .agenda-details h4 {
+      font-size: 0.95rem;
+      color: #ffffff;
+      margin-bottom: 2px;
+    }
+
+    .agenda-details p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .action-btn-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .toast-msg {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 100000;
+      background: #182238;
+      border: 1px solid var(--accent-purple);
+      color: #ffffff;
+      padding: 12px 20px;
+      border-radius: var(--radius-lg);
+      font-size: 0.88rem;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Navigation Header -->
+    <header>
+      <div class="brand-logo">
+        <div class="logo-badge">🎓</div>
+        <div class="brand-title">
+          <h1>Capstone Defense 2026</h1>
+          <p>Senior Engineering & Computer Science Showcase</p>
+        </div>
+      </div>
+
+      <nav class="nav-tabs">
+        <a href="index.html" class="nav-tab" style="text-decoration: none;">
+          <span>🧥</span> Open DripVault App
+        </a>
+        <a href="#rsvpForm" class="nav-tab active" style="text-decoration: none;">
+          <span>✍️</span> RSVP Now
+        </a>
+      </nav>
+    </header>
+
+    <!-- Invitation Hero Header -->
+    <section class="invite-hero">
+      <div class="badge-capstone">
+        <span>✨</span> Senior Capstone Presentation Invitation
+      </div>
+      
+      <h1 class="invite-title">DripVault — Smart Wardrobe & AI Outfit Builder</h1>
+      <p class="invite-subtitle">
+        You are cordially invited to the official capstone presentation and live interactive software demonstration of <strong>DripVault</strong>. Discover how algorithmic color harmony scoring, real-time catalog lookup, and drag-and-drop digital closets are transforming personal fashion management.
+      </p>
+
+      <div class="presenter-card">
+        <div class="presenter-avatar">EW</div>
+        <div style="text-align: left;">
+          <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Lead Architect & Presenter</span>
+          <div style="font-size: 0.95rem; font-weight: 700; color: #ffffff;">Ely Wolf</div>
+        </div>
+      </div>
+
+      <!-- Live Presentation Countdown Timer -->
+      <div style="margin-top: 1rem;">
+        <span style="font-size: 0.8rem; font-weight: 700; color: var(--accent-amber); text-transform: uppercase; letter-spacing: 0.05em;">Presentation Starts In</span>
+        <div class="timer-grid" id="countdownGrid">
+          <div class="timer-box">
+            <div class="timer-val" id="timerHours">01</div>
+            <div class="timer-lbl">Hours</div>
+          </div>
+          <div class="timer-box">
+            <div class="timer-val" id="timerMins">45</div>
+            <div class="timer-lbl">Minutes</div>
+          </div>
+          <div class="timer-box">
+            <div class="timer-val" id="timerSecs">30</div>
+            <div class="timer-lbl">Seconds</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Invite Grid -->
+    <div class="invite-grid">
+      
+      <!-- Left Column: Poster Showcase & Project Abstract -->
+      <div style="display: flex; flex-direction: column; gap: 2rem;">
+        
+        <!-- Digital Presentation Poster -->
+        <div class="poster-card">
+          <div class="poster-img-wrap">
+            <img src="assets/capstone_poster_hero.png" alt="DripVault Capstone Presentation Poster Header" onerror="this.onerror=null; this.src='assets/fog_essentials_hoodie_oatmeal.png';">
+          </div>
+          
+          <div class="poster-content">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <span style="font-size: 0.75rem; color: var(--accent-purple); font-weight: 700; text-transform: uppercase;">Official Event Poster</span>
+                <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; color: #ffffff; margin-top: 2px;">DripVault Architecture & AI Engine</h3>
+              </div>
+              <button type="button" class="btn-secondary" onclick="shareInvitationLink()">
+                <span>🔗</span> Share Link
+              </button>
+            </div>
+
+            <!-- Event Meta Grid -->
+            <div class="event-meta-grid">
+              <div class="event-meta-item">
+                <div class="event-meta-icon">📅</div>
+                <div class="event-meta-text">
+                  <span class="event-meta-label">Date & Time</span>
+                  <span class="event-meta-val">Today @ 5:00 PM EST</span>
+                </div>
+              </div>
+
+              <div class="event-meta-item">
+                <div class="event-meta-icon">📍</div>
+                <div class="event-meta-text">
+                  <span class="event-meta-label">Venue / Stream</span>
+                  <span class="event-meta-val">Auditorium Hall B / Hybrid</span>
+                </div>
+              </div>
+
+              <div class="event-meta-item">
+                <div class="event-meta-icon">🧠</div>
+                <div class="event-meta-text">
+                  <span class="event-meta-label">Core Tech</span>
+                  <span class="event-meta-val">HTML5, Pure CSS, JS & LocalStorage</span>
+                </div>
+              </div>
+
+              <div class="event-meta-item">
+                <div class="event-meta-icon">🚀</div>
+                <div class="event-meta-text">
+                  <span class="event-meta-label">Live Application</span>
+                  <span class="event-meta-val">v1.0 Ready to Demo</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Key Feature Pillars -->
+            <div>
+              <h4 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; color: #ffffff; margin-bottom: 0.75rem;">Core Innovations Demonstrated</h4>
+              <div class="pillars-grid">
+                <div class="pillar-item">
+                  <div class="pillar-icon">📥</div>
+                  <div class="pillar-title">Drag & Drop Closet</div>
+                  <div class="pillar-desc">Upload clothing images directly into base64 data URLs without external servers.</div>
+                </div>
+
+                <div class="pillar-item">
+                  <div class="pillar-icon">🔍</div>
+                  <div class="pillar-title">Smart Catalog Lookup</div>
+                  <div class="pillar-desc">Real-time autocomplete engine matching Essentials, Nike, Carhartt, and Stüssy apparel.</div>
+                </div>
+
+                <div class="pillar-item">
+                  <div class="pillar-icon">🎨</div>
+                  <div class="pillar-title">AI Color Harmony</div>
+                  <div class="pillar-desc">Evaluates tonal balance, neutral contrast, and assigns streetwear vibe tags automatically.</div>
+                </div>
+
+                <div class="pillar-item">
+                  <div class="pillar-icon">🖼️</div>
+                  <div class="pillar-title">Interactive Fit Canvas</div>
+                  <div class="pillar-desc">Slot-based canvas outfit builder with quick swap, clear, and lookbook saving.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Presentation Agenda -->
+            <div>
+              <h4 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; color: #ffffff; margin-bottom: 0.5rem;">Presentation Agenda</h4>
+              <div class="agenda-list">
+                <div class="agenda-item">
+                  <div class="agenda-time">5:00 PM</div>
+                  <div class="agenda-details">
+                    <h4>Opening Remarks & Problem Statement</h4>
+                    <p>Understanding personal closet disorganization and the need for intelligent wardrobe digitization.</p>
+                  </div>
+                </div>
+
+                <div class="agenda-item">
+                  <div class="agenda-time">5:10 PM</div>
+                  <div class="agenda-details">
+                    <h4>Live DripVault Software Demonstration</h4>
+                    <p>Live creation of wardrobe items with drag-and-drop photos, smart autofill, and Fit Studio outfit styling.</p>
+                  </div>
+                </div>
+
+                <div class="agenda-item">
+                  <div class="agenda-time">5:25 PM</div>
+                  <div class="agenda-details">
+                    <h4>Algorithmic Deep Dive & Code Walkthrough</h4>
+                    <p>Color harmony evaluation logic, local storage persistence, and zero-framework performance optimization.</p>
+                  </div>
+                </div>
+
+                <div class="agenda-item">
+                  <div class="agenda-time">5:35 PM</div>
+                  <div class="agenda-details">
+                    <h4>Q&A Session & Audience Outfit Building</h4>
+                    <p>Open questions from faculty, peers, and judges + interactive outfit creation challenges.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Launch Live Demo CTA -->
+            <div class="action-btn-group">
+              <a href="index.html" class="btn-primary" style="text-decoration: none; padding: 14px 28px; font-size: 1rem;">
+                <span>✨</span> Launch Live DripVault App
+              </a>
+              <button type="button" class="btn-secondary" onclick="window.print()">
+                <span>🖨️</span> Print / Save Invitation Poster
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Interactive RSVP Card -->
+      <div>
+        <div class="rsvp-card" id="rsvpForm">
+          <div class="rsvp-header">
+            <div class="rsvp-title">
+              <span>✍️</span> Formal RSVP Card
+            </div>
+            <span class="attendee-badge" id="attendeeCountBadge">18 Confirmed</span>
+          </div>
+
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+            Please register your attendance for the presentation so we can reserve your seat and virtual stream access key.
+          </p>
+
+          <form onsubmit="handleRsvpSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem;">
+            
+            <div class="form-group">
+              <label for="rsvpName">Full Name</label>
+              <input type="text" id="rsvpName" class="input-style" placeholder="e.g. Dr. Alexander Vance" required>
+            </div>
+
+            <div class="form-group">
+              <label for="rsvpAffiliation">Affiliation / Role</label>
+              <select id="rsvpAffiliation" class="input-style">
+                <option value="Faculty / Capstone Judge">Faculty / Capstone Judge</option>
+                <option value="Student Peer">Student Peer</option>
+                <option value="Industry Guest">Industry Guest</option>
+                <option value="Other Supporter">Other Supporter</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="rsvpEmail">Email Address</label>
+              <input type="email" id="rsvpEmail" class="input-style" placeholder="vance@university.edu" required>
+            </div>
+
+            <div class="form-group">
+              <label for="rsvpStatus">Attendance Preference</label>
+              <select id="rsvpStatus" class="input-style">
+                <option value="Attending In Person">Attending In Person (Auditorium Hall B)</option>
+                <option value="Attending Virtually">Attending Virtually (Live Stream)</option>
+                <option value="Regrets">Regrets (Sending Support)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="rsvpNotes">Questions or Notes for Ely</label>
+              <textarea id="rsvpNotes" class="input-style" rows="2" placeholder="e.g. Excited to see the AI color harmony score demo!"></textarea>
+            </div>
+
+            <button type="submit" class="btn-primary" style="margin-top: 0.5rem; justify-content: center; padding: 14px;">
+              <span>🎉</span> Confirm My RSVP
+            </button>
+
+          </form>
+
+          <!-- Confirmed Attendees List -->
+          <div style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+              <span style="font-size: 0.8rem; font-weight: 700; color: #ffffff; text-transform: uppercase;">Recent RSVPs</span>
+              <span style="font-size: 0.75rem; color: var(--accent-amber);">VIP Guest List</span>
+            </div>
+
+            <div id="rsvpListContainer" style="display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto;">
+              <!-- Dynamically rendered -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    // Live Countdown Timer
+    function startCountdown() {
+      // Set presentation target to 5:00 PM today
+      const now = new Date();
+      const target = new Date();
+      target.setHours(17, 0, 0, 0);
+
+      if (now > target) {
+        target.setDate(target.getDate() + 1);
+      }
+
+      function updateTimer() {
+        const currentTime = new Date();
+        const diff = target - currentTime;
+
+        if (diff <= 0) {
+          document.getElementById("timerHours").textContent = "00";
+          document.getElementById("timerMins").textContent = "00";
+          document.getElementById("timerSecs").textContent = "00";
+          return;
+        }
+
+        const hrs = Math.floor(diff / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+        document.getElementById("timerHours").textContent = String(hrs).padStart(2, '0');
+        document.getElementById("timerMins").textContent = String(mins).padStart(2, '0');
+        document.getElementById("timerSecs").textContent = String(secs).padStart(2, '0');
+      }
+
+      updateTimer();
+      setInterval(updateTimer, 1000);
+    }
+
+    // Guest List Persistence
+    let rsvpList = [
+      { name: "Dr. Marcus Vance", role: "Faculty / Capstone Judge", status: "In Person" },
+      { name: "Prof. Elena Rostova", role: "Faculty Advisor", status: "In Person" },
+      { name: "Julian Thorne", role: "Industry Guest (Nike Tech)", status: "Virtual Stream" },
+      { name: "Sarah Jenkins", role: "Student Peer", status: "In Person" }
+    ];
+
+    function loadRsvps() {
+      try {
+        const stored = localStorage.getItem("dripvault_capstone_rsvps");
+        if (stored) rsvpList = JSON.parse(stored);
+      } catch(e) {}
+      renderRsvpList();
+    }
+
+    function renderRsvpList() {
+      const container = document.getElementById("rsvpListContainer");
+      const badge = document.getElementById("attendeeCountBadge");
+      if (!container) return;
+
+      container.innerHTML = "";
+      badge.textContent = `${rsvpList.length} Confirmed`;
+
+      rsvpList.forEach(guest => {
+        const div = document.createElement("div");
+        div.style.cssText = `
+          display: flex; justify-content: space-between; align-items: center;
+          background: rgba(255, 255, 255, 0.03); padding: 8px 12px;
+          border-radius: var(--radius-md); border: 1px solid rgba(255, 255, 255, 0.05);
+        `;
+
+        div.innerHTML = `
+          <div>
+            <div style="font-size: 0.85rem; font-weight: 700; color: #ffffff;">${guest.name}</div>
+            <div style="font-size: 0.72rem; color: var(--text-muted);">${guest.role}</div>
+          </div>
+          <span style="font-size: 0.72rem; color: var(--accent-purple); font-weight: 600; background: rgba(139, 92, 246, 0.15); padding: 2px 8px; border-radius: 10px;">${guest.status || 'Attending'}</span>
+        `;
+
+        container.appendChild(div);
+      });
+    }
+
+    function handleRsvpSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById("rsvpName").value.trim();
+      const role = document.getElementById("rsvpAffiliation").value;
+      const statusVal = document.getElementById("rsvpStatus").value;
+
+      if (!name) return;
+
+      const newGuest = {
+        name,
+        role,
+        status: statusVal.includes("Virtual") ? "Virtual Stream" : (statusVal.includes("Person") ? "In Person" : "Regrets")
+      };
+
+      rsvpList.unshift(newGuest);
+      try {
+        localStorage.setItem("dripvault_capstone_rsvps", JSON.stringify(rsvpList));
+      } catch(e) {}
+
+      renderRsvpList();
+      showToast(`RSVP Confirmed! Welcome, ${name}.`);
+
+      // Reset form fields
+      document.getElementById("rsvpName").value = "";
+      document.getElementById("rsvpEmail").value = "";
+      document.getElementById("rsvpNotes").value = "";
+    }
+
+    function shareInvitationLink() {
+      const url = window.location.href;
+      navigator.clipboard.writeText(url).then(() => {
+        showToast("Invitation Link Copied to Clipboard!");
+      }).catch(() => {
+        showToast("Link: " + url);
+      });
+    }
+
+    function showToast(msg) {
+      const toast = document.createElement("div");
+      toast.className = "toast-msg";
+      toast.innerHTML = `<span>✨</span> ${msg}`;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(10px)";
+        setTimeout(() => {
+          if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 300);
+      }, 2500);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      startCountdown();
+      loadRsvps();
+    });
+  </script>
+</body>
+</html>
