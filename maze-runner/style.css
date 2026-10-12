@@ -360,32 +360,110 @@ html, body {
 .minimap-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(20px);
+  background: rgba(4, 6, 12, 0.88);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   z-index: 200;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 24px;
+  cursor: pointer;
+  animation: fadeIn 0.2s ease;
+}
+
+.minimap-modal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  cursor: default;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+
+.minimap-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+
+.minimap-title-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.minimap-tag {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
+}
+
+.minimap-heading {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.minimap-close-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #f87171;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.minimap-close-btn:hover {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+  transform: translateY(-1px);
+}
+
+.minimap-close-btn svg {
+  width: 15px;
+  height: 15px;
 }
 
 #minimapCanvas {
   max-width: 85vw;
-  max-height: 75vh;
+  max-height: 72vh;
   border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 14px;
+  border-radius: 16px;
   background: #090c14;
-  box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.95);
 }
 
 .minimap-hint {
   margin-top: 14px;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: #94a3b8;
   letter-spacing: 0.08em;
+  text-align: center;
 }
 
 /* MODALS */

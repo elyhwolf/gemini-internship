@@ -1237,7 +1237,14 @@ class MazeGame {
 
       // Minimap Toggle
       if (e.key === 'm' || e.key === 'M') {
+        e.preventDefault();
         this.toggleMinimap();
+      } else if (e.key === 'Escape') {
+        if (this.minimapOverlay && !this.minimapOverlay.classList.contains('hidden')) {
+          e.preventDefault();
+          e.stopPropagation();
+          this.closeMinimap();
+        }
       }
     };
 
@@ -1250,10 +1257,9 @@ class MazeGame {
       }
     };
 
+    // Attach keyboard events only to window to prevent duplicate bubbling triggers
     window.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
-    document.addEventListener('keyup', handleKeyUp);
 
     window.addEventListener('blur', () => {
       this.keys.left = false;
@@ -1275,7 +1281,25 @@ class MazeGame {
     });
 
     const btnMinimap = document.getElementById('btnMinimap');
-    if (btnMinimap) btnMinimap.addEventListener('click', () => this.toggleMinimap());
+    if (btnMinimap) btnMinimap.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.toggleMinimap();
+    });
+
+    const btnCloseMinimap = document.getElementById('btnCloseMinimap');
+    if (btnCloseMinimap) btnCloseMinimap.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.closeMinimap();
+    });
+
+    if (this.minimapOverlay) {
+      this.minimapOverlay.addEventListener('click', (e) => {
+        // Clicking backdrop outside canvas or on close button closes the map
+        if (e.target === this.minimapOverlay || e.target.closest('#btnCloseMinimap')) {
+          this.closeMinimap();
+        }
+      });
+    }
 
     const btnAudio = document.getElementById('btnAudio');
     const audioIconOn = document.getElementById('audioIconOn');
@@ -1328,11 +1352,21 @@ class MazeGame {
     if (!this.minimapOverlay) return;
     const isHidden = this.minimapOverlay.classList.contains('hidden');
     if (isHidden) {
-      this.renderMinimap();
-      this.minimapOverlay.classList.remove('hidden');
+      this.openMinimap();
     } else {
-      this.minimapOverlay.classList.add('hidden');
+      this.closeMinimap();
     }
+  }
+
+  openMinimap() {
+    if (!this.minimapOverlay) return;
+    this.renderMinimap();
+    this.minimapOverlay.classList.remove('hidden');
+  }
+
+  closeMinimap() {
+    if (!this.minimapOverlay) return;
+    this.minimapOverlay.classList.add('hidden');
   }
 
   renderMinimap() {
