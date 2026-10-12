@@ -468,4 +468,19 @@ function initAmbientCanvas() {
 window.addEventListener('DOMContentLoaded', () => {
   initAmbientCanvas();
   resetGame();
+
+  // If running inside arcade iframe, route Arcade Hub back link to parent exit confirmation
+  if (window.self !== window.top) {
+    document.querySelectorAll('a.back-link, a.btn-secondary').forEach(link => {
+      link.addEventListener('click', (e) => {
+        const href = (link.getAttribute('href') || '').trim();
+        if (href === '../' || href === '/' || link.classList.contains('back-link')) {
+          e.preventDefault();
+          try {
+            window.parent.postMessage({ type: 'REQUEST_EXIT_GAME' }, '*');
+          } catch (err) {}
+        }
+      });
+    });
+  }
 });

@@ -532,11 +532,26 @@
   `;
   document.head.appendChild(styleEl);
 
-  // If inside arcade iframe, don't create duplicate UI; provide global helper
+  // If inside arcade iframe, don't create duplicate UI; provide global helpers
   if (isEmbeddedInArcade) {
     window.openArcadeChat = function() {
       try { window.parent.postMessage({ type: 'TOGGLE_LOBBY_CHAT' }, '*'); } catch (e) {}
     };
+    window.exitArcadeGame = function() {
+      try { window.parent.postMessage({ type: 'REQUEST_EXIT_GAME' }, '*'); } catch (e) {}
+    };
+    // Intercept in-game back arrows or links pointing to arcade hub so iframe never loads main menu
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a');
+      if (link) {
+        const href = (link.getAttribute('href') || '').trim();
+        if (href === '../' || href === '/' || href === '../index.html' || href === '/index.html' || link.classList.contains('back-link')) {
+          e.preventDefault();
+          e.stopPropagation();
+          window.exitArcadeGame();
+        }
+      }
+    }, true);
     return;
   }
 

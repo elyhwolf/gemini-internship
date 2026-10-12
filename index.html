@@ -178,12 +178,12 @@
   <div id="gameStageOverlay" class="game-stage-overlay hidden" aria-hidden="true">
     <div class="game-stage-topbar">
       <div class="stage-left">
-        <button id="exitGameBtn" class="exit-stage-btn" title="Exit to Arcade Hub (ESC)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
+        <button id="exitGameBtn" class="exit-stage-btn" title="Back to Arcade Hub (ESC)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
           </svg>
-          <span>EXIT TO ARCADE</span>
+          <span>BACK TO MENU</span>
         </button>
         <div class="stage-game-badge">
           <span class="stage-game-name" id="stageGameName">Shark Bait</span>
@@ -216,6 +216,34 @@
     <!-- EMBEDDED GAME VIEWPORT -->
     <div class="game-stage-viewport">
       <iframe id="gameStageIframe" src="about:blank" title="Arcade Game Viewport" allow="autoplay; fullscreen; encrypted-media" frameborder="0"></iframe>
+
+      <!-- QUICK EXIT CONFIRMATION MODAL -->
+      <div id="exitConfirmModal" class="exit-confirm-modal hidden" aria-hidden="true">
+        <div class="exit-confirm-card">
+          <div class="exit-confirm-icon-orb">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+          </div>
+          <h3 class="exit-confirm-title">Exit to Main Menu?</h3>
+          <p class="exit-confirm-desc">
+            Are you sure you want to exit <strong id="exitConfirmGameName">this game</strong> and return to the Arcade Hub? Any unsaved round progress will be lost.
+          </p>
+          <div class="exit-confirm-actions">
+            <button type="button" id="btnCancelExit" class="exit-btn-cancel">
+              RESUME PLAYING
+            </button>
+            <button type="button" id="btnConfirmExit" class="exit-btn-confirm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              <span>EXIT TO MENU</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 

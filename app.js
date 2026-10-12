@@ -277,6 +277,10 @@ const hudOnlineCount = document.getElementById('hudOnlineCount');
 const hudPlayersList = document.getElementById('hudPlayersList');
 const stageChatToggleBtn = document.getElementById('stageChatToggleBtn');
 const hudChatBadge = document.getElementById('hudChatBadge');
+const exitConfirmModal = document.getElementById('exitConfirmModal');
+const exitConfirmGameName = document.getElementById('exitConfirmGameName');
+const btnCancelExit = document.getElementById('btnCancelExit');
+const btnConfirmExit = document.getElementById('btnConfirmExit');
 
 let currentActiveGame = null;
 
@@ -285,11 +289,16 @@ export function launchGame(gameName, gameUrl, gameTag) {
   currentActiveGame = gameName;
   if (stageGameName) stageGameName.textContent = gameName;
   if (stageGameTag) stageGameTag.textContent = gameTag || '1v1 MULTIPLAYER';
+  if (exitConfirmGameName) exitConfirmGameName.textContent = gameName;
 
   // Load game directly inside arcade fullscreen viewport
   gameStageIframe.src = gameUrl;
   gameStageOverlay.classList.remove('hidden');
   gameStageOverlay.setAttribute('aria-hidden', 'false');
+  hideExitConfirmModal();
+
+  // Track browser history so browser back button triggers exit flow properly
+  history.pushState({ inGame: true, game: gameName }, '', window.location.href);
 
   // Hide the main arcade lobby chat button so only the top-bar button shows
   const chatWidgetWrapper = document.querySelector('.chat-widget-wrapper');
@@ -301,8 +310,30 @@ export function launchGame(gameName, gameUrl, gameTag) {
   playHubSound('hover');
 }
 
+export function requestExitGame() {
+  if (!currentActiveGame && (!gameStageOverlay || gameStageOverlay.classList.contains('hidden'))) return;
+  if (exitConfirmModal) {
+    if (exitConfirmGameName) {
+      exitConfirmGameName.textContent = currentActiveGame || 'this game';
+    }
+    exitConfirmModal.classList.remove('hidden');
+    exitConfirmModal.setAttribute('aria-hidden', 'false');
+    playHubSound('hover');
+  } else {
+    exitGame();
+  }
+}
+
+export function hideExitConfirmModal() {
+  if (exitConfirmModal) {
+    exitConfirmModal.classList.add('hidden');
+    exitConfirmModal.setAttribute('aria-hidden', 'true');
+  }
+}
+
 export function exitGame() {
   if (!gameStageOverlay || !gameStageIframe) return;
+  hideExitConfirmModal();
   gameStageOverlay.classList.add('hidden');
   gameStageOverlay.setAttribute('aria-hidden', 'true');
   gameStageIframe.src = 'about:blank';
@@ -319,6 +350,8 @@ export function exitGame() {
 }
 
 window.launchGame = launchGame;
+window.requestExitGame = requestExitGame;
+window.hideExitConfirmModal = hideExitConfirmModal;
 window.exitGame = exitGame;
 
 function showAlert(msg, type = 'error') {
@@ -1090,9 +1123,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Exit Game Button
+  // Exit Game Button (Back Arrow) Click
   if (exitGameBtn) {
-    exitGameBtn.addEventListener('click', exitGame);
+    exitGameBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      requestExitGame();
+    });
+  }
+
+  // Confirmation Modal Actions
+  if (btnCancelExit) {
+    btnCancelExit.addEventListener('click', (e) => {
+      e.preventDefault();
+      hideExitConfirmModal();
+      playHubSound('hover');
+    });
+  }
+
+  if (btnConfirmExit) {
+    btnConfirmExit.addEventListener('click', (e) => {
+      e.preventDefault();
+      exitGame();
+    });
   }
 
   // In-Game Topbar Chat Toggle Button
@@ -1102,11 +1154,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Keyboard shortcut: ESC to exit game or close modal/chat
+  // Keyboard shortcut: ESC to exit game (with confirmation) or close modal/chat
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-      if (gameStageOverlay && !gameStageOverlay.classList.contains('hidden')) {
-        exitGame();
+      if (exitConfirmModal && !exitConfirmModal.classList.contains('hidden')) {
+        hideExitConfirmModal();
+      } else if (gameStageOverlay && !gameStageOverlay.classList.contains('hidden')) {
+        requestExitGame();
       } else if (authModal && !authModal.classList.contains('hidden')) {
         toggleAuthModal(false);
       } else if (chatDrawer && !chatDrawer.classList.contains('hidden')) {
@@ -1115,12 +1169,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Listen for child game iframe requests to toggle lobby chat
-  window.addEventListener('message', (e) => {
-    if (e.data && e.data.type === 'TOGGLE_LOBBY_CHAT') {
-      toggleChatDrawer(chatDrawer.classList.contains('hidden'));
+  // Handle browser back button / swipe back gesture
+  window.addEventListener('popstate', () => {
+    if (currentActiveGame && gameStageOverlay && !gameStageOverlay.classList.contains('hidden')) {
+      requestExitGame();
+      history.pushState({ inGame: true, game: currentActiveGame }, '', window.location.href);
+    } else {
+      exitGame();
     }
   });
+
+  // Listen for child game iframe requests to toggle lobby chat or exit game
+  window.addEventListener('message', (e) => {
+    if (e.data) {
+      if (e.data.type === 'TOGGLE_LOBBY_CHAT') {
+        toggleChatDrawer(chatDrawer.classList.contains('hidden'));
+      } else if (e.data.type === 'REQUEST_EXIT_GAME') {
+        requestExitGame();
+      }
+    }
+  });
+
+  // Safety guard on iframe navigation: if iframe navigates to root / main menu, close overlay immediately
+  if (gameStageIframe) {
+    gameStageIframe.addEventListener('load', () => {
+      try {
+        const path = gameStageIframe.contentWindow.location.pathname;
+        if (path === '/' || (path.endsWith('/index.html') && !path.includes('/maze-runner/') && !path.includes('/go-fish/') && !path.includes('/math-gauntlet/') && !path.includes('/wardrobe/') && !path.includes('/memory-card/'))) {
+          exitGame();
+        }
+      } catch (err) {}
+    });
+  }
 
   // Observe Auth State Changes
   onAuthChange((user) => {
