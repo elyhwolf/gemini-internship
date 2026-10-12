@@ -123,7 +123,8 @@ class handler(BaseHTTPRequestHandler):
                     'text': text,
                     'time': now_str,
                     'timestamp': timestamp,
-                    'isSystem': is_system
+                    'isSystem': is_system,
+                    'photoURL': payload.get('photoURL')
                 }
                 messages.append(new_msg)
                 self._save_cloud_messages(messages)

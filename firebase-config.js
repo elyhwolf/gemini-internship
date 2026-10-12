@@ -7,8 +7,6 @@ import {
   getAuth, 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
-  signInWithPopup, 
-  GoogleAuthProvider, 
   signOut, 
   onAuthStateChanged,
   updateProfile
@@ -34,7 +32,6 @@ try {
   console.warn("Firebase App initialization notice:", err);
 }
 
-const googleProvider = new GoogleAuthProvider();
 
 // Local & Session Storage Keys
 const LOCAL_USERS_KEY = 'elywolf_arcade_users_db';
@@ -208,12 +205,14 @@ async function sendPresenceHeartbeat() {
   const user = getLocalSessionUser();
   const displayName = user ? (user.displayName || user.email.split('@')[0]) : getOrCreateGuestId();
   const avatar = displayName.replace('Guest #', 'G#').charAt(0).toUpperCase();
+  const photoURL = user ? (user.photoURL || null) : null;
 
   const payload = {
     tabId: TAB_SESSION_ID,
     uid: user ? user.uid : TAB_SESSION_ID,
     displayName: displayName,
     avatar: avatar,
+    photoURL: photoURL,
     status: getPageLabel(),
     isGuest: !user,
     lastSeen: Date.now()
@@ -330,6 +329,7 @@ fetchGlobalChat();
 export async function sendChatMessage(text) {
   const user = getLocalSessionUser();
   const senderName = user ? (user.displayName || user.email.split('@')[0]) : getOrCreateGuestId();
+  const photoURL = user ? (user.photoURL || null) : null;
   const timestamp = Date.now();
   const nowStr = new Date(timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   const msgId = 'msg_' + timestamp + '_' + Math.random().toString(36).substr(2, 4);
@@ -340,6 +340,7 @@ export async function sendChatMessage(text) {
     text: text.trim(),
     time: nowStr,
     timestamp: timestamp,
+    photoURL: photoURL,
     isSystem: false
   };
 
@@ -366,6 +367,7 @@ export async function sendChatMessage(text) {
         text: text.trim(),
         time: nowStr,
         timestamp: timestamp,
+        photoURL: photoURL,
         isSystem: false
       })
     });
@@ -438,17 +440,23 @@ export function onOnlinePlayersUpdate(callback) {
 // ==========================================================================
 // AUTHENTICATION METHODS
 // ==========================================================================
-export async function signUpWithEmail(email, password, displayName) {
+export async function signUpWithEmail(email, password, displayName, photoURL = null) {
   const cleanEmail = email.toLowerCase().trim();
   const name = displayName.trim() || cleanEmail.split('@')[0];
 
   if (auth) {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, cleanEmail, password);
-      if (name) {
-        await updateProfile(userCredential.user, { displayName: name });
-      }
-      const u = { uid: userCredential.user.uid, email: userCredential.user.email, displayName: name };
+      const profileUpdates = { displayName: name };
+      if (photoURL) profileUpdates.photoURL = photoURL;
+      await updateProfile(userCredential.user, profileUpdates);
+
+      const u = { 
+        uid: userCredential.user.uid, 
+        email: userCredential.user.email, 
+        displayName: name,
+        photoURL: photoURL
+      };
       setLocalSessionUser(u);
       sendPresenceHeartbeat();
       return u;
@@ -465,7 +473,8 @@ export async function signUpWithEmail(email, password, displayName) {
     uid: 'usr_' + Math.random().toString(36).substr(2, 9),
     email: cleanEmail,
     password: password,
-    displayName: name
+    displayName: name,
+    photoURL: photoURL
   };
 
   users[cleanEmail] = newUser;
@@ -482,7 +491,15 @@ export async function signInWithEmail(email, password) {
   if (auth) {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, cleanEmail, password);
-      const u = { uid: userCredential.user.uid, email: userCredential.user.email, displayName: userCredential.user.displayName || cleanEmail.split('@')[0] };
+      const localUsers = getLocalUsers();
+      const localU = localUsers[cleanEmail];
+      const photo = userCredential.user.photoURL || (localU ? localU.photoURL : null);
+      const u = { 
+        uid: userCredential.user.uid, 
+        email: userCredential.user.email, 
+        displayName: userCredential.user.displayName || cleanEmail.split('@')[0],
+        photoURL: photo
+      };
       setLocalSessionUser(u);
       sendPresenceHeartbeat();
       return u;
@@ -501,7 +518,8 @@ export async function signInWithEmail(email, password) {
       uid: 'usr_' + Math.random().toString(36).substr(2, 9),
       email: cleanEmail,
       password: password,
-      displayName: cleanEmail.split('@')[0]
+      displayName: cleanEmail.split('@')[0],
+      photoURL: null
     };
     users[cleanEmail] = newUser;
     saveLocalUsers(users);
@@ -517,26 +535,27 @@ export async function signInWithEmail(email, password) {
   return user;
 }
 
-export async function signInWithGoogle() {
-  if (auth) {
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const u = { uid: result.user.uid, email: result.user.email, displayName: result.user.displayName || "Google Player" };
-      setLocalSessionUser(u);
-      sendPresenceHeartbeat();
-      return u;
-    } catch (err) {}
+export async function updateUserProfilePic(photoURL) {
+  const user = getLocalSessionUser();
+  if (!user) return;
+  user.photoURL = photoURL;
+  setLocalSessionUser(user);
+
+  const cleanEmail = (user.email || '').toLowerCase().trim();
+  const users = getLocalUsers();
+  if (users[cleanEmail]) {
+    users[cleanEmail].photoURL = photoURL;
+    saveLocalUsers(users);
   }
 
-  const googleUser = {
-    uid: 'goog_' + Math.random().toString(36).substr(2, 9),
-    email: 'google.player@gmail.com',
-    displayName: 'Google Player'
-  };
+  if (auth && auth.currentUser) {
+    try {
+      await updateProfile(auth.currentUser, { photoURL });
+    } catch (e) {}
+  }
 
-  setLocalSessionUser(googleUser);
   sendPresenceHeartbeat();
-  return googleUser;
+  return user;
 }
 
 export async function signOutUser() {

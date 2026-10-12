@@ -3,7 +3,6 @@
 import { 
   signUpWithEmail, 
   signInWithEmail, 
-  signInWithGoogle, 
   signOutUser, 
   onAuthChange,
   sendChatMessage,
@@ -11,7 +10,8 @@ import {
   onChatUpdate,
   onOnlinePlayersUpdate,
   getLocalSessionUser,
-  setActiveGameStatus
+  setActiveGameStatus,
+  updateUserProfilePic
 } from './firebase-config.js';
 
 // Web Audio API Synthesizer for Hub FX
@@ -134,21 +134,100 @@ const openAuthModalBtn = document.getElementById('openAuthModalBtn');
 const closeAuthModalBtn = document.getElementById('closeAuthModalBtn');
 const authModal = document.getElementById('authModal');
 const userProfilePill = document.getElementById('userProfilePill');
+const userAvatarWrap = document.getElementById('userAvatarWrap');
 const userAvatar = document.getElementById('userAvatar');
+const inputChangeAvatar = document.getElementById('inputChangeAvatar');
 const userNameDisplay = document.getElementById('userNameDisplay');
 const signOutBtn = document.getElementById('signOutBtn');
 
 const tabSignUp = document.getElementById('tabSignUp');
 const tabSignIn = document.getElementById('tabSignIn');
+const groupProfilePic = document.getElementById('groupProfilePic');
+const avatarPreviewBox = document.getElementById('avatarPreviewBox');
+const avatarPreviewImg = document.getElementById('avatarPreviewImg');
+const avatarPreviewPlaceholder = document.getElementById('avatarPreviewPlaceholder');
+const inputProfilePic = document.getElementById('inputProfilePic');
+const btnUploadProfilePic = document.getElementById('btnUploadProfilePic');
+const btnRemoveProfilePic = document.getElementById('btnRemoveProfilePic');
+const avatarPresetsGrid = document.getElementById('avatarPresetsGrid');
+
 const groupDisplayName = document.getElementById('groupDisplayName');
 const submitAuthBtn = document.getElementById('submitAuthBtn');
 const authForm = document.getElementById('authForm');
-const googleAuthBtn = document.getElementById('googleAuthBtn');
 const authAlert = document.getElementById('authAlert');
 
 const inputDisplayName = document.getElementById('inputDisplayName');
 const inputEmail = document.getElementById('inputEmail');
 const inputPassword = document.getElementById('inputPassword');
+
+// Preset Arcade Avatars
+const PRESET_SVGS = {
+  wolf: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" stroke="#38bdf8" stroke-width="2"><rect width="32" height="32" rx="16" fill="#0f172a"/><polygon points="16,3 28,12 24,29 8,29 4,12"></polygon><circle cx="11" cy="16" r="2" fill="#38bdf8"></circle><circle cx="21" cy="16" r="2" fill="#38bdf8"></circle><polygon points="16,21 13,25 19,25" fill="#38bdf8"></polygon></svg>`,
+  gamepad: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" stroke="#a855f7" stroke-width="2"><rect width="32" height="32" rx="16" fill="#180b2b"/><rect x="4" y="8" width="24" height="16" rx="6"></rect><line x1="10" y1="13" x2="10" y2="19"></line><line x1="7" y1="16" x2="13" y2="16"></line><circle cx="21" cy="14" r="1.5" fill="#a855f7"></circle><circle cx="23" cy="18" r="1.5" fill="#a855f7"></circle></svg>`,
+  lightning: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" stroke="#fbbf24" stroke-width="2"><rect width="32" height="32" rx="16" fill="#241a04"/><polygon points="18,3 6,17 15,17 14,29 26,15 17,15" fill="#fbbf24"></polygon></svg>`,
+  alien: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" stroke="#10b981" stroke-width="2"><rect width="32" height="32" rx="16" fill="#062015"/><rect x="7" y="10" width="18" height="14" rx="4"></rect><circle cx="12" cy="16" r="2" fill="#10b981"></circle><circle cx="20" cy="16" r="2" fill="#10b981"></circle><line x1="11" y1="6" x2="13" y2="10"></line><line x1="21" y1="6" x2="19" y2="10"></line></svg>`,
+  crown: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" stroke="#f59e0b" stroke-width="2"><rect width="32" height="32" rx="16" fill="#231503"/><polygon points="4,24 28,24 26,11 19,17 16,7 13,17 6,11" fill="rgba(245,158,11,0.4)"></polygon></svg>`,
+  sword: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" stroke="#ec4899" stroke-width="2"><rect width="32" height="32" rx="16" fill="#240718"/><line x1="6" y1="26" x2="26" y2="6"></line><polyline points="20,6 26,6 26,12"></polyline><line x1="9" y1="21" x2="11" y2="23"></line></svg>`
+};
+
+function getPresetDataUrl(key) {
+  const svg = PRESET_SVGS[key] || PRESET_SVGS.wolf;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
+let selectedAvatarDataUrl = getPresetDataUrl('wolf');
+let isCustomUploaded = false;
+
+function setPresetAvatar(presetKey) {
+  selectedAvatarDataUrl = getPresetDataUrl(presetKey);
+  isCustomUploaded = false;
+  if (avatarPreviewImg) {
+    avatarPreviewImg.src = selectedAvatarDataUrl;
+    avatarPreviewImg.classList.remove('hidden');
+  }
+  if (avatarPreviewPlaceholder) {
+    avatarPreviewPlaceholder.classList.add('hidden');
+  }
+  if (btnRemoveProfilePic) {
+    btnRemoveProfilePic.classList.add('hidden');
+  }
+  if (avatarPresetsGrid) {
+    avatarPresetsGrid.querySelectorAll('.preset-avatar-btn').forEach(b => {
+      b.classList.toggle('active', b.getAttribute('data-preset') === presetKey);
+    });
+  }
+}
+
+// Convert image file to resized base64 JPEG
+function processImageFile(file) {
+  return new Promise((resolve, reject) => {
+    if (!file || !file.type.startsWith('image/')) {
+      reject(new Error("Please upload a valid image file."));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Failed to read image file."));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("Failed to load image."));
+      img.onload = () => {
+        const size = 128;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        const minDim = Math.min(img.width, img.height);
+        const sx = (img.width - minDim) / 2;
+        const sy = (img.height - minDim) / 2;
+        ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        resolve(dataUrl);
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 // Presence & Chat Elements
 const onlineCountText = document.getElementById('onlineCountText');
@@ -242,12 +321,14 @@ function setAuthMode(signUp) {
   if (signUp) {
     tabSignUp.classList.add('active');
     tabSignIn.classList.remove('active');
-    groupDisplayName.classList.remove('hidden');
+    if (groupDisplayName) groupDisplayName.classList.remove('hidden');
+    if (groupProfilePic) groupProfilePic.classList.remove('hidden');
     submitAuthBtn.textContent = 'CREATE ACCOUNT';
   } else {
     tabSignIn.classList.add('active');
     tabSignUp.classList.remove('active');
-    groupDisplayName.classList.add('hidden');
+    if (groupDisplayName) groupDisplayName.classList.add('hidden');
+    if (groupProfilePic) groupProfilePic.classList.add('hidden');
     submitAuthBtn.textContent = 'SIGN IN';
   }
 }
@@ -321,8 +402,11 @@ function renderOnlinePlayers(players) {
       otherPlayers.forEach(p => {
         const chip = document.createElement('div');
         chip.className = 'player-chip';
+        const avatarHtml = p.photoURL 
+          ? `<img src="${p.photoURL}" alt="${p.displayName}" class="chip-avatar-img" />`
+          : `<span class="chip-avatar">${p.avatar || 'P'}</span>`;
         chip.innerHTML = `
-          <span class="chip-avatar">${p.avatar || 'P'}</span>
+          ${avatarHtml}
           <div style="display:flex; flex-direction:column; line-height:1.2;">
             <span class="chip-name">${p.displayName}</span>
             <span style="font-size:0.62rem; color:#a1a1aa; font-family:var(--font-mono);">${p.status || 'Online'}</span>
@@ -352,8 +436,11 @@ function renderOnlinePlayers(players) {
       otherPlayers.forEach(p => {
         const hudChip = document.createElement('div');
         hudChip.className = 'hud-player-chip';
+        const hudAvatarHtml = p.photoURL
+          ? `<img src="${p.photoURL}" alt="${p.displayName}" class="hud-avatar-img" />`
+          : `<span class="hud-avatar">${p.avatar || 'P'}</span>`;
         hudChip.innerHTML = `
-          <span class="hud-avatar">${p.avatar || 'P'}</span>
+          ${hudAvatarHtml}
           <span class="hud-name">${p.displayName}</span>
           <span class="hud-status">${p.status || 'Online'}</span>
           <button class="hud-challenge-btn" title="Challenge ${p.displayName} to 1v1">CHALLENGE ⚔️</button>
@@ -431,9 +518,15 @@ function renderChatFeed(messages) {
     const item = document.createElement('div');
     item.className = `chat-item ${m.isSystem ? 'system-msg' : ''}`;
     const displayTime = formatChatTime(m);
+    const chatAvatarHtml = m.photoURL
+      ? `<img src="${m.photoURL}" alt="${m.sender}" class="chat-msg-avatar" />`
+      : `<span class="chat-msg-avatar-initial">${(m.sender || 'P').charAt(0).toUpperCase()}</span>`;
     item.innerHTML = `
       <div class="chat-item-meta">
-        <span class="chat-sender">${m.sender}</span>
+        <div class="chat-sender-wrap">
+          ${!m.isSystem ? chatAvatarHtml : ''}
+          <span class="chat-sender">${m.sender}</span>
+        </div>
         <span class="chat-time">${displayTime}</span>
       </div>
       <div class="chat-text">${m.text}</div>
@@ -499,7 +592,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         if (isSignUpMode) {
-          await signUpWithEmail(email, password, displayName || email.split('@')[0]);
+          await signUpWithEmail(email, password, displayName || email.split('@')[0], selectedAvatarDataUrl);
           showAlert("Account created successfully! Welcome to ElyWolf Arcade.", "success");
         } else {
           await signInWithEmail(email, password);
@@ -518,21 +611,84 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Google Auth Button
-  if (googleAuthBtn) {
-    googleAuthBtn.addEventListener('click', async () => {
-      hideAlert();
+  // Preset Avatar Buttons
+  if (avatarPresetsGrid) {
+    avatarPresetsGrid.querySelectorAll('.preset-avatar-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const presetKey = btn.getAttribute('data-preset');
+        setPresetAvatar(presetKey);
+        playHubSound('hover');
+      });
+    });
+  }
+
+  // Upload Profile Picture Click Triggers
+  if (btnUploadProfilePic && inputProfilePic) {
+    btnUploadProfilePic.addEventListener('click', () => inputProfilePic.click());
+  }
+  if (avatarPreviewBox && inputProfilePic) {
+    avatarPreviewBox.addEventListener('click', () => inputProfilePic.click());
+  }
+
+  // File Input Handler for Sign-Up Profile Picture
+  if (inputProfilePic) {
+    inputProfilePic.addEventListener('change', async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
       try {
-        await signInWithGoogle();
-        showAlert("Google Sign In successful!", "success");
-        setTimeout(() => toggleAuthModal(false), 800);
-      } catch (err) {
-        if (err.code !== 'auth/popup-closed-by-user') {
-          showAlert(err.message || "Google Sign-In failed.");
+        const dataUrl = await processImageFile(file);
+        selectedAvatarDataUrl = dataUrl;
+        isCustomUploaded = true;
+        if (avatarPreviewImg) {
+          avatarPreviewImg.src = dataUrl;
+          avatarPreviewImg.classList.remove('hidden');
         }
+        if (avatarPreviewPlaceholder) {
+          avatarPreviewPlaceholder.classList.add('hidden');
+        }
+        if (btnRemoveProfilePic) {
+          btnRemoveProfilePic.classList.remove('hidden');
+        }
+        if (avatarPresetsGrid) {
+          avatarPresetsGrid.querySelectorAll('.preset-avatar-btn').forEach(b => b.classList.remove('active'));
+        }
+      } catch (err) {
+        showAlert(err.message || "Failed to process photo.");
       }
     });
   }
+
+  // Remove Custom Photo Button (Revert to Preset)
+  if (btnRemoveProfilePic) {
+    btnRemoveProfilePic.addEventListener('click', () => {
+      setPresetAvatar('wolf');
+      if (inputProfilePic) inputProfilePic.value = '';
+    });
+  }
+
+  // Header Avatar Change for Logged-In Users
+  if (userAvatarWrap && inputChangeAvatar) {
+    userAvatarWrap.addEventListener('click', () => inputChangeAvatar.click());
+  }
+  if (inputChangeAvatar) {
+    inputChangeAvatar.addEventListener('change', async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      try {
+        const dataUrl = await processImageFile(file);
+        await updateUserProfilePic(dataUrl);
+        if (userAvatar) {
+          userAvatar.innerHTML = `<img src="${dataUrl}" alt="Profile" class="avatar-img" />`;
+        }
+        playHubSound('hover');
+      } catch (err) {
+        alert(err.message || "Failed to update profile picture.");
+      }
+    });
+  }
+
+  // Initialize Default Preset Avatar in Modal Preview
+  setPresetAvatar('wolf');
 
   // Sign Out Button
   if (signOutBtn) {
@@ -586,7 +742,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (user) {
       const name = user.displayName || user.email.split('@')[0];
       userNameDisplay.textContent = name;
-      userAvatar.textContent = name.charAt(0).toUpperCase();
+      if (user.photoURL) {
+        userAvatar.innerHTML = `<img src="${user.photoURL}" alt="${name}" class="avatar-img" />`;
+      } else {
+        userAvatar.textContent = name.charAt(0).toUpperCase();
+      }
 
       openAuthModalBtn.classList.add('hidden');
       userProfilePill.classList.remove('hidden');

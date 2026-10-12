@@ -128,6 +128,7 @@ class handler(BaseHTTPRequestHandler):
                 'uid': uid,
                 'displayName': display_name,
                 'avatar': avatar,
+                'photoURL': payload.get('photoURL'),
                 'status': status,
                 'lastSeen': now,
                 'isGuest': is_guest
