@@ -21,7 +21,7 @@
     <div id="startStage" class="stage active">
       <div class="start-actions-row">
         <button type="button" class="btn-black-start" onclick="startGauntlet()">start</button>
-        <button type="button" class="btn-black-leaderboard" onclick="openLeaderboard()">leaderboard 🏆</button>
+        <button type="button" class="btn-black-leaderboard" onclick="openLeaderboard()"><img src="assets/trophy.svg" class="icon-btn-trophy" alt="Leaderboard" /> leaderboard</button>
       </div>
     </div>
 
@@ -47,7 +47,7 @@
           <span id="coinCounter">0</span>
         </div>
         <button type="button" class="btn-gauntlet-lb" onclick="toggleLeaderboard()" title="Toggle Leaderboard (L)">
-          🏆 Leaderboard
+          <img src="assets/trophy.svg" class="icon-btn-trophy" alt="Leaderboard" /> Leaderboard
         </button>
         <span class="level-indicator" id="difficultyTag">Ultra Easy</span>
       </div>
@@ -132,14 +132,18 @@
 
   <!-- Lil Tecca - DOPAMINE Background Music Widget -->
   <div class="music-player-widget" id="musicPlayerWidget">
-    <div class="disc-icon" id="discIcon">💿</div>
+    <div class="disc-icon" id="discIcon"><img src="assets/disc.svg" alt="disc" /></div>
     <div class="track-info">
       <span class="track-title" id="musicTrackTitle">Lil Tecca — DOPAMINE</span>
       <span class="album-badge paused" id="musicStatusBadge">READY</span>
     </div>
     <div class="player-controls">
-      <button type="button" class="btn-music-ctrl" id="btnPlayPause" onclick="toggleMusicPlay()">▶</button>
-      <button type="button" class="btn-music-ctrl" id="btnMusicNext" onclick="nextMusicTrack()">⏭</button>
+      <button type="button" class="btn-music-ctrl" id="btnPlayPause" onclick="toggleMusicPlay()" aria-label="Play or Pause">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+      </button>
+      <button type="button" class="btn-music-ctrl" id="btnMusicNext" onclick="nextMusicTrack()" aria-label="Next Track">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2.5"></line></svg>
+      </button>
     </div>
   </div>
 
@@ -157,7 +161,7 @@
     <div class="modal-card" onclick="event.stopPropagation()">
       <button type="button" class="modal-close-btn" onclick="closeDevModal()">&times;</button>
       <div class="modal-header">
-        <h3 class="modal-title">🔐 DEV OVERRIDE ACCESS</h3>
+        <h3 class="modal-title"><img src="assets/lock.svg" class="icon-lock-svg" alt="Dev Lock" /> DEV OVERRIDE ACCESS</h3>
         <p class="modal-subtitle">Enter 4-digit passcode to skip to Question 90</p>
       </div>
       <div class="code-bar-container">
@@ -174,9 +178,11 @@
       <div class="leaderboard-header">
         <div class="leaderboard-title-group">
           <span class="leaderboard-badge">HALL OF FAME</span>
-          <h2 class="leaderboard-title">🏆 SPEEDRUN LEADERBOARD</h2>
+          <h2 class="leaderboard-title"><img src="assets/trophy.svg" class="icon-title-trophy" alt="Trophy" /> SPEEDRUN LEADERBOARD</h2>
         </div>
-        <button type="button" class="btn-modal-close" onclick="closeLeaderboard()" title="Close Leaderboard (Esc)">✕</button>
+        <button type="button" class="btn-modal-close" onclick="closeLeaderboard()" title="Close Leaderboard (Esc)">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
       </div>
 
       <div class="leaderboard-tabs">
@@ -209,6 +215,8 @@
   </div>
 
   <script src="app.js"></script>
+  <script src="profile-store.js"></script>
+  <script src="match-guard.js"></script>
   <script src="universal-chat.js"></script>
 </body>
 </html>

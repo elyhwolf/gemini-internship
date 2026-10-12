@@ -229,7 +229,7 @@ function toggleAudioPlay() {
       currentAudioSource.connect(audioContext.destination);
       currentAudioSource.start(0);
       isPlaying = true;
-      btn.textContent = '⏸';
+      btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>';
       currentAudioSource.onended = () => {
         isPlaying = false;
         btn.textContent = '▶';
@@ -243,7 +243,7 @@ function toggleAudioPlay() {
 
 function playSynthesizedBeep() {
   const btn = document.getElementById('playPauseBtn');
-  btn.textContent = '⏸';
+  btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>';
   const ctx = new (window.AudioContext || window.webkitAudioContext)();
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
@@ -350,12 +350,12 @@ function launchDistribution() {
       .then(res => res.json())
       .then(data => {
         const ytMusicUrl = data.youtube_music_url || `https://music.youtube.com/search?q=${encodeURIComponent(appState.artistName + ' ' + appState.trackTitle)}`;
-        statusText.innerHTML = `🎉 <strong>RELEASE IS LIVE!</strong> "${appState.trackTitle}" by ${appState.artistName} is now published on <strong>YouTube Music</strong>!<br><br><a href="${ytMusicUrl}" target="_blank" style="color: #ff4d4d; font-weight: 700; text-decoration: underline; font-size: 0.95rem;">👉 Click here to stream your track LIVE on YouTube Music!</a>`;
+        statusText.innerHTML = `<strong>RELEASE IS LIVE!</strong> "${appState.trackTitle}" by ${appState.artistName} is now published on <strong>YouTube Music</strong>!<br><br><a href="${ytMusicUrl}" target="_blank" style="color: #ff4d4d; font-weight: 700; text-decoration: underline; font-size: 0.95rem;">👉 Click here to stream your track LIVE on YouTube Music!</a>`;
         showReleaseSuccessModal(ytMusicUrl);
       })
       .catch(() => {
         const fallbackYtUrl = `https://music.youtube.com/search?q=${encodeURIComponent(appState.artistName + ' ' + appState.trackTitle)}`;
-        statusText.innerHTML = `🎉 <strong>RELEASE IS LIVE!</strong> "${appState.trackTitle}" by ${appState.artistName} is now published on <strong>YouTube Music</strong>!<br><br><a href="${fallbackYtUrl}" target="_blank" style="color: #ff4d4d; font-weight: 700; text-decoration: underline; font-size: 0.95rem;">👉 Click here to stream your track LIVE on YouTube Music!</a>`;
+        statusText.innerHTML = `<strong>RELEASE IS LIVE!</strong> "${appState.trackTitle}" by ${appState.artistName} is now published on <strong>YouTube Music</strong>!<br><br><a href="${fallbackYtUrl}" target="_blank" style="color: #ff4d4d; font-weight: 700; text-decoration: underline; font-size: 0.95rem;">👉 Click here to stream your track LIVE on YouTube Music!</a>`;
         showReleaseSuccessModal(fallbackYtUrl);
       });
     }
@@ -390,13 +390,13 @@ function showReleaseAuthRequiredModal(msg) {
   const isrc = document.getElementById('modalISRC');
   const ytBtn = document.getElementById('modalYouTubeBtn');
 
-  if (subtext) subtext.innerHTML = `<span style="color:#f87171; font-weight:700;">⚠️ YouTube Authorization Required</span><br>YouTube blocks direct video uploads to your channel unless authorized. Paste your Google OAuth Access Token or click Connect YouTube below!`;
+  if (subtext) subtext.innerHTML = `<span style="color:#f87171; font-weight:700;">YouTube Authorization Required</span><br>YouTube blocks direct video uploads to your channel unless authorized. Paste your Google OAuth Access Token or click Connect YouTube below!`;
   if (trackTitle) trackTitle.textContent = appState.trackTitle;
   if (artistName) artistName.textContent = appState.artistName;
   if (isrc) isrc.textContent = appState.isrc;
   if (ytBtn) {
     ytBtn.href = 'https://developers.google.com/oauthplayground/';
-    ytBtn.textContent = '🔑 Get Google OAuth Access Token ↗';
+    ytBtn.textContent = 'Get Google OAuth Access Token ↗';
   }
 
   if (modal) modal.style.display = 'flex';
@@ -414,16 +414,16 @@ async function runAICopilot(promptType) {
   const artist = appState.artistName;
   const genre = document.getElementById('selectGenre') ? document.getElementById('selectGenre').value : 'Hip-Hop';
 
-  box.textContent = "🤖 SoundDrop AI is generating your release kit...";
+  box.textContent = "SoundDrop AI is generating your release kit...";
 
   setTimeout(() => {
     let resultText = "";
     if (promptType === 'press_release') {
-      resultText = `🔥 PRESS RELEASE: "${track}" by ${artist}\n\nFOR IMMEDIATE RELEASE\n\nIndependent artist ${artist} drops their highly anticipated new ${genre} single "${track}" on all major streaming platforms via SoundDrop. Blending hard-hitting rhythm with soul-stirring melodies, "${track}" sets a new benchmark for independent creators.\n\n"We built this joint from the ground up for the real ones," says ${artist}. "SoundDrop gave us 100% control to deliver our vision straight to the fans."\n\nStream "${track}" now on Spotify, Apple Music, and YouTube Music!`;
+      resultText = `PRESS RELEASE: "${track}" by ${artist}\n\nFOR IMMEDIATE RELEASE\n\nIndependent artist ${artist} drops their highly anticipated new ${genre} single "${track}" on all major streaming platforms via SoundDrop. Blending hard-hitting rhythm with soul-stirring melodies, "${track}" sets a new benchmark for independent creators.\n\n"We built this joint from the ground up for the real ones," says ${artist}. "SoundDrop gave us 100% control to deliver our vision straight to the fans."\n\nStream "${track}" now on Spotify, Apple Music, and YouTube Music!`;
     } else if (promptType === 'spotify_bio') {
-      resultText = `🎧 SPOTIFY ARTIST BIO: ${artist}\n\nRising out of the independent scene, ${artist} brings an unmistakable blend of raw energy and precision craftsmanship to ${genre}. With signature tracks like "${track}", ${artist} has accumulated thousands of global streams while staying 100% independent.\n\nConnect on Instagram & TikTok: @${artist.toLowerCase().replace(/\s+/g, '')}`;
+      resultText = `SPOTIFY ARTIST BIO: ${artist}\n\nRising out of the independent scene, ${artist} brings an unmistakable blend of raw energy and precision craftsmanship to ${genre}. With signature tracks like "${track}", ${artist} has accumulated thousands of global streams while staying 100% independent.\n\nConnect on Instagram & TikTok: @${artist.toLowerCase().replace(/\s+/g, '')}`;
     } else if (promptType === 'playlist_pitch') {
-      resultText = `🎯 EDITORIAL PLAYLIST PITCH FORM:\n\n• Track Title: ${track}\n• Artist Name: ${artist}\n• Genre: ${genre}\n• Target Playlists: RapCaviar, Most Necessary, New Music Friday, Alternative Hip-Hop\n• Pitch Note: "${track} is a high-energy ${genre} anthem combining booming basslines with introspective vocal hooks. Perfect fit for prime workout, drive, and focus playlists."`;
+      resultText = `EDITORIAL PLAYLIST PITCH FORM:\n\n• Track Title: ${track}\n• Artist Name: ${artist}\n• Genre: ${genre}\n• Target Playlists: RapCaviar, Most Necessary, New Music Friday, Alternative Hip-Hop\n• Pitch Note: "${track} is a high-energy ${genre} anthem combining booming basslines with introspective vocal hooks. Perfect fit for prime workout, drive, and focus playlists."`;
     }
     box.textContent = resultText;
   }, 1000);
@@ -434,7 +434,7 @@ function connectGoogleYouTube() {
   const scope = encodeURIComponent("https://www.googleapis.com/auth/youtube.upload");
   const playgroundUrl = "https://developers.google.com/oauthplayground/";
   
-  alert("🔑 Opening Google OAuth Login!\n\nStep 1: Click 'Authorize APIs' with YouTube Data API v3 selected.\nStep 2: Copy your Access Token into SoundDrop — SoundDrop will auto-save it forever!");
+  alert("Opening Google OAuth Login!\n\nStep 1: Click 'Authorize APIs' with YouTube Data API v3 selected.\nStep 2: Copy your Access Token into SoundDrop — SoundDrop will auto-save it forever!");
   window.open(`${playgroundUrl}?scopes=${scope}`, '_blank');
 }
 
@@ -448,7 +448,7 @@ function initYouTubeAutoLogin() {
   if (savedToken) {
     if (tokenInput) tokenInput.value = savedToken;
     if (badge) {
-      badge.textContent = '🟢 YouTube Session Active (Auto-Saved)';
+      badge.textContent = 'YouTube Session Active (Auto-Saved)';
       badge.style.color = '#84cc16';
     }
     if (statusText) {
@@ -456,7 +456,7 @@ function initYouTubeAutoLogin() {
     }
   } else {
     if (badge) {
-      badge.textContent = '⚪ Login Required for Live Channel Upload';
+      badge.textContent = 'Login Required for Live Channel Upload';
       badge.style.color = '#94a3b8';
     }
   }
@@ -467,13 +467,13 @@ function initYouTubeAutoLogin() {
       if (val) {
         localStorage.setItem('sounddrop_yt_token', val);
         if (badge) {
-          badge.textContent = '🟢 YouTube Session Saved';
+          badge.textContent = 'YouTube Session Saved';
           badge.style.color = '#84cc16';
         }
       } else {
         localStorage.removeItem('sounddrop_yt_token');
         if (badge) {
-          badge.textContent = '⚪ Login Required for Live Channel Upload';
+          badge.textContent = 'Login Required for Live Channel Upload';
           badge.style.color = '#94a3b8';
         }
       }
@@ -488,7 +488,7 @@ function clearYouTubeSession() {
   const statusText = document.getElementById('ytLoginStatusText');
   if (tokenInput) tokenInput.value = '';
   if (badge) {
-    badge.textContent = '⚪ Session Logged Out';
+    badge.textContent = 'Session Logged Out';
     badge.style.color = '#f87171';
   }
   if (statusText) {
@@ -508,7 +508,7 @@ function handleCoverArtUpload(event) {
         preview.innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover;" />`;
       }
       if (statusText) {
-        statusText.innerHTML = `<span style="color:#84cc16; font-weight:700;">🟢 Custom Cover Art Uploaded (${file.name})</span>`;
+        statusText.innerHTML = `<span style="color:#84cc16; font-weight:700;">Custom Cover Art Uploaded (${file.name})</span>`;
       }
       appState.coverArtUrl = e.target.result;
     };
@@ -539,13 +539,13 @@ function saveBankAccountConnection() {
   if (subElem) subElem.textContent = `● ACH Direct Deposit Verified via Stripe Connect`;
 
   closeBankSetupModal();
-  alert(`✅ Bank Connection Verified!\n\nYour ${provider} account (•••• ${last4}) has been connected via Stripe Connect for direct deposit royalty payouts.`);
+  alert(`Bank Connection Verified!\n\nYour ${provider} account (•••• ${last4}) has been connected via Stripe Connect for direct deposit royalty payouts.`);
 }
 
 // Royalty Payout Simulation
 function requestRoyaltyPayout() {
   const currentTotal = appState.totalEarnings;
-  alert(`💵 Payout Request Approved!\n\nSuccessfully transferred $${currentTotal.toFixed(2)} to your connected bank account via SoundDrop Direct Deposit.`);
+  alert(`Payout Request Approved!\n\nSuccessfully transferred $${currentTotal.toFixed(2)} to your connected bank account via SoundDrop Direct Deposit.`);
   appState.totalEarnings = 0.00;
   const valElem = document.getElementById('totalEarningsVal');
   if (valElem) valElem.textContent = '$0.00';

@@ -1090,7 +1090,7 @@
   <header>
     <div class="logo-container">
       <div class="logo">
-        <div class="logo-icon">🍗</div>
+        <div class="logo-icon"><img src="assets/drumstick.svg" alt="ChronoFocus" style="width:20px;height:20px;filter:brightness(0) invert(1);" /></div>
         <div class="logo-text">Chrono<span>Focus</span></div>
       </div>
       <div class="sponsor-badge">Sponsored by Ely's Hot Chicken</div>
@@ -1098,10 +1098,10 @@
     <div class="header-controls">
       <!-- Segmented Language Switcher -->
       <div class="lang-selector-group">
-        <button type="button" id="lang-btn-en" class="lang-btn active" onclick="setLanguage('en')">🇺🇸 EN</button>
-        <button type="button" id="lang-btn-es" class="lang-btn" onclick="setLanguage('es')">🇪🇸 ES</button>
-        <button type="button" id="lang-btn-he" class="lang-btn" onclick="setLanguage('he')">🇮🇱 עב</button>
-        <button type="button" id="lang-btn-xh" class="lang-btn" onclick="setLanguage('xh')">🇿🇦 XH</button>
+        <button type="button" id="lang-btn-en" class="lang-btn active" onclick="setLanguage('en')">EN</button>
+        <button type="button" id="lang-btn-es" class="lang-btn" onclick="setLanguage('es')">ES</button>
+        <button type="button" id="lang-btn-he" class="lang-btn" onclick="setLanguage('he')">עב</button>
+        <button type="button" id="lang-btn-xh" class="lang-btn" onclick="setLanguage('xh')">XH</button>
       </div>
     </div>
   </header>
@@ -1117,9 +1117,9 @@
 
         <!-- Mode Tabs -->
         <div class="mode-tabs" role="tablist" aria-label="Timer mode">
-          <button class="mode-tab active" data-mode="work"  id="tab-work"  role="tab" onclick="switchMode('work')">🍗 Focus</button>
-          <button class="mode-tab"        data-mode="short" id="tab-short" role="tab" onclick="switchMode('short')">🥤 Short Break</button>
-          <button class="mode-tab"        data-mode="long"  id="tab-long"  role="tab" onclick="switchMode('long')">🍨 Long Break</button>
+          <button class="mode-tab active" data-mode="work"  id="tab-work"  role="tab" onclick="switchMode('work')">Focus</button>
+          <button class="mode-tab"        data-mode="short" id="tab-short" role="tab" onclick="switchMode('short')">Short Break</button>
+          <button class="mode-tab"        data-mode="long"  id="tab-long"  role="tab" onclick="switchMode('long')">Long Break</button>
         </div>
 
         <!-- Timer Card -->
@@ -1140,7 +1140,7 @@
           <div class="timer-controls">
             <button class="btn-icon" id="btn-reset" onclick="resetTimer()" title="Reset (R)" aria-label="Reset timer">↺</button>
             <button class="btn-play" id="btn-play"  onclick="toggleTimer()" title="Start/Pause (Space)" aria-label="Start or pause timer">▶</button>
-            <button class="btn-icon" id="btn-skip"  onclick="skipSession()" title="Skip (S)" aria-label="Skip session">⏭</button>
+            <button class="btn-icon" id="btn-skip" onclick="skipSession()" title="Skip (S)" aria-label="Skip session"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2.5"></line></svg></button>
           </div>
 
           <!-- Session dots -->
@@ -1191,7 +1191,7 @@
         </form>
 
         <div class="task-empty" id="task-empty" style="display: block;">
-          <div class="task-empty-icon">📋</div>
+          <div class="task-empty-icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg></div>
           <span id="lbl-task-empty">Add tasks to focus on them during your sessions</span>
         </div>
         <div class="task-list" id="task-list" role="list" aria-label="Task list"></div>
@@ -1202,22 +1202,22 @@
     <!-- Bottom: Stats Bar (Full Width Spanning) -->
     <div class="stats-bar">
       <div class="card stat-card orange-theme">
-        <div class="stat-icon">🍗</div>
+        <div class="stat-icon"><img src="assets/drumstick.svg" alt="sessions" style="width:20px;height:20px;" /></div>
         <div class="stat-val" id="stat-sessions">0</div>
         <div class="stat-lbl" id="lbl-sessions">Sessions</div>
       </div>
       <div class="card stat-card lime-theme">
-        <div class="stat-icon">✅</div>
+        <div class="stat-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
         <div class="stat-val" id="stat-tasks">0</div>
         <div class="stat-lbl" id="lbl-tasks">Tasks Done</div>
       </div>
       <div class="card stat-card lime-theme">
-        <div class="stat-icon">⏱</div>
+        <div class="stat-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
         <div class="stat-val" id="stat-focus">0m</div>
         <div class="stat-lbl" id="lbl-focus">Focus Time</div>
       </div>
       <div class="card stat-card streak-theme">
-        <div class="stat-icon">🔥</div>
+        <div class="stat-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg></div>
         <div class="stat-val" id="stat-streak">0</div>
         <div class="stat-lbl" id="lbl-streak">Day Streak</div>
       </div>
@@ -1232,7 +1232,7 @@
       <span class="kbd">R</span> Reset &nbsp;
       <span class="kbd">S</span> Skip
     </div>
-    <div id="lbl-footer-credits">ChronoFocus · Sponsored by Ely's Hot Chicken · Built with ❤️</div>
+    <div id="lbl-footer-credits">ChronoFocus · Sponsored by Ely's Hot Chicken · Built with passion️</div>
   </footer>
 
 </div>
@@ -1241,23 +1241,21 @@
 <div class="toast" id="toast" role="alert" aria-live="assertive"></div>
 
 <!-- Chatbot Trigger Button -->
-<button id="chatbot-trigger" class="chatbot-trigger" onclick="toggleChatbot()" title="ChronoCluck AI Assistant">
-  🤖
-</button>
+<button id="chatbot-trigger" class="chatbot-trigger" onclick="toggleChatbot()" title="ChronoCluck AI Assistant"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="8" cy="16" r="1" fill="currentColor"></circle><circle cx="16" cy="16" r="1" fill="currentColor"></circle><path d="M12 2v4"></path></svg></button>
 
 <!-- Chatbot Floating Panel -->
 <div id="chatbot-panel" class="card chatbot-panel" style="display: none;">
   <div class="chatbot-header">
     <div style="display: flex; align-items: center; gap: 8px;">
-      <span style="font-size: 1.25rem;">🤖</span>
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="8" cy="16" r="1" fill="currentColor"></circle><circle cx="16" cy="16" r="1" fill="currentColor"></circle><path d="M12 2v4"></path></svg>
       <div>
         <div class="chatbot-title" id="lbl-bot-title">ChronoCluck AI</div>
         <div class="chatbot-status" id="lbl-bot-status">Online · Focus Helper</div>
       </div>
     </div>
     <div style="display: flex; align-items: center; gap: 12px;">
-      <button class="chatbot-settings-toggle" onclick="toggleChatSettings()" title="Settings" style="background: none; border: none; cursor: pointer; font-size: 1rem; color: #fff; opacity: 0.8; transition: opacity 0.2s; padding: 4px;">⚙️</button>
-      <button class="chatbot-close" onclick="toggleChatbot()">✕</button>
+      <button class="chatbot-settings-toggle" onclick="toggleChatSettings()" title="Settings" style="background: none; border: none; cursor: pointer; font-size: 1rem; color: #fff; opacity: 0.8; transition: opacity 0.2s; padding: 4px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></button>
+      <button class="chatbot-close" onclick="toggleChatbot()" aria-label="Close">&times;</button>
     </div>
   </div>
   
@@ -1273,7 +1271,7 @@
   <div class="chatbot-feed" id="chatbot-feed"></div>
   <form class="chatbot-input-form" onsubmit="handleBotSubmit(event)">
     <input type="text" id="chatbot-input" placeholder="Ask ChronoCluck…" autocomplete="off" maxlength="120" />
-    <button type="submit" class="chatbot-send">➔</button>
+    <button type="submit" class="chatbot-send" aria-label="Send"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
   </form>
 </div>
 
@@ -1282,9 +1280,9 @@
   const TRANSLATIONS = {
     en: {
       sponsor: "Sponsored by Ely's Hot Chicken",
-      focusTab: "🍗 Focus",
-      shortTab: "🥤 Short Break",
-      longTab: "🍨 Long Break",
+      focusTab: "Focus",
+      shortTab: "Short Break",
+      longTab: "Long Break",
       focusLabel: "Focus Session",
       shortLabel: "Short Break",
       longLabel: "Long Break",
@@ -1296,11 +1294,11 @@
       taskPlaceholder: "Add a task…",
       taskEmpty: "Add tasks to focus on them during your sessions",
       shortcuts: "<span class=\"kbd\">Space</span> Start/Pause &nbsp; <span class=\"kbd\">R</span> Reset &nbsp; <span class=\"kbd\">S</span> Skip",
-      credits: "ChronoFocus · Sponsored by Ely's Hot Chicken · Built with ❤️",
-      toastCycleDone: "🎉 4 sessions done! Take a long break.",
-      toastSessionDone: "✅ Session done! Time for a break.",
-      toastBreakDone: "⏰ Break over! Ready to focus?",
-      toastTaskDone: '✅ "{task}" completed!',
+      credits: "ChronoFocus · Sponsored by Ely's Hot Chicken · Built with passion️",
+      toastCycleDone: "4 sessions done! Take a long break.",
+      toastSessionDone: "Session done! Time for a break.",
+      toastBreakDone: "Break over! Ready to focus?",
+      toastTaskDone: '"{task}" completed!',
       likesLabel: "Likes",
       noTasksMsg: "No tasks active",
       durationsTitle: "Durations (min)",
@@ -1308,24 +1306,24 @@
       durationsShort: "Short",
       durationsLong: "Long",
       botTitle: "ChronoCluck AI",
-      botWelcome: "sup. need help setting up the timer or managing your checklist? 🤖",
+      botWelcome: "sup. need help setting up the timer or managing your checklist?",
       botPlaceholder: "Ask ChronoCluck…",
-      botSetFocus: "🍗 locked in. focus session set to {min} minutes, real talk.",
-      botSetShort: "🥤 brief break set to {min} minutes. stay safe.",
-      botSetLong: "🍨 chill session set to {min} minutes. kick back.",
-      botStart: "▶ timer running. let's get focusin' on the block.",
-      botPause: "⏸ timer paused. on hold.",
-      botReset: "↺ timer reset. back to zero.",
-      botCreatedTask: '📋 task "{task}" added to the queue.',
-      botCompletedTask: '✅ task "{task}" marked completed. job done.',
-      botTaskNotFound: '🔍 couldn\'t find any active task matching "{task}".',
+      botSetFocus: "locked in. focus session set to {min} minutes, real talk.",
+      botSetShort: "brief break set to {min} minutes. stay safe.",
+      botSetLong: "chill session set to {min} minutes. kick back.",
+      botStart: "timer running. let's get focusin' on the block.",
+      botPause: "timer paused. on hold.",
+      botReset: "timer reset. back to zero.",
+      botCreatedTask: 'task "{task}" added to the queue.',
+      botCompletedTask: 'task "{task}" marked completed. job done.',
+      botTaskNotFound: 'couldn\'t find any active task matching "{task}".',
       botHelp: "i didn't catch that. you can say:\n• 'set focus to 10 min'\n• 'add task buy chicken'\n• 'complete buy chicken'\n• 'start / pause / reset'"
     },
     es: {
       sponsor: "Patrocinado por Ely's Hot Chicken",
-      focusTab: "🍗 Concentración",
-      shortTab: "🥤 Descanso Corto",
-      longTab: "🍨 Descanso Largo",
+      focusTab: "Concentración",
+      shortTab: "Descanso Corto",
+      longTab: "Descanso Largo",
       focusLabel: "Sesión de Enfoque",
       shortLabel: "Descanso Corto",
       longLabel: "Descanso Largo",
@@ -1337,11 +1335,11 @@
       taskPlaceholder: "Agregar tarea…",
       taskEmpty: "Agrega tareas para enfocarte en ellas durante tus sesiones",
       shortcuts: "<span class=\"kbd\">Espacio</span> Iniciar/Pausa &nbsp; <span class=\"kbd\">R</span> Reiniciar &nbsp; <span class=\"kbd\">S</span> Saltar",
-      credits: "ChronoFocus · Patrocinado por Ely's Hot Chicken · Hecho con ❤️",
-      toastCycleDone: "🎉 ¡4 sesiones listas! Toma un descanso largo.",
-      toastSessionDone: "✅ ¡Sesión terminada! Hora de descansar.",
-      toastBreakDone: "⏰ ¡Descanso terminado! ¿Listo para enfocarte?",
-      toastTaskDone: '✅ ¡"{task}" completado!',
+      credits: "ChronoFocus · Patrocinado por Ely's Hot Chicken · Hecho con pasión️",
+      toastCycleDone: "¡4 sesiones listas! Toma un descanso largo.",
+      toastSessionDone: "¡Sesión terminada! Hora de descansar.",
+      toastBreakDone: "¡Descanso terminado! ¿Listo para enfocarte?",
+      toastTaskDone: '¡"{task}" completado!',
       likesLabel: "Le gusta",
       noTasksMsg: "No hay tareas activas",
       durationsTitle: "Duración (min)",
@@ -1351,22 +1349,22 @@
       botTitle: "IA ChronoCluck",
       botWelcome: "¡Hola! Soy ChronoCluck. ¡Pídeme configurar tiempos, iniciar/pausar o reiniciar el temporizador! (ej. 'concentracion a 15 min')",
       botPlaceholder: "Preguntar a ChronoCluck…",
-      botSetFocus: "🍗 ¡Tiempo de concentración configurado en {min} minutos!",
-      botSetShort: "🥤 ¡Descanso corto configurado en {min} minutos!",
-      botSetLong: "🍨 ¡Descanso largo configurado en {min} minutos!",
-      botStart: "▶ ¡Temporizador iniciado! ¡A enfocarse!",
-      botPause: "⏸ Temporizador pausado.",
-      botReset: "↺ Temporizador reiniciado.",
-      botCreatedTask: '📋 ¡Se ha creado la tarea "{task}"!',
-      botCompletedTask: '✅ ¡Tarea "{task}" marcada como completada!',
-      botTaskNotFound: '🔍 No encontré ninguna tarea activa que coincida con "{task}".',
+      botSetFocus: "¡Tiempo de concentración configurado en {min} minutos!",
+      botSetShort: "¡Descanso corto configurado en {min} minutos!",
+      botSetLong: "¡Descanso largo configurado en {min} minutos!",
+      botStart: "¡Temporizador iniciado! ¡A enfocarse!",
+      botPause: "Temporizador pausado.",
+      botReset: "Temporizador reiniciado.",
+      botCreatedTask: '¡Se ha creado la tarea "{task}"!',
+      botCompletedTask: '¡Tarea "{task}" marcada como completada!',
+      botTaskNotFound: 'No encontré ninguna tarea activa que coincida con "{task}".',
       botHelp: "No entendí bien. Puedes decir:\n• 'enfoque a 10 min'\n• 'agregar tarea comprar pollo'\n• 'completar comprar pollo'\n• 'iniciar / pausar / reiniciar'"
     },
     he: {
       sponsor: "בחסות Ely's Hot Chicken",
-      focusTab: "🍗 ריכוז",
-      shortTab: "🥤 הפסקה קצרה",
-      longTab: "🍨 הפסקה ארוכה",
+      focusTab: "ריכוז",
+      shortTab: "הפסקה קצרה",
+      longTab: "הפסקה ארוכה",
       focusLabel: "סשן ריכוז",
       shortLabel: "הפסקה קצרה",
       longLabel: "הפסקה ארוכה",
@@ -1378,11 +1376,11 @@
       taskPlaceholder: "הוסף משימה…",
       taskEmpty: "הוסף משימות כדי להתרכז בהן במהלך הסשנים שלך",
       shortcuts: "<span class=\"kbd\">רווח</span> הפעל/השהה &nbsp; <span class=\"kbd\">R</span> איפוס &nbsp; <span class=\"kbd\">S</span> דילוג",
-      credits: "ChronoFocus · בחסות Ely's Hot Chicken · נבנה באהבה ❤️",
-      toastCycleDone: "🎉 4 סשנים הושלמו! קחו הפסקה ארוכה.",
-      toastSessionDone: "✅ הסשן הסתיים! זמן להפסקה.",
-      toastBreakDone: "⏰ ההפסקה הסתיימה! מוכנים להתרכז?",
-      toastTaskDone: '✅ "{task}" הושלם!',
+      credits: "ChronoFocus · בחסות Ely's Hot Chicken · נבנה במסירות️",
+      toastCycleDone: "4 סשנים הושלמו! קחו הפסקה ארוכה.",
+      toastSessionDone: "הסשן הסתיים! זמן להפסקה.",
+      toastBreakDone: "ההפסקה הסתיימה! מוכנים להתרכז?",
+      toastTaskDone: '"{task}" הושלם!',
       likesLabel: "אוהב/ת",
       noTasksMsg: "אין משימות פעילות",
       durationsTitle: "מרווחים (דקות)",
@@ -1392,22 +1390,22 @@
       botTitle: "צ'אטבוט ChronoCluck",
       botWelcome: "שלום! אני ChronoCluck. בקש ממני להגדיר זמנים, להפעיל/להשהות או לאפס את הטיימר! (למשל: 'ריכוז ל-15 דקות')",
       botPlaceholder: "שאל את ChronoCluck…",
-      botSetFocus: "🍗 זמן הריכוז הוגדר ל-{min} דקות!",
-      botSetShort: "🥤 הפסקה קצרה הוגדרה ל-{min} דקות!",
-      botSetLong: "🍨 הפסקה ארוכה הוגדרה ל-{min} דקות!",
-      botStart: "▶ הטיימר הופעל! קדימה לעבודה!",
-      botPause: "⏸ הטיימר הושהה.",
-      botReset: "↺ הטיימר אופס.",
-      botCreatedTask: '📋 המשימה "{task}" נוצרה בהצלחה!',
-      botCompletedTask: '✅ המשימה "{task}" סומנה כבוצעה!',
-      botTaskNotFound: '🔍 לא מצאתי משימה פעילה שמתאימה ל-"{task}".',
+      botSetFocus: "זמן הריכוז הוגדר ל-{min} דקות!",
+      botSetShort: "הפסקה קצרה הוגדרה ל-{min} דקות!",
+      botSetLong: "הפסקה ארוכה הוגדרה ל-{min} דקות!",
+      botStart: "הטיימר הופעל! קדימה לעבודה!",
+      botPause: "הטיימר הושהה.",
+      botReset: "הטיימר אופס.",
+      botCreatedTask: 'המשימה "{task}" נוצרה בהצלחה!',
+      botCompletedTask: 'המשימה "{task}" סומנה כבוצעה!',
+      botTaskNotFound: 'לא מצאתי משימה פעילה שמתאימה ל-"{task}".',
       botHelp: "לא הבנתי. ניתן לומר:\n• 'ריכוז ל-10 דקות'\n• 'הוסף משימה לקנות כנפיים'\n• 'בוצע לקנות כנפיים'\n• 'הפעל / השהה / איפוס'"
     },
     xh: {
       sponsor: "Ixhaswe yi-Ely's Hot Chicken",
-      focusTab: "🍗 Gxila",
-      shortTab: "🥤 Ikhefu Elifutshane",
-      longTab: "🍨 Ikhefu Elide",
+      focusTab: "Gxila",
+      shortTab: "Ikhefu Elifutshane",
+      longTab: "Ikhefu Elide",
       focusLabel: "Iseshoni yokugxila",
       shortLabel: "Ikhefu Elifutshane",
       longLabel: "Ikhefu Elide",
@@ -1419,11 +1417,11 @@
       taskPlaceholder: "Faka umsebenzi…",
       taskEmpty: "Faka imisebenzi ukuze ugxile kuyo ngexesha leeseshoni zakho",
       shortcuts: "<span class=\"kbd\">Space</span> Qala/Nqumama &nbsp; <span class=\"kbd\">R</span> Seta kabusha &nbsp; <span class=\"kbd\">S</span> Skip",
-      credits: "ChronoFocus · Ixhaswe yi-Ely's Hot Chicken · Yakhiwe ngothando ❤️",
-      toastCycleDone: "🎉 Iiseshoni ezi-4 zigityiwe! Thatha ikhefu elide.",
-      toastSessionDone: "✅ Iseshoni igityiwe! Ixesha lekhefu.",
-      toastBreakDone: "⏰ Ikhefu liphelile! Ukulungele ukugxila?",
-      toastTaskDone: '✅ "{task}" igqityiwe!',
+      credits: "ChronoFocus · Ixhaswe yi-Ely's Hot Chicken · Yakhiwe ngothando️",
+      toastCycleDone: "Iiseshoni ezi-4 zigityiwe! Thatha ikhefu elide.",
+      toastSessionDone: "Iseshoni igityiwe! Ixesha lekhefu.",
+      toastBreakDone: "Ikhefu liphelile! Ukulungele ukugxila?",
+      toastTaskDone: '"{task}" igqityiwe!',
       likesLabel: "Uthanda",
       noTasksMsg: "Akukho misebenzi isebenzayo",
       durationsTitle: "Amaxesha (imiz)",
@@ -1433,15 +1431,15 @@
       botTitle: "ChronoCluck AI",
       botWelcome: "Molo! NdinguChronoCluck. Ndicele ukuba ndisete amaxesha, ndiqale/ndinqumame okanye ndisete kabusha itayima! (umz. 'gxila kwimizuzu eyi-15')",
       botPlaceholder: "Buza iChronoCluck…",
-      botSetFocus: "🍗 Iseshoni yokugxila isetwe kwimizuzu eyi-{min}!",
-      botSetShort: "🥤 Ikhefu elifutshane lisetwe kwimizuzu eyi-{min}!",
-      botSetLong: "🍨 Ikhefu elide lisetwe kwimizuzu eyi-{min}!",
-      botStart: "▶ Itayima iqalile! Masigxile!",
-      botPause: "⏸ Itayima inqumisiwe.",
-      botReset: "↺ Itayima isetwe kabusha.",
-      botCreatedTask: '📋 Umsebenzi "{task}" ukiwe!',
-      botCompletedTask: '✅ Umsebenzi "{task}" uphawulwe njogugqityiweyo!',
-      botTaskNotFound: '🔍 Andikhange ndiwufumane umsebenzi ohambelana ne-"{task}".',
+      botSetFocus: "Iseshoni yokugxila isetwe kwimizuzu eyi-{min}!",
+      botSetShort: "Ikhefu elifutshane lisetwe kwimizuzu eyi-{min}!",
+      botSetLong: "Ikhefu elide lisetwe kwimizuzu eyi-{min}!",
+      botStart: "Itayima iqalile! Masigxile!",
+      botPause: "Itayima inqumisiwe.",
+      botReset: "Itayima isetwe kabusha.",
+      botCreatedTask: 'Umsebenzi "{task}" ukiwe!',
+      botCompletedTask: 'Umsebenzi "{task}" uphawulwe njogugqityiweyo!',
+      botTaskNotFound: 'Andikhange ndiwufumane umsebenzi ohambelana ne-"{task}".',
       botHelp: "Andikhange ndiyive kakuhle lonto. Ungathi:\n• 'gxila kwimizuzu eyi-10'\n• 'faka umsebenzi ukuthenga inkuku'\n• 'gqiba ukuthenga inkuku'\n• 'qala / nqumama / seta kabusha'"
     }
   };
@@ -1544,7 +1542,7 @@
 
   function startTimer() {
     running = true;
-    document.getElementById('btn-play').textContent = '⏸';
+    document.getElementById('btn-play').innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>';
     document.getElementById('timer-card').classList.add('running');
     updateSessionDots();
     interval = setInterval(tick, 1000);
@@ -1552,7 +1550,7 @@
 
   function pauseTimer() {
     running = false;
-    document.getElementById('btn-play').textContent = '▶';
+    document.getElementById('btn-play').innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
     document.getElementById('timer-card').classList.remove('running');
     clearInterval(interval);
   }
@@ -1851,11 +1849,11 @@
            role="listitem"
            onclick="setActive(${task.id})">
         <div class="task-check ${task.done ? 'checked' : ''}" onclick="event.stopPropagation(); toggleTask(${task.id})" role="checkbox" aria-checked="${task.done}" tabindex="0" title="Toggle completion">
-          ${task.done ? '✓' : ''}
+          ${task.done ? '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" style="display:inline-block;vertical-align:middle;"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
         </div>
         <div class="task-text">${escapeHtml(task.text)}</div>
-        ${task.pomodoros > 0 ? `<div class="task-pomodoros">🍗×${task.pomodoros}</div>` : ''}
-        <button class="task-delete" onclick="event.stopPropagation(); deleteTask(${task.id})" aria-label="Delete task">✕</button>
+        ${task.pomodoros > 0 ? `<div class="task-pomodoros"><img src="assets/drumstick.svg" style="width:12px;height:12px;vertical-align:middle;display:inline-block;margin-right:2px;" />×${task.pomodoros}</div>` : ''}
+        <button class="task-delete" onclick="event.stopPropagation(); deleteTask(${task.id})" aria-label="Delete task">&times;</button>
       </div>
     `).join('');
   }
@@ -2279,31 +2277,31 @@
   const BOT_CHAT_RESPONSES = {
     en: {
       greetings: [
-        "yo what's good homie. you ready to get focusin' and grind on some goals today? 🍗",
-        "sup. need help setting up the timer or managing your checklist? 🤖",
-        "cluck cluck. welcome back to the block. let's get it. 🐔"
+        "yo what's good homie. you ready to get focusin' and grind on some goals today?",
+        "sup. need help setting up the timer or managing your checklist?",
+        "cluck cluck. welcome back to the block. let's get it."
       ],
       howAreYou: [
-        "i'm extra crispy and motivated. ready to count down some sessions on the block. 🍗",
-        "staying focused, keeping the fryers hot. how you livin'? 🔥"
+        "i'm extra crispy and motivated. ready to count down some sessions on the block.",
+        "staying focused, keeping the fryers hot. how you livin'?"
       ],
       jokes: [
-        "why did the chicken focus on the timer? to get to the other side of the task, real talk. 🐔",
-        "what do you call a chicken who loves productivity? a hard-boiled worker. 🥚",
-        "why did the chicken cross the road? to submit their pull request. 💻"
+        "why did the chicken focus on the timer? to get to the other side of the task, real talk.",
+        "what do you call a chicken who loves productivity? a hard-boiled worker.",
+        "why did the chicken cross the road? to submit their pull request."
       ],
       motivation: [
-        "you're doing great. one session at a time, we runnin' this. 🍗🚀",
-        "stay locked in. the secret of getting ahead is getting started, real talk. 💪",
-        "every session counts. keep your eyes on the prize and some hot wings later. 🌶️"
+        "you're doing great. one session at a time, we runnin' this.",
+        "stay locked in. the secret of getting ahead is getting started, real talk.",
+        "every session counts. keep your eyes on the prize and some hot wings later."
       ],
       identity: [
-        "i'm chronocluck, your trusted mascot from ely's hot chicken. tell me to set timers or manage your checklist. 🤖",
-        "i'm the resident chronofocus ai helper. part chicken, part code, full hustle. 🐔"
+        "i'm chronocluck, your trusted mascot from ely's hot chicken. tell me to set timers or manage your checklist.",
+        "i'm the resident chronofocus ai helper. part chicken, part code, full hustle."
       ],
       elyChicken: [
-        "ely's Nashville hot chicken is the ultimate fuel. choose from Country to Poultrygeist. 🔥🍗",
-        "ely's hot chicken: cooked to golden crispy perfection. perfect to order after a long focus session. 🤤"
+        "ely's Nashville hot chicken is the ultimate fuel. choose from Country to Poultrygeist.",
+        "ely's hot chicken: cooked to golden crispy perfection. perfect to order after a long focus session."
       ],
       conversational: [
         "i hear you brudda, that's real talk. let's set a focus timer and lock in, gang.",
@@ -2319,28 +2317,28 @@
     },
     es: {
       greetings: [
-        "¡Hola! ¿Listo para concentrarte hoy? 🍗",
-        "¡Hola! ¿Necesitas ayuda con el temporizador o tus tareas? 🤖",
-        "¡Kikirikí! ¡Bienvenido de nuevo! Hagamos que hoy sea productivo. 🐔"
+        "¡Hola! ¿Listo para concentrarte hoy?",
+        "¡Hola! ¿Necesitas ayuda con el temporizador o tus tareas?",
+        "¡Kikirikí! ¡Bienvenido de nuevo! Hagamos que hoy sea productivo."
       ],
       howAreYou: [
-        "¡Me siento súper crujiente y motivado! Listo para contar sesiones contigo. 🍗",
+        "¡Me siento súper crujiente y motivado! Listo para contar sesiones contigo.",
         "¡Excelente! Manteniendo el enfoque y las freidoras calientes. ¿Y tú qué tal?"
       ],
       jokes: [
-        "¿Por qué el pollo cruzó la calle? ¡Para llegar al otro lado de la lista de tareas! 🐔",
-        "¿Cómo se llama un pollo muy productivo? ¡Un trabajador bien cocido! 🥚"
+        "¿Por qué el pollo cruzó la calle? ¡Para llegar al otro lado de la lista de tareas!",
+        "¿Cómo se llama un pollo muy productivo? ¡Un trabajador bien cocido!"
       ],
       motivation: [
-        "¡Lo estás haciendo genial! Una sesión a la vez. ¡Sigue así! 🍗🚀",
-        "¡Mantén el enfoque! El secreto para salir adelante es comenzar. ¡Hagámoslo! 💪"
+        "¡Lo estás haciendo genial! Una sesión a la vez. ¡Sigue así!",
+        "¡Mantén el enfoque! El secreto para salir adelante es comenzar. ¡Hagámoslo!"
       ],
       identity: [
-        "Soy ChronoCluck, la mascota de concentración de Ely's Hot Chicken. Pídeme temporizadores o tareas. 🤖",
-        "¡Soy el Asistente IA de ChronoFocus! Mitad pollo, mitad código, ¡entusiasta de la productividad! 🐔"
+        "Soy ChronoCluck, la mascota de concentración de Ely's Hot Chicken. Pídeme temporizadores o tareas.",
+        "¡Soy el Asistente IA de ChronoFocus! Mitad pollo, mitad código, ¡entusiasta de la productividad!"
       ],
       elyChicken: [
-        "¡Ely's Nashville Hot Chicken es el combustible definitivo para la productividad! Puedes elegir entre Country (sin picante) hasta Poultrygeist (picante extremo)! 🔥🍗"
+        "¡Ely's Nashville Hot Chicken es el combustible definitivo para la productividad! Puedes elegir entre Country (sin picante) hasta Poultrygeist (picante extremo)!"
       ],
       conversational: [
         "Te entiendo, amigo. ¡Pongamos un temporizador de enfoque y concentrémonos!",
@@ -2355,28 +2353,28 @@
     },
     he: {
       greetings: [
-        "שלום! מוכן להתרכז היום? 🍗",
-        "היי! צריך עזרה בהגדרת הטיימר או בניהול המשימות שלך? 🤖",
-        "קוקוריקו! ברוך הבא! בוא נהפוך את היום הזה לפרודוקטיבי. 🐔"
+        "שלום! מוכן להתרכז היום?",
+        "היי! צריך עזרה בהגדרת הטיימר או בניהול המשימות שלך?",
+        "קוקוריקו! ברוך הבא! בוא נהפוך את היום הזה לפרודוקטיבי."
       ],
       howAreYou: [
-        "אני מרגיש פריך במיוחד ומלא מוטיבציה! מוכן להתחיל לספור סשנים איתך. 🍗",
+        "אני מרגיש פריך במיוחד ומלא מוטיבציה! מוכן להתחיל לספור סשנים איתך.",
         "הכל מצוין! שומר על ריכוז ומחמם את סירי הטיגון. מה שלומך?"
       ],
       jokes: [
-        "למה התרנגולת עברה את הכביש? כדי להגיע לצด השני של רשימת המשימות! 🐔",
-        "איך קוראים לתרנגולת שאוהבת פרודוקטיביות? עובדת קשה במיוחד! 🥚"
+        "למה התרנגולת עברה את הכביש? כדי להגיע לצด השני של רשימת המשימות!",
+        "איך קוראים לתרנגולת שאוהבת פרודוקטיביות? עובדת קשה במיוחד!"
       ],
       motivation: [
-        "אתה עושה עבודה מדהימה! סשן אחד בכל פעם. תמשיך ככה! 🍗🚀",
-        "הישאר מרוכז! הסוד להתקדם הוא פשוט להתחיל. בוא נעשה את זה! 💪"
+        "אתה עושה עבודה מדהימה! סשן אחד בכל פעם. תמשיך ככה!",
+        "הישאר מרוכז! הסוד להתקדם הוא פשוט להתחיל. בוא נעשה את זה!"
       ],
       identity: [
-        "אני ChronoCluck, קמע הריכוז של Ely's Hot Chicken! בקש ממני טיימרים או משימות. 🤖",
-        "אני עוזר הבינה המלאכותית של ChronoFocus. חצי תרנגולת, חצי קוד, ומאה אחוז מוטיבציה! 🐔"
+        "אני ChronoCluck, קמע הריכוז של Ely's Hot Chicken! בקש ממני טיימרים או משימות.",
+        "אני עוזר הבינה המלאכותית של ChronoFocus. חצי תרנגולת, חצי קוד, ומאה אחוז מוטיבציה!"
       ],
       elyChicken: [
-        "העוף של אלי הוא הדלק האולטימטיבי לפרודוקטיביות! בחר רמת חריפות מ-Country (ללא חריפות) ועד Poultrygeist (חריף בטירוף)! 🔥🍗"
+        "העוף של אלי הוא הדלק האולטימטיבי לפרודוקטיביות! בחר רמת חריפות מ-Country (ללא חריפות) ועד Poultrygeist (חריף בטירוף)!"
       ],
       conversational: [
         "אני מבין אותך, אח שלי. בוא נגדיר טיימר ריכוז ונתחיל לעבוד, גנג.",
@@ -2391,28 +2389,28 @@
     },
     xh: {
       greetings: [
-        "Molo! Ukulungele ukugxila namhlanje? 🍗",
-        "Molo! Uyakufuna uncedo ngesitayima okanye ngemisebenzi yakho? 🤖",
-        "Kuku! Wamkelekile! Masenze namhlanje ibe nemveliso. 🐔"
+        "Molo! Ukulungele ukugxila namhlanje?",
+        "Molo! Uyakufuna uncedo ngesitayima okanye ngemisebenzi yakho?",
+        "Kuku! Wamkelekile! Masenze namhlanje ibe nemveliso."
       ],
       howAreYou: [
-        "Ndiziva ndicrispy kwaye ndikhuthazekile! Ukulungele ukubala iiseshoni nawe. 🍗",
+        "Ndiziva ndicrispy kwaye ndikhuthazekile! Ukulungele ukubala iiseshoni nawe.",
         "Ndilungile kakhulu! Ndishushu kwaye ndilungele ukugxila. Unjani wena?"
       ],
       jokes: [
-        "Kutheni inkuku iwele indlela? Ukuze ifike kwelinye icala lomsebenzi! 🐔",
-        "Ubizwa ngokuba yintoni inkuku ethanda imveliso? Umsebenzi olukhuni! 🥚"
+        "Kutheni inkuku iwele indlela? Ukuze ifike kwelinye icala lomsebenzi!",
+        "Ubizwa ngokuba yintoni inkuku ethanda imveliso? Umsebenzi olukhuni!"
       ],
       motivation: [
-        "Wenza kakuhle kakhulu! Iseshoni enye ngexesha. Gcina phezulu! 🍗🚀",
-        "Gcina ugxilo! Imfihlo yokufumana phambili kukuqala. Masenze oku! 💪"
+        "Wenza kakuhle kakhulu! Iseshoni enye ngexesha. Gcina phezulu!",
+        "Gcina ugxilo! Imfihlo yokufumana phambili kukuqala. Masenze oku!"
       ],
       identity: [
-        "NdinguChronoCluck, imascot yokugxila ye-Ely's Hot Chicken! Ndicele iitayima okanye imisebenzi. 🤖",
-        "NdinguMncedisi we-AI we-ChronoFocus. Inxalenye yenkuku, inxalenye yekhowudi, unololiwe wokugxila! 🐔"
+        "NdinguChronoCluck, imascot yokugxila ye-Ely's Hot Chicken! Ndicele iitayima okanye imisebenzi.",
+        "NdinguMncedisi we-AI we-ChronoFocus. Inxalenye yenkuku, inxalenye yekhowudi, unololiwe wokugxila!"
       ],
       elyChicken: [
-        "I-Ely's Nashville Hot Chicken yeyona mafutha okugqibela okugxila! Khetha phakathi kweCountry ukuya kwiPoultrygeist! 🔥🍗"
+        "I-Ely's Nashville Hot Chicken yeyona mafutha okugqibela okugxila! Khetha phakathi kweCountry ukuya kwiPoultrygeist!"
       ],
       conversational: [
         "Ndiyakuva mfondini, linyani elo. Masingenise ixesha lokugxila kwaye sisebenze.",

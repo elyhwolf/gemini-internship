@@ -6,17 +6,17 @@ const QUESTIONS = [
   { q: "3 + 4 = ?", a: "7", level: "Ultra Easy", hint: "Simple addition" },
   { q: "10 - 6 = ?", a: "4", level: "Ultra Easy", hint: "Subtract 6 from 10" },
   { q: "5 + 5 = ?", a: "10", level: "Ultra Easy", hint: "Double five" },
-  { q: "9 - 2 = ?", a: "7", level: "Ultra Easy", hint: "🔍 Read carefully! (Shenanigan)", type: "upside_down" },
+  { q: "9 - 2 = ?", a: "7", level: "Ultra Easy", hint: "Read carefully! (Shenanigan)", type: "upside_down" },
   { q: "8 + 7 = ?", a: "15", level: "Ultra Easy", hint: "Basic addition" },
   { q: "12 - 5 = ?", a: "7", level: "Ultra Easy", hint: "Subtract 5" },
   { q: "6 + 9 = ?", a: "15", level: "Ultra Easy", hint: "Single digits" },
   { q: "14 - 8 = ?", a: "6", level: "Ultra Easy", hint: "Basic subtraction" },
-  { q: "8 + 7 = 15", a: "15", level: "Ultra Easy", hint: "🧩 Click & swap tiles to fix the formula!", type: "rearrange", tiles: ["+", "7", "8", "=", "15"], solution: ["8", "+", "7", "=", "15"] },
+  { q: "8 + 7 = 15", a: "15", level: "Ultra Easy", hint: "Click & swap tiles to fix the formula!", type: "rearrange", tiles: ["+", "7", "8", "=", "15"], solution: ["8", "+", "7", "=", "15"] },
   { q: "20 - 9 = ?", a: "11", level: "Ultra Easy", hint: "Subtract 9" },
   { q: "13 + 8 = ?", a: "21", level: "Ultra Easy", hint: "Basic arithmetic" },
-  { q: "18 - 4 = ?", a: "14", level: "Ultra Easy", hint: "🏃 Good luck clicking submit button!", type: "runaway" },
+  { q: "18 - 4 = ?", a: "14", level: "Ultra Easy", hint: "Good luck clicking submit button!", type: "runaway" },
   { q: "15 + 9 = ?", a: "24", level: "Ultra Easy", hint: "Add 9" },
-  { q: "25 - 11 = ?", a: "14", level: "Ultra Easy", hint: "🌫️ Hover or tap to unblur equation", type: "blurry" },
+  { q: "25 - 11 = ?", a: "14", level: "Ultra Easy", hint: "Hover or tap to unblur equation", type: "blurry" },
   { q: "17 + 6 = ?", a: "23", level: "Ultra Easy", hint: "Basic addition" },
   { q: "30 - 14 = ?", a: "16", level: "Ultra Easy", hint: "Subtract 14" },
   { q: "19 + 12 = ?", a: "31", level: "Ultra Easy", hint: "Add 12" },
@@ -25,18 +25,18 @@ const QUESTIONS = [
 
   // 21-40: Easy Multiplication & Division
   { q: "3 × 4 = ?", a: "12", level: "Easy", hint: "Times 4" },
-  { q: "5 × 6 = ?", a: "30", level: "Easy", hint: "🔄 Mirrored box! Type answer in reverse", type: "reverse_input" },
+  { q: "5 × 6 = ?", a: "30", level: "Easy", hint: "Mirrored box! Type answer in reverse", type: "reverse_input" },
   { q: "24 ÷ 4 = ?", a: "6", level: "Easy", hint: "Divide by 4" },
   { q: "7 × 4 = ?", a: "28", level: "Easy", hint: "Times 4" },
-  { q: "36 ÷ 6 = ?", a: "6", level: "Easy", hint: "〰️ Dizzy math! (Wobbly font)", type: "wobbly" },
+  { q: "36 ÷ 6 = ?", a: "6", level: "Easy", hint: "Dizzy math! (Wobbly font)", type: "wobbly" },
   { q: "8 × 7 = ?", a: "56", level: "Easy", hint: "Times 7" },
   { q: "45 ÷ 9 = ?", a: "5", level: "Easy", hint: "Divide by 9" },
   { q: "9 × 6 = ?", a: "54", level: "Easy", hint: "Times 6" },
   { q: "64 ÷ 8 = ?", a: "8", level: "Easy", hint: "Divide by 8" },
-  { q: "7 × 4 = 28", a: "28", level: "Easy", hint: "🧩 Click pairs of tiles to rearrange formula", type: "rearrange", tiles: ["=", "28", "7", "×", "4"], solution: ["7", "×", "4", "=", "28"] },
+  { q: "7 × 4 = 28", a: "28", level: "Easy", hint: "Click pairs of tiles to rearrange formula", type: "rearrange", tiles: ["=", "28", "7", "×", "4"], solution: ["7", "×", "4", "=", "28"] },
   { q: "81 ÷ 9 = ?", a: "9", level: "Easy", hint: "Square root of 81" },
   { q: "11 × 7 = ?", a: "77", level: "Easy", hint: "Times 7" },
-  { q: "64 ÷ 8 = 8", a: "SECRET_DOT", level: "Easy", hint: "👀 Answer is already on screen! Click the period . at the end!", type: "secret_dot" },
+  { q: "64 ÷ 8 = 8", a: "SECRET_DOT", level: "Easy", hint: "Answer is already on screen! Click the period . at the end!", type: "secret_dot" },
   { q: "14 × 3 = ?", a: "42", level: "Easy", hint: "Times 3" },
   { q: "72 ÷ 6 = ?", a: "12", level: "Easy", hint: "Divide by 6" },
   { q: "15 × 4 = ?", a: "60", level: "Easy", hint: "Quarter century times 4" },
@@ -47,7 +47,7 @@ const QUESTIONS = [
 
   // 41-60: Medium 2-Step & Squares
   { q: "12² = ?", a: "144", level: "Medium", hint: "12 squared" },
-  { q: "7 × 8 + 6 = ?", a: "62", level: "Medium", hint: "👻 Invisible Ink! Highlight text with mouse to reveal", type: "invisible" },
+  { q: "7 × 8 + 6 = ?", a: "62", level: "Medium", hint: "Invisible Ink! Highlight text with mouse to reveal", type: "invisible" },
   { q: "90 ÷ 5 - 7 = ?", a: "11", level: "Medium", hint: "Divide then subtract" },
   { q: "13² = ?", a: "169", level: "Medium", hint: "13 squared upside down", type: "upside_down" },
   { q: "15 × 6 - 20 = ?", a: "70", level: "Medium", hint: "Multiply then subtract" },
@@ -55,13 +55,13 @@ const QUESTIONS = [
   { q: "144 ÷ 12 + 23 = ?", a: "35", level: "Medium", hint: "Divide then add" },
   { q: "15² - 25 = ?", a: "200", level: "Medium", hint: "Square minus 25" },
   { q: "84 ÷ 4 + 19 = ?", a: "40", level: "Medium", hint: "Divide then add" },
-  { q: "16² = ?", a: "256", level: "Medium", hint: "🏃 Slippery submit button strikes again!", type: "runaway" },
+  { q: "16² = ?", a: "256", level: "Medium", hint: "Slippery submit button strikes again!", type: "runaway" },
   { q: "(25 - 9) × 4 = ?", a: "64", level: "Medium", hint: "Parentheses first" },
   { q: "175 ÷ 5 = ?", a: "35", level: "Medium", hint: "Divide by 5" },
   { q: "18 × 4 - 22 = ?", a: "50", level: "Medium", hint: "Multiply then subtract" },
   { q: "200 ÷ 8 + 15 = ?", a: "40", level: "Medium", hint: "Divide then add" },
   { q: "14 × 6 + 16 = ?", a: "100", level: "Medium", hint: "Multiply then add" },
-  { q: "175 ÷ 5 = 35", a: "35", level: "Medium", hint: "🧩 Rearrange formula tiles!", type: "rearrange", tiles: ["35", "=", "175", "÷", "5"], solution: ["175", "÷", "5", "=", "35"] },
+  { q: "175 ÷ 5 = 35", a: "35", level: "Medium", hint: "Rearrange formula tiles!", type: "rearrange", tiles: ["35", "=", "175", "÷", "5"], solution: ["175", "÷", "5", "=", "35"] },
   { q: "(45 + 55) ÷ 4 = ?", a: "25", level: "Medium", hint: "Sum then divide" },
   { q: "21 × 4 = ?", a: "84", level: "Medium", hint: "Times 4" },
   { q: "225 ÷ 15 + 35 = ?", a: "50", level: "Medium", hint: "Divide then add" },
@@ -77,7 +77,7 @@ const QUESTIONS = [
   { q: "2⁷ = ?", a: "128", level: "Hard", hint: "2 to the 7th power" },
   { q: "17 × 13 = ?", a: "221", level: "Hard", hint: "Multiplication" },
   { q: "√400 + 45 = ?", a: "65", level: "Hard", hint: "Square root + 45" },
-  { q: "Solve x: 4x - 18 = 42", a: "15", level: "Hard", hint: "〰️ Wobbly algebra!", type: "wobbly" },
+  { q: "Solve x: 4x - 18 = 42", a: "15", level: "Hard", hint: "Wobbly algebra!", type: "wobbly" },
   { q: "3⁵ - 43 = ?", a: "200", level: "Hard", hint: "Power minus 43" },
   { q: "2⁸ = ?", a: "256", level: "Hard", hint: "2 to the 8th power" },
   { q: "√625 ÷ 5 = ?", a: "5", level: "Hard", hint: "Square root divided by 5" },
@@ -99,7 +99,7 @@ const QUESTIONS = [
   { q: "log₃(81) = ?", a: "4", level: "Expert", hint: "3 to what power equals 81?" },
   { q: "∫₀⁴ 2x dx = ?", a: "16", level: "Expert", hint: "Definite integral [x²] from 0 to 4" },
   { q: "Solve x: 3ˣ = 243", a: "5", level: "Expert", hint: "Exponent x" },
-  { q: "(5! + 30) ÷ 3 = ?", a: "50", level: "Expert", hint: "🔄 Mirrored input box!", type: "reverse_input" },
+  { q: "(5! + 30) ÷ 3 = ?", a: "50", level: "Expert", hint: "Mirrored input box!", type: "reverse_input" },
   { q: "d/dx (2x² - 5x) at x=4", a: "11", level: "Expert", hint: "4x - 5 evaluated at 4" },
   { q: "log₂(512) = ?", a: "9", level: "Expert", hint: "2 to what power equals 512?" },
   { q: "∫₀³ 3x² dx = ?", a: "27", level: "Expert", hint: "Definite integral [x³] from 0 to 3" },
@@ -241,7 +241,7 @@ function onPlayerError(event) {
 
   if (isExplicitContentFilter && !hasSwitchedToCleanPlaylist) {
     hasSwitchedToCleanPlaylist = true;
-    showToast("🧼 Content Filter Detected — Switched to Clean Album! 🎵", 4000);
+    showToast("Content Filter Detected — Switched to Clean Album!", 4000);
 
     try {
       if (ytPlayer && typeof ytPlayer.loadPlaylist === 'function') {
@@ -268,7 +268,7 @@ function onPlayerStateChange(event) {
     isMusicPlaying = true;
     if (widget) widget.classList.add('visible');
     if (badge) { badge.textContent = "PLAYING"; badge.className = "album-badge"; }
-    if (btn) btn.textContent = "❚❚";
+    if (btn) btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>';
     if (disc) disc.classList.remove("paused");
 
     try {
@@ -285,7 +285,7 @@ function onPlayerStateChange(event) {
   } else if (event.data === YT.PlayerState.PAUSED) {
     isMusicPlaying = false;
     if (badge) { badge.textContent = "PAUSED"; badge.className = "album-badge paused"; }
-    if (btn) btn.textContent = "▶";
+    if (btn) btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
     if (disc) disc.classList.add("paused");
   }
 }
@@ -296,7 +296,7 @@ function toggleMusicPlay() {
 
   if (!ytPlayer || typeof ytPlayer.playVideo !== 'function') {
     resetAndReinitYTPlayer();
-    showToast("🎵 Lil Tecca Audio Player initializing...");
+    showToast("Lil Tecca Audio Player initializing...");
     return;
   }
   try {
@@ -364,7 +364,7 @@ function showCoinPopup(text) {
 
 function buyExtraTime() {
   if (userCoins < EXTRA_TIME_COST) {
-    showToast("Not enough coins! Need 15 🪙");
+    showToast("Not enough coins! Need 15 coins");
     return;
   }
   userCoins -= EXTRA_TIME_COST;
@@ -372,7 +372,7 @@ function buyExtraTime() {
   puzzleTimeRemainingMs += 5000;
   updatePuzzleTimerUI();
   playTone(1400, 'sine', 0.2);
-  showToast("⚡ Bought +5s Extra Time! (-15 🪙)");
+  showToast("Bought +5s Extra Time! (-15 coins)");
 }
 
 function calculateMaxPuzzleMs(qNum) {
@@ -486,7 +486,7 @@ function handlePuzzleTimeout() {
   playTone(150, 'sawtooth', 0.4);
   if (puzzleTimerInterval) clearInterval(puzzleTimerInterval);
 
-  showToast("⏱️ TIMEOUT! Make 2 FREE THROWS IN A ROW or RESTART! 🏀", 3000);
+  showToast("TIMEOUT! Make 2 FREE THROWS IN A ROW or RESTART!", 3000);
 
   document.getElementById('gauntletStage').classList.remove('active');
   document.getElementById('basketballStage').classList.add('active');
@@ -553,19 +553,18 @@ function shootFreeThrow() {
 
   // Green Zone: 72% to 88%
   if (meterPos >= 72 && meterPos <= 88) {
-    // 🟢 GREEN RELEASE!
     freeThrowsStreak++;
     updateStreakDots();
     playTone(1200, 'sine', 0.2);
     setTimeout(() => playTone(1600, 'triangle', 0.25), 100);
 
-    feedback.textContent = "EXCELLENT RELEASE! 🟢 GREEN SPLASH!";
+    feedback.textContent = "EXCELLENT RELEASE! GREEN SPLASH!";
     feedback.className = "shot-feedback green";
     ball.classList.add('swish');
 
     if (freeThrowsStreak >= 2) {
       setTimeout(() => {
-        showToast("🏀 2 FREE THROWS CLEARED! Returning to Gauntlet!");
+        showToast("2 FREE THROWS CLEARED! Returning to Gauntlet!");
         bbStage.classList.remove('active');
         document.getElementById('gauntletStage').classList.add('active');
         renderQuestion();
@@ -580,18 +579,17 @@ function shootFreeThrow() {
       }, 1200);
     }
   } else {
-    // 💀 MISSED FREE THROW -> RESTART GAUNTLET BACK TO QUESTION 1!
     freeThrowsStreak = 0;
     updateStreakDots();
     playTone(100, 'sawtooth', 0.6); // Loud fail buzzer
 
-    feedback.textContent = "MISSED FREE THROW! RESTARTING GAUNTLET BACK TO QUESTION 1! 💀";
+    feedback.textContent = "MISSED FREE THROW! RESTARTING GAUNTLET BACK TO QUESTION 1!";
     feedback.className = "shot-feedback miss";
     ball.classList.add('clang');
 
     setTimeout(() => {
       currentIndex = 0; // RESTART GAUNTLET TO QUESTION 1!
-      showToast("💀 MISSED FREE THROW! RESETTING GAUNTLET BACK TO QUESTION 1!", 4000);
+      showToast("MISSED FREE THROW! RESETTING GAUNTLET BACK TO QUESTION 1!", 4000);
       bbStage.classList.remove('active');
       document.getElementById('gauntletStage').classList.add('active');
       renderQuestion();
@@ -643,10 +641,10 @@ function renderQuestion() {
     eqBox.classList.add("upside-down");
   } else if (current.type === "blurry") {
     eqText.classList.add("blurry-text");
-    eqHint.textContent = "⏱️ QUICK! You have 2 seconds to memorize the equation!";
+    eqHint.textContent = "QUICK! You have 2 seconds to memorize the equation!";
     blurryTimeout = setTimeout(() => {
       eqText.classList.add("auto-blurred");
-      eqHint.textContent = "🙈 PERMANENTLY BLURRED! Solve from memory!";
+      eqHint.textContent = "PERMANENTLY BLURRED! Solve from memory!";
       playTone(280, 'sine', 0.2);
     }, 2000);
   } else if (current.type === "invisible") {
@@ -691,7 +689,7 @@ function setupRunawayBtn(btn) {
 
 function clickSecretDot() {
   playTone(880, 'sine', 0.2);
-  showToast("Found the hidden dot! 🎯");
+  showToast("Found the hidden dot!");
   advanceQuestion();
 }
 
@@ -760,7 +758,7 @@ function advanceQuestion() {
     const earned = getCoinReward(current.level);
     userCoins += earned;
     updateCoinDisplay();
-    showCoinPopup(`+${earned} 🪙`);
+    showCoinPopup(`+${earned} COINS`);
 
     const badge = document.getElementById('coinBadge');
     if (badge) {
@@ -799,26 +797,26 @@ function checkEasterEgg(inputVal) {
   const val = inputVal.toLowerCase();
 
   if (val === '42') {
-    showToast("🌌 42: The answer to the universe! (+1 Question Skip)");
+    showToast("42: The answer to the universe! (+1 Question Skip)");
     playTone(1000, 'sine', 0.3);
     advanceQuestion();
     return true;
   } else if (val === '69' || val === '420') {
-    showToast("Nice 😎");
+    showToast("Nice!");
     playTone(800, 'triangle', 0.2);
     return false;
   } else if (val === 'rick' || val === 'never') {
-    showToast("🎵 Never gonna give you up!");
+    showToast("Never gonna give you up!");
     playTone(440, 'square', 0.1);
     setTimeout(() => playTone(554, 'square', 0.1), 120);
     setTimeout(() => playTone(659, 'square', 0.15), 240);
     return false;
   } else if (val === 'ely' || val === 'wolf') {
-    showToast("⚡ Developer Mode Activated!");
+    showToast("Developer Mode Activated!");
     triggerConfetti();
     return false;
   } else if (val === 'skip') {
-    showToast("Nice try! No skipping without solving 😜");
+    showToast("Nice try! No skipping without solving.");
     return false;
   }
   return false;
@@ -858,7 +856,7 @@ function setupEventListeners() {
     if (e.key === konamiCode[konamiIndex]) {
       konamiIndex++;
       if (konamiIndex === konamiCode.length) {
-        showToast("🎮 KONAMI CODE UNLOCKED! Party Time 🎉");
+        showToast("KONAMI CODE UNLOCKED! Party Time!");
         triggerConfetti();
         konamiIndex = 0;
       }
@@ -944,6 +942,7 @@ function triggerLevel2Prank() {
   prankStage.appendChild(subtext);
 
   // Record finish to leaderboard
+  if (window.ElyMatchGuard) window.ElyMatchGuard.markFinished('win', { announce: true });
   recordSpeedrunResult(totalElapsedMs, totalSecs);
 
   // 1. Burst Confetti
@@ -1026,13 +1025,13 @@ function submitDevCode() {
   const code = input ? input.value.trim() : '';
 
   if (code === '0000') {
-    // 🔓 CORRECT PASSCODE! Fast-forward to Question 90
+    // Dev override: fast-forward to Question 90
     playTone(1200, 'sine', 0.15);
     setTimeout(() => playTone(1600, 'sine', 0.25), 100);
     triggerConfetti();
 
     closeDevModal();
-    showToast("⚡ DEV OVERRIDE UNLOCKED! Jumped to Question 90 / 100 🚀", 3500);
+    showToast("DEV OVERRIDE UNLOCKED! Jumped to Question 90 / 100", 3500);
 
     // If currently on start stage, activate gauntlet stage
     const startStage = document.getElementById('startStage');
@@ -1052,7 +1051,7 @@ function submitDevCode() {
     renderQuestion();
 
   } else {
-    // ❌ INCORRECT PASSCODE
+    // INCORRECT PASSCODE
     playTone(180, 'sawtooth', 0.3);
     if (err) err.classList.add('active');
     if (input) {
@@ -1181,11 +1180,11 @@ function renderLeaderboard() {
 
   entries.forEach((item, index) => {
     const rankNum = index + 1;
-    let rankBadge = `${rankNum}`;
-    let rankClass = '';
-    if (rankNum === 1) { rankBadge = '🥇'; rankClass = 'lb-rank-1'; }
-    else if (rankNum === 2) { rankBadge = '🥈'; rankClass = 'lb-rank-2'; }
-    else if (rankNum === 3) { rankBadge = '🥉'; rankClass = 'lb-rank-3'; }
+    let rankBadge = `#${rankNum}`;
+    let rankClass = 'rank-other';
+    if (rankNum === 1) { rankBadge = '#1'; rankClass = 'rank-1'; }
+    else if (rankNum === 2) { rankBadge = '#2'; rankClass = 'rank-2'; }
+    else if (rankNum === 3) { rankBadge = '#3'; rankClass = 'rank-3'; }
 
     const initial = (item.name || 'P').charAt(0).toUpperCase();
 
@@ -1200,7 +1199,7 @@ function renderLeaderboard() {
       </td>
       <td class="lb-time">${item.time}</td>
       <td>${item.solved} / 100</td>
-      <td>${item.coins} 🪙</td>
+      <td>${item.coins}</td>
     `;
     tbody.appendChild(tr);
   });

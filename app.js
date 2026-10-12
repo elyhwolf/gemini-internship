@@ -753,8 +753,9 @@ function scrollChatToBottom() {
 
 // Render Presence Bar (Hub & In-Game Fullscreen HUD)
 function renderOnlinePlayers(players) {
-  // Only filter out the exact current tab session (p.isSelf)
-  const otherPlayers = players.filter(p => !p.isSelf);
+  // You must never see yourself as an active player: hide this tab AND any other
+  // tab/session of the same account. Other users still see you in their lists.
+  const otherPlayers = players.filter(p => !p.isSelf && !p.isSameAccountTab);
 
   latestOtherPlayers = otherPlayers;
 
@@ -779,54 +780,56 @@ function renderOnlinePlayers(players) {
           ? `<img src="${p.photoURL}" alt="${p.displayName}" class="chip-avatar-img" />`
           : `<span class="chip-avatar">${p.avatar || 'P'}</span>`;
         const displayNameText = p.isSameAccountTab ? `${p.displayName} (Other Tab)` : p.displayName;
-        chip.innerHTML = `
-          ${avatarHtml}
-          <div style="display:flex; flex-direction:column; line-height:1.2;">
-            <span class="chip-name">${displayNameText}</span>
-            <span style="font-size:0.62rem; color:#a1a1aa; font-family:var(--font-mono);">${p.status || 'In Arcade Hub'}</span>
-          </div>
-          <button class="chip-challenge-btn" title="Challenge ${p.displayName} to a match">CHALLENGE ⚔️</button>
-        `;
+          chip.innerHTML = `
+            ${avatarHtml}
+            <div style="display:flex; flex-direction:column; line-height:1.2;">
+              <span class="chip-name">${displayNameText}</span>
+              <span style="font-size:0.62rem; color:#a1a1aa; font-family:var(--font-mono);">${p.status || 'In Main Arcade Menu'}</span>
+            </div>
+            <a href="profile.html?user=${encodeURIComponent(p.displayName)}" class="chip-profile-btn" title="View ${p.displayName}'s stats">PROFILE</a>
+            <button class="chip-challenge-btn" title="Challenge ${p.displayName} to a match"><svg class="btn-sword-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:3px;"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"></path><path d="M13 19l6-6"></path><path d="M16 16l4 4"></path></svg>CHALLENGE</button>
+          `;
 
-        const btn = chip.querySelector('.chip-challenge-btn');
-        if (btn) {
-          btn.addEventListener('click', () => {
-            openChallengePicker(p.displayName);
-          });
-        }
-        onlinePlayersList.appendChild(chip);
-      });
+          const btn = chip.querySelector('.chip-challenge-btn');
+          if (btn) {
+            btn.addEventListener('click', () => {
+              openChallengePicker(p.displayName);
+            });
+          }
+          onlinePlayersList.appendChild(chip);
+        });
+      }
     }
-  }
 
-  // 2. Render In-Game Topbar HUD Strip
-  if (hudPlayersList) {
-    hudPlayersList.innerHTML = '';
-    if (otherPlayers.length === 0) {
-      hudPlayersList.innerHTML = `<span class="hud-empty">No other players online right now.</span>`;
-    } else {
-      otherPlayers.forEach(p => {
-        const hudChip = document.createElement('div');
-        hudChip.className = 'hud-player-chip';
-        const hudAvatarHtml = p.photoURL
-          ? `<img src="${p.photoURL}" alt="${p.displayName}" class="hud-avatar-img" />`
-          : `<span class="hud-avatar">${p.avatar || 'P'}</span>`;
-        const displayNameText = p.isSameAccountTab ? `${p.displayName} (Other Tab)` : p.displayName;
-        hudChip.innerHTML = `
-          ${hudAvatarHtml}
-          <span class="hud-name">${displayNameText}</span>
-          <span class="hud-status">${p.status || 'In Arcade Hub'}</span>
-          <button class="hud-challenge-btn" title="Challenge ${p.displayName} to 1v1">CHALLENGE ⚔️</button>
-        `;
+    // 2. Render In-Game Topbar HUD Strip
+    if (hudPlayersList) {
+      hudPlayersList.innerHTML = '';
+      if (otherPlayers.length === 0) {
+        hudPlayersList.innerHTML = `<span class="hud-empty">No other players online right now.</span>`;
+      } else {
+        otherPlayers.forEach(p => {
+          const hudChip = document.createElement('div');
+          hudChip.className = 'hud-player-chip';
+          const hudAvatarHtml = p.photoURL
+            ? `<img src="${p.photoURL}" alt="${p.displayName}" class="hud-avatar-img" />`
+            : `<span class="hud-avatar">${p.avatar || 'P'}</span>`;
+          const displayNameText = p.isSameAccountTab ? `${p.displayName} (Other Tab)` : p.displayName;
+          hudChip.innerHTML = `
+            ${hudAvatarHtml}
+            <span class="hud-name">${displayNameText}</span>
+            <span class="hud-status">${p.status || 'In Main Arcade Menu'}</span>
+            <a href="profile.html?user=${encodeURIComponent(p.displayName)}" target="_blank" class="chip-profile-btn" title="View ${p.displayName}'s stats">PROFILE</a>
+            <button class="hud-challenge-btn" title="Challenge ${p.displayName} to 1v1"><svg class="btn-sword-icon" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:3px;"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"></path><path d="M13 19l6-6"></path><path d="M16 16l4 4"></path></svg>CHALLENGE</button>
+          `;
 
-        const hudBtn = hudChip.querySelector('.hud-challenge-btn');
-        if (hudBtn) {
-          hudBtn.addEventListener('click', () => {
-            openChallengePicker(p.displayName);
-          });
-        }
-        hudPlayersList.appendChild(hudChip);
-      });
+          const hudBtn = hudChip.querySelector('.hud-challenge-btn');
+          if (hudBtn) {
+            hudBtn.addEventListener('click', () => {
+              openChallengePicker(p.displayName);
+            });
+          }
+          hudPlayersList.appendChild(hudChip);
+        });
     }
   }
 }
@@ -890,7 +893,13 @@ function launchChallengeMatch(gameName, matchId, role, oppName) {
     targetUrl = `./memory-card/?mode=1v1&match=${encodeURIComponent(matchId)}&role=${role}&opp=${encodeURIComponent(oppName)}`;
   } else if (gameName.includes('Maze')) {
     cleanGameName = 'Maze Runner 100';
-    targetUrl = `./maze-runner/?mode=live&match=${encodeURIComponent(matchId)}&opp=${encodeURIComponent(oppName)}`;
+    // Compute a shared random level between 1 and 100 deterministically from matchId
+    let seed = 0;
+    for (let i = 0; i < matchId.length; i++) {
+      seed = ((seed << 5) - seed + matchId.charCodeAt(i)) | 0;
+    }
+    const sharedLevel = (Math.abs(seed) % 100) + 1;
+    targetUrl = `./maze-runner/?mode=1v1&match=${encodeURIComponent(matchId)}&role=${role}&opp=${encodeURIComponent(oppName)}&level=${sharedLevel}`;
   } else if (gameName.includes('Math')) {
     cleanGameName = 'Math Gauntlet';
     targetUrl = `./math-gauntlet/?mode=1v1&match=${encodeURIComponent(matchId)}&opp=${encodeURIComponent(oppName)}`;
@@ -1109,11 +1118,15 @@ function renderChatFeed(messages) {
     const chatAvatarHtml = m.photoURL
       ? `<img src="${m.photoURL}" alt="${m.sender}" class="chat-msg-avatar" />`
       : `<span class="chat-msg-avatar-initial">${(m.sender || 'P').charAt(0).toUpperCase()}</span>`;
+    const profileLinkHtml = !m.isSystem && m.sender
+      ? `<a href="profile.html?user=${encodeURIComponent(m.sender)}" target="_blank" class="chat-sender-profile" title="View ${escapeHtml(m.sender)}'s profile">STATS</a>`
+      : '';
     item.innerHTML = `
       <div class="chat-item-meta">
         <div class="chat-sender-wrap">
           ${!m.isSystem ? chatAvatarHtml : ''}
           <span class="chat-sender" title="Click to @mention ${escapeHtml(m.sender)}">${escapeHtml(m.sender)}</span>
+          ${profileLinkHtml}
         </div>
         <span class="chat-time">${displayTime}</span>
       </div>
@@ -1132,6 +1145,25 @@ document.addEventListener('DOMContentLoaded', () => {
     el.addEventListener('mouseenter', () => playHubSound('hover'));
   });
   initBgCanvas();
+
+  // Surface the result of a match that just ended by resignation / leaving
+  try {
+    const rawResult = localStorage.getItem('elywolf_last_match_result');
+    if (rawResult) {
+      localStorage.removeItem('elywolf_last_match_result');
+      const r = JSON.parse(rawResult);
+      if (r && Date.now() - (r.timestamp || 0) < 60000) {
+        const opp = r.opponent || 'your opponent';
+        if (r.result === 'loss') {
+          showToast(r.reason === 'resigned'
+            ? `You resigned your match vs ${opp}.`
+            : `You left the match vs ${opp}. It counts as a loss.`);
+        } else if (r.result === 'win') {
+          showToast(`${opp} resigned. You win the match!`);
+        }
+      }
+    }
+  } catch (e) {}
 
   if (openAuthModalBtn) openAuthModalBtn.addEventListener('click', () => toggleAuthModal(true));
   if (closeAuthModalBtn) closeAuthModalBtn.addEventListener('click', () => toggleAuthModal(false));
@@ -1451,11 +1483,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  function updateHubProfileBadge() {
+    if (!window.ElyProfiles) return;
+    const me = window.ElyProfiles.getIdentity();
+    const p = window.ElyProfiles.getLocalProfile(me.name) || { xp: 0, level: 1 };
+    const lvlEl = document.getElementById('hubProfileLevel');
+    const xpEl = document.getElementById('hubProfileXp');
+    if (lvlEl) lvlEl.textContent = `LV ${p.level || 1}`;
+    if (xpEl) xpEl.textContent = `${(p.xp || 0).toLocaleString()} XP`;
+  }
+  updateHubProfileBadge();
+
   // Observe Auth State Changes
   onAuthChange((user) => {
     if (user) {
       const name = user.displayName || user.email.split('@')[0];
       userNameDisplay.textContent = name;
+      userNameDisplay.href = `profile.html?user=${encodeURIComponent(name)}`;
       if (user.photoURL) {
         userAvatar.innerHTML = `<img src="${user.photoURL}" alt="${name}" class="avatar-img" />`;
       } else {
@@ -1468,5 +1512,6 @@ document.addEventListener('DOMContentLoaded', () => {
       openAuthModalBtn.classList.remove('hidden');
       userProfilePill.classList.add('hidden');
     }
+    updateHubProfileBadge();
   });
 });

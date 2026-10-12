@@ -157,7 +157,7 @@ function getPageLabel() {
   if (path.includes('/math-gauntlet/')) return 'Playing Math Gauntlet';
   if (path.includes('/memory-card/')) return 'Playing Album Memory';
   if (path.includes('/maze-runner/')) return 'Playing Maze Runner 100';
-  return 'In Arcade Hub';
+  return 'In Main Arcade Menu';
 }
 
 // API Endpoints

@@ -267,6 +267,7 @@ if (raceChannel) {
 }
 
 function showDefeatModal(winnerName, time) {
+  if (window.ElyMatchGuard) window.ElyMatchGuard.markFinished('loss');
   stopTimer();
   playMismatchSound();
 
@@ -437,6 +438,7 @@ function handleVictory() {
   if (raceFinished) return;
   raceFinished = true;
 
+  if (window.ElyMatchGuard) window.ElyMatchGuard.markFinished('win', { announce: true });
   stopTimer();
   playWinSound();
 

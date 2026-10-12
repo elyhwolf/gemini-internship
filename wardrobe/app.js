@@ -388,8 +388,8 @@ function renderClosetGrid() {
           </div>
 
           <div class="item-actions">
-            <button type="button" class="icon-action-btn" title="Equip in Fit Studio" onclick="equipInStudio('${item.id}')">✨</button>
-            <button type="button" class="icon-action-btn delete" title="Delete Item" onclick="deleteItem('${item.id}', event)">🗑️</button>
+            <button type="button" class="icon-action-btn" title="Equip in Fit Studio" onclick="equipInStudio('${item.id}')">Equip</button>
+            <button type="button" class="icon-action-btn delete" title="Delete Item" onclick="deleteItem('${item.id}', event)">&times;</button>
           </div>
         </div>
       </div>
@@ -717,7 +717,7 @@ function renderFitStudioCanvas() {
     } else {
       el.innerHTML = `
         <div class="slot-empty-prompt">
-          <span>➕</span> Select ${slot}
+          + Select ${slot}
         </div>
       `;
     }
@@ -822,13 +822,13 @@ function calculateColorHarmonyScore() {
   circle.style.background = `conic-gradient(var(--accent-purple) 0%, var(--accent-purple) ${baseScore}%, rgba(255,255,255,0.1) ${baseScore}%)`;
 
   if (baseScore >= 90) {
-    vibeTag.textContent = "Streetwear Essential ⚡";
+    vibeTag.textContent = "Streetwear Essential";
     vibeDesc.textContent = "Perfect tonal balance with high-vibe contrast.";
   } else if (baseScore >= 80) {
-    vibeTag.textContent = "Clean Daily Drip ✨";
+    vibeTag.textContent = "Clean Daily Drip";
     vibeDesc.textContent = "Harmonious combination for daily wear.";
   } else {
-    vibeTag.textContent = "Bold Experimental Fit 🎨";
+    vibeTag.textContent = "Bold Experimental Fit";
     vibeDesc.textContent = "Unique palette contrast.";
   }
 }
@@ -925,7 +925,7 @@ function renderLookbook() {
     card.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <h4 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.05rem; color: #ffffff;">${outfit.name}</h4>
-        <button type="button" class="icon-action-btn delete" onclick="deleteOutfit('${outfit.id}', event)">🗑️</button>
+        <button type="button" class="icon-action-btn delete" onclick="deleteOutfit('${outfit.id}', event)">&times;</button>
       </div>
 
       <div class="lookbook-items-preview">
@@ -935,7 +935,7 @@ function renderLookbook() {
       <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px;">
         <span style="font-size: 0.75rem; color: var(--text-muted);">Saved ${outfit.dateSaved}</span>
         <button type="button" class="btn-secondary" style="padding: 6px 12px; font-size: 0.78rem;" onclick="equipLookbookOutfit('${outfit.id}')">
-          ✨ Wear Fit
+          Wear Fit
         </button>
       </div>
     `;
@@ -990,7 +990,7 @@ function equipLookbookOutfit(id) {
 function showToast(msg) {
   const toast = document.createElement("div");
   toast.className = "toast-msg";
-  toast.innerHTML = `<span>✨</span> ${msg}`;
+  toast.innerHTML = msg;
   document.body.appendChild(toast);
 
   setTimeout(() => {

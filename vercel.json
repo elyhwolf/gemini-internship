@@ -4,6 +4,7 @@
   "rewrites": [
     { "source": "/api/chat", "destination": "/api/chat.py" },
     { "source": "/api/presence", "destination": "/api/presence.py" },
+    { "source": "/api/profiles", "destination": "/api/profiles.py" },
     { "source": "/api/convert", "destination": "/api/convert.py" },
     { "source": "/api/publish-youtube", "destination": "/api/publish-youtube.py" },
     { "source": "/sounddrop", "destination": "/distro/index.html" },

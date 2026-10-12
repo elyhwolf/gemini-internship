@@ -1574,7 +1574,7 @@ function simulatePlaybackProgress() {
     if (currentSec > dur) {
       isPlayingEmbed = false;
       const playIcon = document.getElementById('playIcon');
-      if (playIcon) playIcon.textContent = '▶';
+      if (playIcon) playIcon.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
       clearInterval(interval);
       return;
     }

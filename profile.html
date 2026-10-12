@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Player Profile & XP Stats | ElyWolf Arcade</title>
+  <meta name="description" content="View player XP, level, win/loss stats, streak, game breakdown, and recent match history on ElyWolf Arcade." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-dark: #0b0c10;
+      --bg-card: #141722;
+      --bg-card-hover: #1c202e;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(255, 255, 255, 0.22);
+      --text-heading: #f8fafc;
+      --text-body: #94a3b8;
+      --text-subtle: #64748b;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --green: #22c55e;
+      --red: #ef4444;
+      --blue: #38bdf8;
+      --amber: #f59e0b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-dark);
+      color: var(--text-heading);
+      min-height: 100vh;
+      line-height: 1.5;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .profile-wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 2.2rem 1.4rem 5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* NAV */
+    .profile-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text-heading);
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-brand-tag {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: var(--amber);
+      font-size: 0.65rem;
+      font-family: var(--font-mono);
+      font-weight: 800;
+      padding: 3px 7px;
+      border-radius: 6px;
+      letter-spacing: 0.08em;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-heading);
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 10px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: var(--font-sans);
+    }
+
+    .btn-nav:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--border-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-nav.primary {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #0b0c10;
+      border: none;
+    }
+
+    .btn-nav.primary:hover {
+      filter: brightness(1.1);
+    }
+
+    /* SEARCH BAR */
+    .profile-search {
+      display: flex;
+      gap: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      padding: 6px;
+      border-radius: var(--radius-md);
+      margin-bottom: 2rem;
+      align-items: center;
+    }
+
+    .profile-search input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-heading);
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      padding: 8px 12px;
+      outline: none;
+    }
+
+    .profile-search input::placeholder { color: var(--text-subtle); }
+
+    .profile-search button {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-heading);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      transition: all 0.2s;
+    }
+
+    .profile-search button:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: var(--border-hover);
+    }
+
+    /* HERO CARD */
+    .hero-card {
+      background: linear-gradient(165deg, rgba(20, 23, 34, 0.95), rgba(15, 18, 26, 0.98));
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::before {
+      content: '';
+      position: absolute;
+      top: -120px;
+      right: -100px;
+      width: 280px;
+      height: 280px;
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.12), transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-top {
+      display: flex;
+      align-items: center;
+      gap: 1.4rem;
+      flex-wrap: wrap;
+    }
+
+    .hero-avatar {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f59e0b, #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 2rem;
+      color: #fff;
+      overflow: hidden;
+      flex-shrink: 0;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      border: 2px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .hero-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .hero-identity {
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .hero-badge-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+
+    .hero-title-pill {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(245, 158, 11, 0.16);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: var(--amber);
+    }
+
+    .hero-source-pill {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--blue);
+    }
+
+    .hero-name {
+      font-size: 1.9rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      word-break: break-word;
+    }
+
+    .hero-level-box {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      font-family: var(--font-mono);
+      margin-left: auto;
+      text-align: right;
+    }
+
+    .hero-level-label {
+      font-size: 0.72rem;
+      color: var(--text-subtle);
+      font-weight: 700;
+      letter-spacing: 0.1em;
+    }
+
+    .hero-level-num {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--amber);
+      line-height: 1;
+    }
+
+    /* XP PROGRESS BAR */
+    .xp-bar-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .xp-meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+    }
+
+    .xp-points {
+      font-weight: 800;
+      color: var(--text-heading);
+    }
+
+    .xp-target {
+      color: var(--text-subtle);
+      font-size: 0.75rem;
+    }
+
+    .xp-track {
+      height: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-subtle);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .xp-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f59e0b, #fbbf24);
+      border-radius: 999px;
+      width: 0%;
+      transition: width 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.6);
+    }
+
+    /* STATS GRID */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin-top: 1.5rem;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .stat-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+    }
+
+    .stat-card-label {
+      font-size: 0.68rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-subtle);
+    }
+
+    .stat-card-value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      line-height: 1.1;
+      color: var(--text-heading);
+    }
+
+    .stat-card.win .stat-card-value { color: var(--green); }
+    .stat-card.loss .stat-card-value { color: var(--red); }
+    .stat-card.streak .stat-card-value { color: var(--amber); }
+
+    /* LAYOUT: BREAKDOWN + RECENT */
+    .profile-sections {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    @media (max-width: 820px) {
+      .profile-sections { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-title {
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-badge {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text-subtle);
+    }
+
+    /* GAME CARDS */
+    .game-stats-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .game-stat-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      gap: 10px;
+    }
+
+    .game-stat-name {
+      font-weight: 700;
+      font-size: 0.88rem;
+    }
+
+    .game-stat-counts {
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      display: flex;
+      gap: 10px;
+      color: var(--text-subtle);
+    }
+
+    .game-stat-counts strong { color: var(--text-heading); }
+    .game-stat-counts .w { color: var(--green); }
+    .game-stat-counts .l { color: var(--red); }
+
+    /* MATCH HISTORY */
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      font-size: 0.82rem;
+      gap: 10px;
+    }
+
+    .history-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .history-pill {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+    }
+
+    .history-pill.win { background: rgba(34, 197, 94, 0.16); color: var(--green); border: 1px solid rgba(34, 197, 94, 0.35); }
+    .history-pill.loss { background: rgba(239, 68, 68, 0.16); color: var(--red); border: 1px solid rgba(239, 68, 68, 0.35); }
+    .history-pill.draw { background: rgba(148, 163, 184, 0.14); color: var(--text-body); border: 1px solid rgba(148, 163, 184, 0.3); }
+
+    .history-meta {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.25;
+      min-width: 0;
+    }
+
+    .history-game {
+      font-weight: 700;
+      color: var(--text-heading);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .history-vs {
+      font-size: 0.72rem;
+      color: var(--text-subtle);
+    }
+
+    .history-vs span { color: var(--text-body); }
+
+    .history-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      line-height: 1.2;
+      flex-shrink: 0;
+    }
+
+    .history-xp {
+      font-family: var(--font-mono);
+      font-weight: 800;
+      font-size: 0.82rem;
+    }
+
+    .history-xp.up { color: var(--green); }
+    .history-xp.down { color: var(--red); }
+    .history-xp.flat { color: var(--text-subtle); }
+
+    .history-time {
+      font-size: 0.65rem;
+      color: var(--text-subtle);
+      font-family: var(--font-mono);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 2.4rem 1rem;
+      color: var(--text-subtle);
+      font-size: 0.84rem;
+    }
+
+    /* LEADERBOARD PANEL (BOTTOM) */
+    .leaderboard-panel {
+      margin-top: 2rem;
+    }
+
+    .lb-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+    }
+
+    .lb-table th {
+      text-align: left;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-subtle);
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .lb-table td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--text-heading);
+    }
+
+    .lb-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .lb-rank {
+      font-family: var(--font-mono);
+      font-weight: 800;
+      color: var(--text-subtle);
+      width: 48px;
+    }
+
+    .lb-rank.r1 { color: #fbbf24; }
+    .lb-rank.r2 { color: #cbd5e1; }
+    .lb-rank.r3 { color: #d97706; }
+
+    .lb-user-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .lb-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f59e0b, #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.72rem;
+      color: #fff;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .lb-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    .lb-link {
+      color: var(--text-heading);
+      font-weight: 700;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .lb-link:hover { color: var(--amber); }
+
+    .lb-mono {
+      font-family: var(--font-mono);
+      font-weight: 700;
+    }
+
+    /* RULES FOOTER */
+    .rules-card {
+      margin-top: 2rem;
+      background: rgba(245, 158, 11, 0.05);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: var(--radius-md);
+      padding: 1.2rem 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      font-size: 0.82rem;
+    }
+
+    .rules-card strong { color: var(--amber); font-family: var(--font-mono); }
+  </style>
+</head>
+<body>
+  <div class="profile-wrap">
+    <!-- TOP NAVIGATION -->
+    <nav class="profile-nav">
+      <a href="./" class="nav-brand">
+        <span>ELYWOLF ARCADE</span>
+        <span class="nav-brand-tag">XP & PROFILES</span>
+      </a>
+
+      <div class="nav-actions">
+        <a href="./" class="btn-nav">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          <span>Main Arcade Menu</span>
+        </a>
+        <button type="button" id="btnViewMine" class="btn-nav primary">View My Profile</button>
+      </div>
+    </nav>
+
+    <!-- SEARCH ANY PLAYER -->
+    <form class="profile-search" id="searchProfileForm">
+      <input type="text" id="targetPlayerInput" placeholder="Lookup any player by username (e.g. Ely Wolf, Guest #1234)..." autocomplete="off" />
+      <button type="submit">SEARCH</button>
+    </form>
+
+    <!-- HERO PROFILE CARD -->
+    <section class="hero-card" id="heroCard">
+      <div class="hero-top">
+        <div class="hero-avatar" id="heroAvatar">P</div>
+        <div class="hero-identity">
+          <div class="hero-badge-row">
+            <span class="hero-title-pill" id="heroTitle">Rookie</span>
+            <span class="hero-source-pill" id="heroSource">Syncing...</span>
+          </div>
+          <h1 class="hero-name" id="heroName">Loading...</h1>
+        </div>
+
+        <div class="hero-level-box">
+          <span class="hero-level-label">LEVEL</span>
+          <span class="hero-level-num" id="heroLevel">1</span>
+        </div>
+      </div>
+
+      <!-- XP PROGRESS -->
+      <div class="xp-bar-container">
+        <div class="xp-meta-row">
+          <span class="xp-points"><span id="heroXp">0</span> XP</span>
+          <span class="xp-target" id="heroXpNext">0 / 100 XP to Level 2</span>
+        </div>
+        <div class="xp-track">
+          <div class="xp-fill" id="heroXpFill"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STATS SUMMARY -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-card-label">Matches</span>
+        <span class="stat-card-value" id="statMatches">0</span>
+      </div>
+      <div class="stat-card win">
+        <span class="stat-card-label">Wins</span>
+        <span class="stat-card-value" id="statWins">0</span>
+      </div>
+      <div class="stat-card loss">
+        <span class="stat-card-label">Losses</span>
+        <span class="stat-card-value" id="statLosses">0</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-card-label">Win Rate</span>
+        <span class="stat-card-value" id="statWinRate">0%</span>
+      </div>
+      <div class="stat-card streak">
+        <span class="stat-card-label">Current Streak</span>
+        <span class="stat-card-value" id="statStreak">0</span>
+      </div>
+      <div class="stat-card streak">
+        <span class="stat-card-label">Best Streak</span>
+        <span class="stat-card-value" id="statBestStreak">0</span>
+      </div>
+    </div>
+
+    <!-- DETAILS: BREAKDOWN & HISTORY -->
+    <div class="profile-sections">
+      <!-- GAME BREAKDOWN -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+              <rect x="2" y="6" width="20" height="12" rx="6"></rect>
+              <line x1="6" y1="12" x2="10" y2="12"></line>
+              <line x1="8" y1="10" x2="8" y2="14"></line>
+            </svg>
+            Game Breakdown
+          </h2>
+          <span class="panel-badge" id="breakdownTotal">4 Games</span>
+        </div>
+        <div class="game-stats-list" id="gameBreakdownList">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- MATCH HISTORY -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            Recent Matches
+          </h2>
+          <span class="panel-badge" id="historyCount">0 Matches</span>
+        </div>
+        <div class="history-list" id="historyList">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ARCADE LEADERBOARD -->
+    <section class="panel leaderboard-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+            <path d="M4 22h16"></path>
+            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+          </svg>
+          Arcade XP Leaderboard
+        </h2>
+        <span class="panel-badge">Global Rankings</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="lb-table">
+          <thead>
+            <tr>
+              <th style="width: 50px;">Rank</th>
+              <th>Player</th>
+              <th>Level</th>
+              <th>XP</th>
+              <th>Matches</th>
+              <th>W / L</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardTbody">
+            <tr><td colspan="6" class="empty-state">Loading rankings...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- RULES -->
+    <footer class="rules-card">
+      <div>
+        <span>XP System: </span>
+        <strong>+30 XP Win</strong> &bull;
+        <strong>-20 XP Loss</strong> (XP never drops below 0) &bull;
+        <strong>+5 XP Draw</strong> &bull;
+        <strong>100 XP / Level</strong>
+      </div>
+      <div>Resigning or leaving any match counts as an immediate loss.</div>
+    </footer>
+  </div>
+
+  <script src="profile-store.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      const store = window.ElyProfiles;
+      const params = new URLSearchParams(window.location.search);
+      const myIdentity = store.getIdentity();
+
+      let targetPlayer = params.get('user') || myIdentity.name;
+
+      const heroAvatar = document.getElementById('heroAvatar');
+      const heroName = document.getElementById('heroName');
+      const heroTitle = document.getElementById('heroTitle');
+      const heroSource = document.getElementById('heroSource');
+      const heroLevel = document.getElementById('heroLevel');
+      const heroXp = document.getElementById('heroXp');
+      const heroXpNext = document.getElementById('heroXpNext');
+      const heroXpFill = document.getElementById('heroXpFill');
+
+      const statMatches = document.getElementById('statMatches');
+      const statWins = document.getElementById('statWins');
+      const statLosses = document.getElementById('statLosses');
+      const statWinRate = document.getElementById('statWinRate');
+      const statStreak = document.getElementById('statStreak');
+      const statBestStreak = document.getElementById('statBestStreak');
+
+      const gameBreakdownList = document.getElementById('gameBreakdownList');
+      const historyList = document.getElementById('historyList');
+      const historyCount = document.getElementById('historyCount');
+      const leaderboardTbody = document.getElementById('leaderboardTbody');
+
+      const searchForm = document.getElementById('searchProfileForm');
+      const targetInput = document.getElementById('targetPlayerInput');
+      const btnViewMine = document.getElementById('btnViewMine');
+
+      function safe(t) {
+        return String(t || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function timeAgo(ts) {
+        if (!ts) return 'Just now';
+        const diff = Math.max(0, Date.now() - ts);
+        const sec = Math.floor(diff / 1000);
+        if (sec < 60) return `${sec}s ago`;
+        const min = Math.floor(sec / 60);
+        if (min < 60) return `${min}m ago`;
+        const hr = Math.floor(min / 60);
+        if (hr < 24) return `${hr}h ago`;
+        const days = Math.floor(hr / 24);
+        return `${days}d ago`;
+      }
+
+      async function renderProfile(name) {
+        targetPlayer = name;
+        targetInput.value = name;
+        document.title = `${name} — XP Profile | ElyWolf Arcade`;
+
+        const { profile, exists, source } = await store.fetchProfile(name);
+        const isMe = name.toLowerCase() === myIdentity.name.toLowerCase();
+
+        // Hero identity
+        heroName.textContent = profile.name;
+        heroTitle.textContent = store.titleFor(profile.level);
+        heroLevel.textContent = profile.level;
+        heroSource.textContent = isMe ? 'YOU' : (source === 'cloud' ? 'ONLINE' : (exists ? 'CACHED' : 'NEW PLAYER'));
+
+        const photo = profile.photoURL || (isMe ? myIdentity.photoURL : null);
+        if (photo) {
+          heroAvatar.innerHTML = `<img src="${photo}" alt="${safe(profile.name)}" />`;
+        } else {
+          heroAvatar.textContent = (profile.name || 'P').charAt(0).toUpperCase();
+        }
+
+        // Progress
+        const prog = store.progressFor(profile.xp);
+        heroXp.textContent = profile.xp.toLocaleString();
+        heroXpNext.textContent = `${prog.into} / ${prog.needed} XP to Level ${prog.level + 1} (${prog.pct}%)`;
+        heroXpFill.style.width = prog.pct + '%';
+
+        // Stats
+        statMatches.textContent = profile.matches;
+        statWins.textContent = profile.wins;
+        statLosses.textContent = profile.losses;
+        const rate = profile.matches ? Math.round((profile.wins / profile.matches) * 100) : 0;
+        statWinRate.textContent = rate + '%';
+        statStreak.textContent = profile.streak;
+        statBestStreak.textContent = profile.bestStreak || 0;
+
+        // Games breakdown
+        gameBreakdownList.innerHTML = '';
+        store.GAMES.forEach(g => {
+          const stats = (profile.games && profile.games[g]) || { wins: 0, losses: 0, draws: 0 };
+          const row = document.createElement('div');
+          row.className = 'game-stat-row';
+          row.innerHTML = `
+            <span class="game-stat-name">${g}</span>
+            <div class="game-stat-counts">
+              <span><strong class="w">${stats.wins}</strong> W</span>
+              <span><strong class="l">${stats.losses}</strong> L</span>
+              <span><strong>${stats.draws}</strong> D</span>
+            </div>
+          `;
+          gameBreakdownList.appendChild(row);
+        });
+
+        // History
+        historyList.innerHTML = '';
+        const history = profile.history || [];
+        historyCount.textContent = `${history.length} Matches`;
+        if (history.length === 0) {
+          historyList.innerHTML = `<div class="empty-state">No recorded 1v1 challenge matches yet. Challenge someone in the arcade to start gaining XP!</div>`;
+        } else {
+          history.forEach(h => {
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            const pillCls = h.result === 'win' ? 'win' : h.result === 'loss' ? 'loss' : 'draw';
+            const delta = h.xpDelta || 0;
+            const deltaCls = delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat';
+            const deltaSign = delta > 0 ? '+' : delta < 0 ? '-' : '+';
+            item.innerHTML = `
+              <div class="history-left">
+                <span class="history-pill ${pillCls}">${h.result}</span>
+                <div class="history-meta">
+                  <span class="history-game">${safe(h.game)}</span>
+                  <span class="history-vs">vs <span>${safe(h.opponent || 'Opponent')}</span></span>
+                </div>
+              </div>
+              <div class="history-right">
+                <span class="history-xp ${deltaCls}">${deltaSign}${Math.abs(delta)} XP</span>
+                <span class="history-time">${timeAgo(h.ts)}</span>
+              </div>
+            `;
+            historyList.appendChild(item);
+          });
+        }
+      }
+
+      async function renderLeaderboard() {
+        const rows = await store.fetchLeaderboard();
+        leaderboardTbody.innerHTML = '';
+        if (!rows.length) {
+          leaderboardTbody.innerHTML = `<tr><td colspan="6" class="empty-state">No ranked players yet. Be the first to win a match!</td></tr>`;
+          return;
+        }
+        rows.forEach((p, idx) => {
+          const rank = idx + 1;
+          const tr = document.createElement('tr');
+          const rankClass = rank === 1 ? 'r1' : rank === 2 ? 'r2' : rank === 3 ? 'r3' : '';
+          const avatarHtml = p.photoURL
+            ? `<div class="lb-avatar"><img src="${safe(p.photoURL)}" alt="${safe(p.name)}" /></div>`
+            : `<div class="lb-avatar">${(p.name || 'P').charAt(0).toUpperCase()}</div>`;
+          tr.innerHTML = `
+            <td class="lb-rank ${rankClass}">#${rank}</td>
+            <td>
+              <div class="lb-user-cell">
+                ${avatarHtml}
+                <a href="profile.html?user=${encodeURIComponent(p.name)}" class="lb-link">${safe(p.name)}</a>
+              </div>
+            </td>
+            <td class="lb-mono">Lv ${p.level}</td>
+            <td class="lb-mono" style="color:var(--amber);">${p.xp} XP</td>
+            <td class="lb-mono">${p.matches}</td>
+            <td class="lb-mono"><span style="color:var(--green);">${p.wins}</span> / <span style="color:var(--red);">${p.losses}</span></td>
+          `;
+          leaderboardTbody.appendChild(tr);
+        });
+      }
+
+      // Handlers
+      searchForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const val = targetInput.value.trim();
+        if (val) {
+          history.pushState(null, '', `profile.html?user=${encodeURIComponent(val)}`);
+          renderProfile(val);
+        }
+      });
+
+      btnViewMine.addEventListener('click', () => {
+        const me = store.getIdentity().name;
+        history.pushState(null, '', `profile.html?user=${encodeURIComponent(me)}`);
+        renderProfile(me);
+      });
+
+      window.addEventListener('popstate', () => {
+        const p = new URLSearchParams(window.location.search).get('user') || myIdentity.name;
+        renderProfile(p);
+      });
+
+      renderProfile(targetPlayer);
+      renderLeaderboard();
+    })();
+  </script>
+</body>
+</html>

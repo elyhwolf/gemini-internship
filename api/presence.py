@@ -124,7 +124,7 @@ class handler(BaseHTTPRequestHandler):
             tab_id = payload.get('tabId')
             display_name = payload.get('displayName', 'Player')
             avatar = payload.get('avatar', 'P')
-            status = payload.get('status', 'In Arcade Hub')
+            status = payload.get('status', 'In Main Arcade Menu')
             is_guest = payload.get('isGuest', True)
             maze_pos = payload.get('mazePos')
             challenge_action = payload.get('challengeAction')

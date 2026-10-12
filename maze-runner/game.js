@@ -1369,6 +1369,11 @@ class MazeGame {
     this.isPaused = false;
     this.isCompleted = false;
 
+    // 1v1 Ranked Match Mode
+    const urlParamsObj = new URLSearchParams(window.location.search);
+    this.is1v1Match = urlParamsObj.get('mode') === '1v1' || urlParamsObj.get('mode') === 'live';
+    this.matchOpponentName = (urlParamsObj.get('opp') || 'Opponent').trim();
+
     // DOM Elements
     this.hudLevelVal = document.getElementById('hudLevelVal');
     this.hudThemeDot = document.getElementById('hudThemeDot');
@@ -1382,6 +1387,15 @@ class MazeGame {
     this.levelsGrid = document.getElementById('levelsGrid');
     this.hudRunnersPill = document.getElementById('hudRunnersPill');
     this.hudRunnersText = document.getElementById('hudRunnersText');
+
+    if (this.is1v1Match) {
+      if (this.hudRunnersPill && this.hudRunnersText) {
+        this.hudRunnersPill.classList.remove('hidden');
+        this.hudRunnersText.textContent = `1v1 VS ${this.matchOpponentName.toUpperCase()} (+30 XP)`;
+      }
+      const btnLevelSelect = document.getElementById('btnLevelSelect');
+      if (btnLevelSelect) btnLevelSelect.style.display = 'none';
+    }
 
     // Live Multiplayer Synchronization State
     this.localPlayerName = getMazeLocalUsername();
@@ -1945,18 +1959,31 @@ class MazeGame {
 
     // Update HUD indicator of other runners on this level
     if (this.hudRunnersPill && this.hudRunnersText) {
-      const sameLevelRunners = [];
-      const now = performance.now();
-      this.remotePlayers.forEach(p => {
-        if (p.name !== this.localPlayerName && p.level === this.currentLevel && (now - p.lastSeen < 12000)) {
-          sameLevelRunners.push(p.name);
-        }
-      });
-      if (sameLevelRunners.length > 0) {
+      if (this.is1v1Match) {
         this.hudRunnersPill.classList.remove('hidden');
-        this.hudRunnersText.textContent = `${sameLevelRunners.length} RUNNER${sameLevelRunners.length > 1 ? 'S' : ''}: ${sameLevelRunners.join(', ')}`;
+        const oppData = this.remotePlayers.get(this.matchOpponentName);
+        if (oppData && oppData.level === this.currentLevel) {
+          const dx = Math.round(oppData.x - this.player.x);
+          const dy = Math.round(oppData.y - this.player.y);
+          const dist = Math.round(Math.hypot(dx, dy));
+          this.hudRunnersText.textContent = `1v1 VS ${this.matchOpponentName.toUpperCase()} (${dist}px AWAY) • FIRST TO PORTAL WINS!`;
+        } else {
+          this.hudRunnersText.textContent = `1v1 VS ${this.matchOpponentName.toUpperCase()} • FIRST TO FINISH WINS! (+30 XP)`;
+        }
       } else {
-        this.hudRunnersPill.classList.add('hidden');
+        const sameLevelRunners = [];
+        const now = performance.now();
+        this.remotePlayers.forEach(p => {
+          if (p.name !== this.localPlayerName && p.level === this.currentLevel && (now - p.lastSeen < 12000)) {
+            sameLevelRunners.push(p.name);
+          }
+        });
+        if (sameLevelRunners.length > 0) {
+          this.hudRunnersPill.classList.remove('hidden');
+          this.hudRunnersText.textContent = `${sameLevelRunners.length} RUNNER${sameLevelRunners.length > 1 ? 'S' : ''}: ${sameLevelRunners.join(', ')}`;
+        } else {
+          this.hudRunnersPill.classList.add('hidden');
+        }
       }
     }
 
@@ -2071,6 +2098,10 @@ class MazeGame {
       localStorage.setItem('elywolf_maze_max_unlocked', this.maxUnlockedLevel);
     }
 
+    if (window.ElyMatchGuard) {
+      window.ElyMatchGuard.markFinished('win', { announce: true });
+    }
+
     // Show Victory Modal
     setTimeout(() => {
       const clearTitle = document.getElementById('clearTitle');
@@ -2079,8 +2110,13 @@ class MazeGame {
       const clearDeathsVal = document.getElementById('clearDeathsVal');
       const clearUnlockedVal = document.getElementById('clearUnlockedVal');
 
-      if (clearTitle) clearTitle.textContent = `MAZE ${this.currentLevel} CONQUERED!`;
-      if (clearSub) clearSub.textContent = `${this.theme.name} • ${this.theme.range}`;
+      if (this.is1v1Match) {
+        if (clearTitle) clearTitle.textContent = "VICTORY! YOU FINISHED FIRST!";
+        if (clearSub) clearSub.textContent = `You beat ${this.matchOpponentName} to the portal on Maze ${this.currentLevel}! (+30 XP)`;
+      } else {
+        if (clearTitle) clearTitle.textContent = `MAZE ${this.currentLevel} CONQUERED!`;
+        if (clearSub) clearSub.textContent = `${this.theme.name} • ${this.theme.range}`;
+      }
       if (clearTimeVal) clearTimeVal.textContent = this.hudTimerVal ? this.hudTimerVal.textContent : '00:00.0';
       if (clearDeathsVal) clearDeathsVal.textContent = this.deaths;
       if (clearUnlockedVal) clearUnlockedVal.textContent = `${this.maxUnlockedLevel} / 100`;

@@ -364,10 +364,10 @@ function resetGame() {
 
   if (is1v1Mode) {
     if (isPlayerTurn) {
-      updateSharkSpeech(`⚔️ 1v1 MATCH vs ${opponentName}! Select a card from your hand to ask ${opponentName}.`);
+      updateSharkSpeech(`1v1 DUEL vs ${opponentName}! Select a card from your hand to ask ${opponentName}.`);
       showToast(`1v1 Match Started! Your turn vs ${opponentName}.`);
     } else {
-      updateSharkSpeech(`⚔️ 1v1 MATCH vs ${opponentName}! Waiting for ${opponentName}'s move...`);
+      updateSharkSpeech(`1v1 DUEL vs ${opponentName}! Waiting for ${opponentName}'s move...`);
       showToast(`1v1 Match Started! ${opponentName}'s turn first.`);
     }
 
@@ -648,7 +648,7 @@ if (matchChannel) {
       sharkHand = new Array(data.hostHandCount || 7).fill({ rank: '?' });
       isPlayerTurn = false;
       updateUI();
-      updateSharkSpeech(`⚔️ 1v1 MATCH vs ${opponentName}! Waiting for ${opponentName}'s move...`);
+      updateSharkSpeech(`1v1 DUEL vs ${opponentName}! Waiting for ${opponentName}'s move...`);
       showToast(`Connected to Host! ${opponentName}'s turn first.`);
     } else if (data.type === '1V1_GUEST_HELLO' && playerRole === 'host') {
       matchChannel.postMessage({
@@ -731,14 +731,20 @@ function showGameOverModal() {
   pVal.textContent = playerBooks.length;
   sVal.textContent = sharkBooks.length;
 
+  let matchResult = 'draw';
+  if (playerBooks.length > sharkBooks.length) matchResult = 'win';
+  else if (sharkBooks.length > playerBooks.length) matchResult = 'loss';
+
+  if (window.ElyMatchGuard) window.ElyMatchGuard.markFinished(matchResult);
+
   const oppLabel = is1v1Mode ? opponentName : 'Captain Finley';
 
-  if (playerBooks.length > sharkBooks.length) {
+  if (matchResult === 'win') {
     title.textContent = "YOU WIN!";
     sub.textContent = `You outsmarted ${oppLabel} ${playerBooks.length} to ${sharkBooks.length}!`;
     playSound('win');
     triggerConfetti();
-  } else if (sharkBooks.length > playerBooks.length) {
+  } else if (matchResult === 'loss') {
     title.textContent = `${oppLabel.toUpperCase()} WINS!`;
     sub.textContent = `${oppLabel} won ${sharkBooks.length} to ${playerBooks.length}. Better luck next time!`;
     playSound('lose');
