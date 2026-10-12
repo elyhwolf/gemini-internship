@@ -345,6 +345,29 @@ body, html {
   object-fit: contain;
 }
 
+.pvp-avatar-badge {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #0284c7 0%, #0f172a 100%);
+  border: 3px solid #38bdf8;
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.5), inset 0 0 15px rgba(56, 189, 248, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+  animation: pvpPulse 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes pvpPulse {
+  from { transform: scale(0.96); box-shadow: 0 0 20px rgba(56, 189, 248, 0.4); }
+  to { transform: scale(1.04); box-shadow: 0 0 32px rgba(56, 189, 248, 0.8); }
+}
+
 .shark-info {
   display: flex;
   align-items: center;

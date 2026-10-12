@@ -1885,3 +1885,361 @@ body {
   height: 15px;
 }
 
+/* ==========================================================================
+   1v1 CHALLENGE OFFER & GAME PICKER MODALS
+   ========================================================================== */
+.challenge-offer-card {
+  position: relative;
+  background: linear-gradient(145deg, #121624, #0c0f18);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(245, 158, 11, 0.2);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 440px;
+  padding: 24px 28px;
+  overflow: hidden;
+  text-align: center;
+  animation: challengeCardPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes challengeCardPop {
+  0% { transform: scale(0.92) translateY(15px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.challenge-offer-glow {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  height: 90px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.3) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.challenge-offer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  margin-bottom: 16px;
+}
+
+.challenge-offer-badge svg {
+  width: 14px;
+  height: 14px;
+  stroke: #fbbf24;
+}
+
+.challenge-sender-profile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.challenge-sender-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 900;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.35);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.challenge-sender-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.challenge-sender-details {
+  text-align: left;
+}
+
+.challenge-sender-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.challenge-sender-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-subtle);
+}
+
+.challenge-game-info-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 22px;
+  text-align: left;
+}
+
+.challenge-game-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.challenge-game-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.challenge-game-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #f1f5f9;
+}
+
+.challenge-game-desc {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+.challenge-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-challenge-accept {
+  flex: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border: 1px solid #10b981;
+  color: #ffffff;
+  padding: 12px 18px;
+  border-radius: 14px;
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: 0.88rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+  transition: all 0.2s ease;
+}
+
+.btn-challenge-accept:hover {
+  background: linear-gradient(135deg, #34d399, #10b981);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.55);
+}
+
+.btn-challenge-accept svg {
+  width: 16px;
+  height: 16px;
+}
+
+.btn-challenge-decline {
+  flex: 0.8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #e2e8f0;
+  padding: 12px 16px;
+  border-radius: 14px;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-challenge-decline:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  transform: translateY(-1px);
+}
+
+.btn-challenge-decline svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* CHALLENGE PICKER MODAL */
+.challenge-picker-card {
+  position: relative;
+  background: #111420;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 500px;
+  padding: 28px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9);
+}
+
+.challenge-picker-header {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.challenge-picker-tag {
+  display: inline-block;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.challenge-picker-title {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.challenge-picker-title span {
+  color: #f59e0b;
+}
+
+.challenge-picker-sub {
+  font-size: 0.82rem;
+  color: var(--text-subtle);
+  margin-top: 4px;
+}
+
+.challenge-games-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-challenge-pick-game {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #ffffff;
+  text-align: left;
+  width: 100%;
+}
+
+.btn-challenge-pick-game:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #38bdf8;
+  transform: translateX(4px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.pick-game-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pick-game-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.visual-shark-icon { background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); }
+.visual-album-icon { background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); }
+.visual-maze-icon { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); }
+.visual-math-icon { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); }
+
+.pick-game-text {
+  flex: 1;
+}
+
+.pick-game-title {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #f1f5f9;
+}
+
+.pick-game-desc {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.pick-game-arrow {
+  font-size: 1rem;
+  opacity: 0.6;
+}
+
+.btn-challenge-pick-game:hover .pick-game-arrow {
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+.arcade-hub-toast {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(245, 158, 11, 0.2);
+  color: #f1f5f9;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 800;
+  padding: 10px 20px;
+  border-radius: 20px;
+  z-index: 9999999;
+  backdrop-filter: blur(16px);
+  pointer-events: none;
+  transition: all 0.3s ease;
+  animation: hubToastPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes hubToastPop {
+  from { opacity: 0; transform: translate(-50%, -15px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+

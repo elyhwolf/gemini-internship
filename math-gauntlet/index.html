@@ -19,7 +19,10 @@
     
     <!-- STAGE 1: Minimalist Start View -->
     <div id="startStage" class="stage active">
-      <button type="button" class="btn-black-start" onclick="startGauntlet()">start</button>
+      <div class="start-actions-row">
+        <button type="button" class="btn-black-start" onclick="startGauntlet()">start</button>
+        <button type="button" class="btn-black-leaderboard" onclick="openLeaderboard()">leaderboard 🏆</button>
+      </div>
     </div>
 
     <!-- STAGE 2: 100 Math Equations Gauntlet -->
@@ -43,6 +46,9 @@
           <img src="assets/coin.svg" class="icon-coin" alt="coin" />
           <span id="coinCounter">0</span>
         </div>
+        <button type="button" class="btn-gauntlet-lb" onclick="toggleLeaderboard()" title="Toggle Leaderboard (L)">
+          🏆 Leaderboard
+        </button>
         <span class="level-indicator" id="difficultyTag">Ultra Easy</span>
       </div>
 
@@ -159,6 +165,46 @@
       </div>
       <div class="modal-error-msg" id="devModalError">ACCESS DENIED: Invalid Passcode</div>
       <button type="button" class="modal-submit-btn" onclick="submitDevCode()">Unlock Passcode ↵</button>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD MODAL (OPEN / CLOSE) -->
+  <div id="leaderboardModal" class="modal-backdrop-gauntlet hidden" onclick="handleLeaderboardBackdropClick(event)" aria-hidden="true">
+    <div class="leaderboard-card" onclick="event.stopPropagation()">
+      <div class="leaderboard-header">
+        <div class="leaderboard-title-group">
+          <span class="leaderboard-badge">HALL OF FAME</span>
+          <h2 class="leaderboard-title">🏆 SPEEDRUN LEADERBOARD</h2>
+        </div>
+        <button type="button" class="btn-modal-close" onclick="closeLeaderboard()" title="Close Leaderboard (Esc)">✕</button>
+      </div>
+
+      <div class="leaderboard-tabs">
+        <button type="button" class="lb-tab active" id="lbTabAllTime" onclick="switchLbTab('allTime')">All-Time Champions</button>
+        <button type="button" class="lb-tab" id="lbTabLive" onclick="switchLbTab('live')">Live Arcade</button>
+      </div>
+
+      <div class="leaderboard-table-container">
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>RANK</th>
+              <th>RUNNER</th>
+              <th>TIME</th>
+              <th>SOLVED</th>
+              <th>COINS</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody">
+            <!-- Dynamically populated rows -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="leaderboard-footer">
+        <span class="lb-hint">Press <kbd class="kbd-badge">L</kbd> to toggle, <kbd class="kbd-badge">ESC</kbd> to close</span>
+        <button type="button" class="btn-lb-close-bottom" onclick="closeLeaderboard()">CLOSE</button>
+      </div>
     </div>
   </div>
 

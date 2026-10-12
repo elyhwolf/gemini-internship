@@ -21,6 +21,17 @@ let pendingRequestedRank = null;
 let sharkMemory = new Set();
 let isAudioEnabled = true;
 
+// 1v1 Challenge Mode Variables
+const urlParams = new URLSearchParams(window.location.search);
+const is1v1Mode = urlParams.get('mode') === '1v1';
+const matchId = urlParams.get('match') || '1v1_default';
+const playerRole = urlParams.get('role') || 'host'; // 'host' or 'guest'
+const opponentName = (urlParams.get('opp') || (playerRole === 'host' ? 'Challenger' : 'Host')).trim();
+
+const matchChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('elywolf_gofish_' + matchId) : null;
+const globalSyncChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('elywolf_arcade_sync') : null;
+let remoteOpponentConnected = false;
+
 // Web Audio API High-Fidelity Sound Engine
 let audioCtx = null;
 
@@ -331,7 +342,7 @@ function resetGame() {
   playerBooks = [];
   sharkBooks = [];
   sharkMemory.clear();
-  isPlayerTurn = true;
+  isPlayerTurn = is1v1Mode ? (playerRole === 'host') : true;
   mustGoFish = false;
   pendingRequestedRank = null;
 
@@ -346,12 +357,37 @@ function resetGame() {
 
   // Check for any initial 4-of-a-kind books
   checkForBooks(playerHand, playerBooks, 'Player');
-  checkForBooks(sharkHand, sharkBooks, 'Finley');
+  checkForBooks(sharkHand, sharkBooks, is1v1Mode ? opponentName : 'Finley');
 
   document.getElementById('gameOverModal').classList.remove('active');
   updateUI();
-  updateSharkSpeech("Welcome to my reef, land-lubber! Select a card from your hand to ask me for a rank.");
-  showToast("New Game Started! Select a card to ask Captain Finley.");
+
+  if (is1v1Mode) {
+    if (isPlayerTurn) {
+      updateSharkSpeech(`⚔️ 1v1 MATCH vs ${opponentName}! Select a card from your hand to ask ${opponentName}.`);
+      showToast(`1v1 Match Started! Your turn vs ${opponentName}.`);
+    } else {
+      updateSharkSpeech(`⚔️ 1v1 MATCH vs ${opponentName}! Waiting for ${opponentName}'s move...`);
+      showToast(`1v1 Match Started! ${opponentName}'s turn first.`);
+    }
+
+    if (matchChannel) {
+      if (playerRole === 'host') {
+        matchChannel.postMessage({
+          type: '1V1_INIT',
+          hostHandCount: playerHand.length,
+          guestHand: sharkHand,
+          deckCount: deck.length,
+          turn: 'host'
+        });
+      } else {
+        matchChannel.postMessage({ type: '1V1_GUEST_HELLO' });
+      }
+    }
+  } else {
+    updateSharkSpeech("Welcome to my reef, land-lubber! Select a card from your hand to ask me for a rank.");
+    showToast("New Game Started! Select a card to ask Captain Finley.");
+  }
 }
 
 // Deck Creation & Shuffling
@@ -395,6 +431,14 @@ function checkForBooks(hand, booksArray, playerName) {
       }
       playSound('book');
       showToast(`${playerName} completed a book of ${rank}s!`);
+      if (is1v1Mode && matchChannel) {
+        matchChannel.postMessage({
+          type: '1V1_BOOK_COMPLETED',
+          from: playerRole,
+          rank,
+          bookCount: booksArray.length
+        });
+      }
     }
   });
 
@@ -416,42 +460,143 @@ function checkHandRefill() {
     for (let i = 0; i < drawCount; i++) {
       sharkHand.push(deck.pop());
     }
-    showToast(`Captain Finley drew ${drawCount} replacement cards!`);
+    showToast(`${is1v1Mode ? opponentName : 'Captain Finley'} drew ${drawCount} replacement cards!`);
   }
 }
 
-// Player Turn: Asking Shark for a rank
+// Player Turn: Asking Opponent for a rank
 function askSharkForRank(rank) {
   if (!isPlayerTurn || mustGoFish) return;
 
   playSound('card');
   pendingRequestedRank = rank;
-  sharkMemory.add(rank); // Shark remembers player asked for this rank!
+  sharkMemory.add(rank);
 
-  // Check if Shark holds matching rank
+  if (is1v1Mode && matchChannel) {
+    matchChannel.postMessage({
+      type: '1V1_ASK_RANK',
+      from: playerRole,
+      rank
+    });
+  }
+
+  // Check if Opponent holds matching rank
   const matches = sharkHand.filter(c => c.rank === rank);
 
   if (matches.length > 0) {
-    // Shark HAS the requested rank! Transfer cards to Player
     playSound('chomp');
     sharkHand = sharkHand.filter(c => c.rank !== rank);
     playerHand.push(...matches);
     sortHand(playerHand);
 
-    updateSharkSpeech(`Argh! You got me... Here are my ${matches.length} ${rank}${matches.length > 1 ? 's' : ''}!`);
-    showToast(`Got ${matches.length} ${rank}(s) from Captain Finley! Take another turn!`);
+    const oppLabel = is1v1Mode ? opponentName : 'Captain Finley';
+    updateSharkSpeech(`${oppLabel}: "You got me! Here are my ${matches.length} ${rank}${matches.length > 1 ? 's' : ''}!"`);
+    showToast(`Got ${matches.length} ${rank}(s) from ${oppLabel}! Take another turn!`);
 
     checkForBooks(playerHand, playerBooks, 'Player');
     updateUI();
   } else {
-    // Shark DOES NOT have rank -> GO FISH!
+    // Opponent does NOT have rank -> GO FISH!
     mustGoFish = true;
-    updateSharkSpeech(`GO FISH! I don't have any ${rank}s! Click the Ocean Deck to draw.`);
-    showToast(`Captain Finley says GO FISH! Click the Ocean Deck.`);
+    const oppLabel = is1v1Mode ? opponentName : 'Captain Finley';
+    updateSharkSpeech(`${oppLabel}: "GO FISH! I don't have any ${rank}s! Click the Ocean Deck to draw."`);
+    showToast(`${oppLabel} says GO FISH! Click the Ocean Deck.`);
     updateUI();
   }
 }
 
+// Switch Turn to Opponent
+function switchTurnToShark() {
+  if (checkGameOver()) return;
+
+  isPlayerTurn = false;
+  mustGoFish = false;
+  updateUI();
+  const oppLabel = is1v1Mode ? opponentName : 'Captain Finley';
+  updateSharkSpeech(`${oppLabel} is making a move...`);
+
+  setTimeout(executeSharkTurn, 1400);
+}
+
+// Opponent Turn Logic
+function executeSharkTurn() {
+  if (checkGameOver() || sharkHand.length === 0) {
+    isPlayerTurn = true;
+    updateUI();
+    return;
+  }
+
+  // Pick rank to ask for
+  const oppRanksInHand = Array.from(new Set(sharkHand.map(c => c.rank)));
+  let chosenRank = null;
+
+  for (let r of oppRanksInHand) {
+    if (sharkMemory.has(r)) {
+      chosenRank = r;
+      break;
+    }
+  }
+
+  if (!chosenRank) {
+    chosenRank = oppRanksInHand[Math.floor(Math.random() * oppRanksInHand.length)];
+  }
+
+  const oppLabel = is1v1Mode ? opponentName : 'Captain Finley';
+  updateSharkSpeech(`${oppLabel}: "Got any ${chosenRank}s?"`);
+  playSound('card');
+
+  setTimeout(() => {
+    const playerMatches = playerHand.filter(c => c.rank === chosenRank);
+
+    if (playerMatches.length > 0) {
+      playSound('chomp');
+      playerHand = playerHand.filter(c => c.rank !== chosenRank);
+      sharkHand.push(...playerMatches);
+      sortHand(playerHand);
+
+      updateSharkSpeech(`${oppLabel}: "Thanks for the ${playerMatches.length} ${chosenRank}${playerMatches.length > 1 ? 's' : ''}! Going again!"`);
+      showToast(`${oppLabel} took ${playerMatches.length} ${chosenRank}(s) from you!`);
+
+      checkForBooks(sharkHand, sharkBooks, oppLabel);
+      updateUI();
+
+      if (!checkGameOver()) {
+        setTimeout(executeSharkTurn, 1400);
+      }
+    } else {
+      updateSharkSpeech(`You: "GO FISH!" ${oppLabel} draws from the Ocean Deck.`);
+      showToast(`You said GO FISH! ${oppLabel} draws a card.`);
+
+      setTimeout(() => {
+        if (deck.length > 0) {
+          playSound('bubble');
+          const drawn = deck.pop();
+          sharkHand.push(drawn);
+
+          checkForBooks(sharkHand, sharkBooks, oppLabel);
+
+          if (drawn.rank === chosenRank) {
+            updateSharkSpeech(`${oppLabel} drew the lucky ${chosenRank}! They take another turn!`);
+            showToast(`${oppLabel} drew a matching card and goes again!`);
+            updateUI();
+            if (!checkGameOver()) {
+              setTimeout(executeSharkTurn, 1400);
+            }
+            return;
+          }
+        }
+
+        isPlayerTurn = true;
+        mustGoFish = false;
+        updateSharkSpeech("Your turn! Select a card from your hand.");
+        showToast("Your Turn! Select a card from your hand.");
+        updateUI();
+      }, 1000);
+    }
+  }, 1000);
+}
+
+// Draw Pile Click Handler (Go Fish action)
 // Draw Pile Click Handler (Go Fish action)
 function handleDrawPileClick() {
   if (!isPlayerTurn || !mustGoFish) {
@@ -476,6 +621,7 @@ function handleDrawPileClick() {
 
   checkForBooks(playerHand, playerBooks, 'Player');
 
+  const oppLabel = is1v1Mode ? opponentName : 'Captain Finley';
   if (drawnCard.rank === pendingRequestedRank) {
     // Lucky catch!
     playSound('lucky');
@@ -483,97 +629,85 @@ function handleDrawPileClick() {
     showToast(`LUCKY CATCH! You drew a ${drawnCard.rank}! Take another turn!`);
     updateUI();
   } else {
-    updateSharkSpeech(`You drew a ${drawnCard.rank}. Now it's MY turn!`);
-    showToast(`Drew a ${drawnCard.rank}. Turn passes to Captain Finley.`);
+    updateSharkSpeech(`You drew a ${drawnCard.rank}. Turn passes to ${oppLabel}.`);
+    showToast(`Drew a ${drawnCard.rank}. Turn passes to ${oppLabel}.`);
     updateUI();
     setTimeout(switchTurnToShark, 1400);
   }
 }
 
-// Switch Turn to Shark AI
-function switchTurnToShark() {
-  if (checkGameOver()) return;
+// 1v1 Cross-Tab BroadcastChannel Network Listeners
+if (matchChannel) {
+  matchChannel.onmessage = (e) => {
+    const data = e.data;
+    if (!data || !is1v1Mode) return;
 
-  isPlayerTurn = false;
-  mustGoFish = false;
-  updateUI();
-  updateSharkSpeech("Thinking... Sizing up your hand");
-
-  setTimeout(executeSharkTurn, 1500);
-}
-
-// Shark AI Logic
-function executeSharkTurn() {
-  if (checkGameOver() || sharkHand.length === 0) {
-    isPlayerTurn = true;
-    updateUI();
-    return;
-  }
-
-  // 1. Pick rank to ask for: Prefer rank in Shark's hand that Shark remembers Player asking for!
-  const sharkRanksInHand = Array.from(new Set(sharkHand.map(c => c.rank)));
-  let chosenRank = null;
-
-  for (let r of sharkRanksInHand) {
-    if (sharkMemory.has(r)) {
-      chosenRank = r;
-      break;
-    }
-  }
-
-  // Otherwise pick random rank from Shark's hand
-  if (!chosenRank) {
-    chosenRank = sharkRanksInHand[Math.floor(Math.random() * sharkRanksInHand.length)];
-  }
-
-  playSound('chomp');
-  updateSharkSpeech(`Got any ${chosenRank}s, land-lubber?`);
-  showToast(`Captain Finley asks: "Got any ${chosenRank}s?"`);
-
-  setTimeout(() => {
-    // Check Player's hand for matching rank
-    const matches = playerHand.filter(c => c.rank === chosenRank);
-
-    if (matches.length > 0) {
-      // Player HAS cards! Give them to Shark
-      playerHand = playerHand.filter(c => c.rank !== chosenRank);
-      sharkHand.push(...matches);
-
-      playSound('chomp');
-      updateSharkSpeech(`Aha! Hand over those ${matches.length} ${chosenRank}${matches.length > 1 ? 's' : ''}!`);
-      showToast(`Finley took ${matches.length} ${chosenRank}(s) from you! Finley goes again.`);
-
-      checkForBooks(sharkHand, sharkBooks, 'Finley');
+    if (data.type === '1V1_INIT' && playerRole === 'guest') {
+      playerHand = data.guestHand || playerHand;
+      sortHand(playerHand);
+      sharkHand = new Array(data.hostHandCount || 7).fill({ rank: '?' });
+      isPlayerTurn = false;
       updateUI();
-
-      // Shark gets another turn!
-      setTimeout(executeSharkTurn, 1800);
-    } else {
-      // Player DOES NOT have rank -> Shark Go Fish!
-      updateSharkSpeech(`Argh! No ${chosenRank}s? Guess I'll GO FISH...`);
-      showToast(`Finley went fishing in the Ocean Deck!`);
-
-      if (deck.length > 0) {
-        playSound('bubble');
-        const drawnCard = deck.pop();
-        sharkHand.push(drawnCard);
-        checkForBooks(sharkHand, sharkBooks, 'Finley');
-
-        if (drawnCard.rank === chosenRank) {
-          updateSharkSpeech(`Aha! I drew a ${chosenRank}! Finley goes again!`);
-          showToast(`Finley drew a ${chosenRank}! Finley goes again.`);
-          updateUI();
-          setTimeout(executeSharkTurn, 1800);
-          return;
-        }
+      updateSharkSpeech(`⚔️ 1v1 MATCH vs ${opponentName}! Waiting for ${opponentName}'s move...`);
+      showToast(`Connected to Host! ${opponentName}'s turn first.`);
+    } else if (data.type === '1V1_GUEST_HELLO' && playerRole === 'host') {
+      matchChannel.postMessage({
+        type: '1V1_INIT',
+        hostHandCount: playerHand.length,
+        guestHand: sharkHand,
+        deckCount: deck.length,
+        turn: isPlayerTurn ? 'host' : 'guest'
+      });
+      showToast(`${opponentName} connected to the match!`);
+    } else if (data.type === '1V1_ASK_RANK' && data.from !== playerRole) {
+      const requestedRank = data.rank;
+      const myMatches = playerHand.filter(c => c.rank === requestedRank);
+      if (myMatches.length > 0) {
+        playerHand = playerHand.filter(c => c.rank !== requestedRank);
+        sortHand(playerHand);
+        matchChannel.postMessage({
+          type: '1V1_GIVE_CARDS',
+          from: playerRole,
+          cards: myMatches,
+          rank: requestedRank
+        });
+        updateSharkSpeech(`${opponentName}: "Got any ${requestedRank}s?" You handed over ${myMatches.length}!`);
+        showToast(`You gave ${myMatches.length} ${requestedRank}(s) to ${opponentName}!`);
+        updateUI();
+      } else {
+        matchChannel.postMessage({
+          type: '1V1_GO_FISH',
+          from: playerRole,
+          rank: requestedRank
+        });
+        updateSharkSpeech(`You: "GO FISH!" ${opponentName} draws a card.`);
+        showToast(`You said GO FISH to ${opponentName}!`);
       }
-
-      // Turn switches back to Player
-      isPlayerTurn = true;
+    } else if (data.type === '1V1_GIVE_CARDS' && data.from !== playerRole) {
+      const received = data.cards || [];
+      playerHand.push(...received);
+      sortHand(playerHand);
+      if (sharkHand.length >= received.length) {
+        sharkHand.splice(0, received.length);
+      }
+      playSound('chomp');
+      checkForBooks(playerHand, playerBooks, 'Player');
+      updateSharkSpeech(`You got ${received.length} ${data.rank}(s) from ${opponentName}! Take another turn!`);
+      showToast(`Got ${received.length} ${data.rank}(s) from ${opponentName}! Take another turn!`);
       updateUI();
-      updateSharkSpeech("Your turn, land-lubber! Choose a card.");
+    } else if (data.type === '1V1_GO_FISH' && data.from !== playerRole) {
+      mustGoFish = true;
+      updateSharkSpeech(`${opponentName}: "GO FISH! I have no ${data.rank}s!" Click the Ocean Deck.`);
+      showToast(`${opponentName} said GO FISH! Click the Ocean Deck.`);
+      updateUI();
+    } else if (data.type === '1V1_BOOK_COMPLETED' && data.from !== playerRole) {
+      if (!sharkBooks.includes(data.rank)) sharkBooks.push(data.rank);
+      playSound('book');
+      showToast(`${opponentName} completed a book of ${data.rank}s!`);
+      updateUI();
+      checkGameOver();
     }
-  }, 1600);
+  };
 }
 
 // Game Over Check
@@ -597,14 +731,16 @@ function showGameOverModal() {
   pVal.textContent = playerBooks.length;
   sVal.textContent = sharkBooks.length;
 
+  const oppLabel = is1v1Mode ? opponentName : 'Captain Finley';
+
   if (playerBooks.length > sharkBooks.length) {
     title.textContent = "YOU WIN!";
-    sub.textContent = `You outsmarted Captain Finley ${playerBooks.length} to ${sharkBooks.length}!`;
+    sub.textContent = `You outsmarted ${oppLabel} ${playerBooks.length} to ${sharkBooks.length}!`;
     playSound('win');
     triggerConfetti();
   } else if (sharkBooks.length > playerBooks.length) {
-    title.textContent = "FINLEY WINS!";
-    sub.textContent = `Captain Finley won ${sharkBooks.length} to ${playerBooks.length}. Better luck next time!`;
+    title.textContent = `${oppLabel.toUpperCase()} WINS!`;
+    sub.textContent = `${oppLabel} won ${sharkBooks.length} to ${playerBooks.length}. Better luck next time!`;
     playSound('lose');
   } else {
     title.textContent = "TIED GAME!";
@@ -617,13 +753,38 @@ function showGameOverModal() {
 
 // UI Updating Function
 function updateUI() {
+  const oppLabel = is1v1Mode ? opponentName : 'CAPTAIN FINLEY';
+
+  // 1v1 Mode Header Labels & Badges
+  if (is1v1Mode) {
+    const subLabel = document.querySelector('.logo-sub');
+    if (subLabel) subLabel.textContent = "1v1 VERSUS ARENA";
+
+    const sLabel = document.querySelector('.shark-score .score-label');
+    if (sLabel) sLabel.textContent = oppLabel.toUpperCase();
+
+    const nameEl = document.querySelector('.shark-name');
+    if (nameEl) nameEl.textContent = oppLabel.toUpperCase();
+
+    const booksTitle = document.getElementById('sharkBooksDisplay')?.querySelector('.books-title');
+    if (booksTitle) booksTitle.textContent = `${oppLabel.toUpperCase()}'S BOOKS`;
+
+    const finalLabel = document.getElementById('finalSharkBooks')?.parentElement?.querySelector('.final-label');
+    if (finalLabel) finalLabel.textContent = `${oppLabel.toUpperCase()}'S BOOKS`;
+
+    const sharkAvatar = document.getElementById('sharkAvatar');
+    if (sharkAvatar && !sharkAvatar.querySelector('.pvp-avatar-badge')) {
+      sharkAvatar.innerHTML = `<div class="pvp-avatar-badge">${oppLabel.charAt(0).toUpperCase()}</div>`;
+    }
+  }
+
   // Update Score Board & Badges
   document.getElementById('playerBooksCount').textContent = playerBooks.length;
   document.getElementById('sharkBooksCount').textContent = sharkBooks.length;
   document.getElementById('sharkCardsBadge').textContent = `${sharkHand.length} CARDS`;
   document.getElementById('deckCountBadge').textContent = `${deck.length} CARDS LEFT`;
 
-  // Render Shark Face-Down Hand
+  // Render Opponent Face-Down Hand: The user CANNOT see opponent's cards (only face-down cards)
   const sharkHandContainer = document.getElementById('sharkHandDisplay');
   sharkHandContainer.innerHTML = '';
   for (let i = 0; i < sharkHand.length; i++) {
@@ -632,7 +793,7 @@ function updateUI() {
     sharkHandContainer.appendChild(cardDiv);
   }
 
-  // Render Player Hand
+  // Render Player Hand: The player can ONLY see their own deck face up!
   const playerHandContainer = document.getElementById('playerHand');
   playerHandContainer.innerHTML = '';
 
@@ -671,12 +832,12 @@ function updateUI() {
     if (mustGoFish) {
       turnInstruction.textContent = "Click the Ocean Deck to GO FISH!";
     } else {
-      turnInstruction.textContent = "Select a card from your hand to ask Captain Finley!";
+      turnInstruction.textContent = `Select a card from your hand to ask ${oppLabel}!`;
     }
   } else {
     turnBanner.classList.add('shark-turn');
-    turnIndicator.textContent = "FINLEY'S TURN";
-    turnInstruction.textContent = "Captain Finley is making a move...";
+    turnIndicator.textContent = `${oppLabel.toUpperCase()}'S TURN`;
+    turnInstruction.textContent = `${oppLabel} is making a move...`;
   }
 }
 

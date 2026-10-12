@@ -840,6 +840,20 @@ function setupEventListeners() {
       }
     }
 
+    // Leaderboard Hotkey 'L' (when not typing in an input)
+    if (e.key === 'l' || e.key === 'L') {
+      const activeEl = document.activeElement;
+      if (!activeEl || (activeEl.tagName !== 'INPUT' && activeEl.tagName !== 'TEXTAREA')) {
+        toggleLeaderboard();
+      }
+    }
+
+    // Escape Hotkey closes Leaderboard or Dev Modal
+    if (e.key === 'Escape') {
+      closeLeaderboard();
+      closeDevModal();
+    }
+
     // Konami Code detector
     if (e.key === konamiCode[konamiIndex]) {
       konamiIndex++;
@@ -928,6 +942,9 @@ function triggerLevel2Prank() {
   subtext.className = 'prank-subtext';
   subtext.textContent = `FINAL SPEEDRUN TIME: ${totalSecs}s`;
   prankStage.appendChild(subtext);
+
+  // Record finish to leaderboard
+  recordSpeedrunResult(totalElapsedMs, totalSecs);
 
   // 1. Burst Confetti
   triggerConfetti();
@@ -1044,3 +1061,157 @@ function submitDevCode() {
     }
   }
 }
+
+/* ==========================================================================
+   LEADERBOARD ENGINE (OPEN / CLOSE / SYNC)
+   ========================================================================== */
+const DEFAULT_LEADERBOARD = [
+  { name: 'Ely Wolf', time: '02:41.2', ms: 161200, solved: 100, coins: 340 },
+  { name: 'Guest 2991', time: '03:15.8', ms: 195800, solved: 100, coins: 310 },
+  { name: 'SpeedSolver', time: '03:48.4', ms: 228400, solved: 100, coins: 280 },
+  { name: 'MathWhiz', time: '04:12.0', ms: 252000, solved: 96, coins: 220 },
+  { name: 'Challenger', time: '04:45.6', ms: 285600, solved: 92, coins: 185 }
+];
+
+let activeLbTab = 'allTime';
+
+function getStoredLeaderboard() {
+  try {
+    const raw = localStorage.getItem('elywolf_math_gauntlet_leaderboard');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {}
+  return [...DEFAULT_LEADERBOARD];
+}
+
+function saveStoredLeaderboard(data) {
+  try {
+    localStorage.setItem('elywolf_math_gauntlet_leaderboard', JSON.stringify(data));
+  } catch (e) {}
+}
+
+function getGauntletPlayerName() {
+  try {
+    const u = localStorage.getItem('elywolf_arcade_session_user') || sessionStorage.getItem('elywolf_arcade_session_user');
+    if (u) {
+      const parsed = JSON.parse(u);
+      if (parsed && (parsed.displayName || parsed.email)) {
+        return parsed.displayName || parsed.email.split('@')[0];
+      }
+    }
+  } catch (e) {}
+  let g = sessionStorage.getItem('elywolf_arcade_guest_id') || localStorage.getItem('elywolf_arcade_guest_id');
+  if (!g) {
+    g = `Guest #${Math.floor(1000 + Math.random() * 9000)}`;
+    sessionStorage.setItem('elywolf_arcade_guest_id', g);
+  }
+  return g;
+}
+
+function recordSpeedrunResult(ms, secs) {
+  const name = getGauntletPlayerName();
+  const mins = Math.floor(ms / 60000);
+  const remainingSecs = ((ms % 60000) / 1000).toFixed(1);
+  const formatted = `${mins.toString().padStart(2, '0')}:${remainingSecs.padStart(4, '0')}`;
+
+  const currentBoard = getStoredLeaderboard();
+  currentBoard.push({
+    name,
+    time: formatted,
+    ms,
+    solved: 100,
+    coins: userCoins || 300
+  });
+
+  // Sort by ms ascending
+  currentBoard.sort((a, b) => a.ms - b.ms);
+  saveStoredLeaderboard(currentBoard.slice(0, 20));
+}
+
+function openLeaderboard() {
+  const modal = document.getElementById('leaderboardModal');
+  if (!modal) return;
+  modal.classList.remove('hidden');
+  modal.setAttribute('aria-hidden', 'false');
+  renderLeaderboard();
+  playTone(800, 'sine', 0.1);
+}
+
+function closeLeaderboard() {
+  const modal = document.getElementById('leaderboardModal');
+  if (!modal) return;
+  modal.classList.add('hidden');
+  modal.setAttribute('aria-hidden', 'true');
+  playTone(400, 'sine', 0.08);
+}
+
+function toggleLeaderboard() {
+  const modal = document.getElementById('leaderboardModal');
+  if (!modal) return;
+  if (modal.classList.contains('hidden')) {
+    openLeaderboard();
+  } else {
+    closeLeaderboard();
+  }
+}
+
+function handleLeaderboardBackdropClick(e) {
+  if (e.target && e.target.id === 'leaderboardModal') {
+    closeLeaderboard();
+  }
+}
+
+function switchLbTab(tab) {
+  activeLbTab = tab;
+  const tabAllTime = document.getElementById('lbTabAllTime');
+  const tabLive = document.getElementById('lbTabLive');
+  if (tabAllTime) tabAllTime.className = tab === 'allTime' ? 'lb-tab active' : 'lb-tab';
+  if (tabLive) tabLive.className = tab === 'live' ? 'lb-tab active' : 'lb-tab';
+  renderLeaderboard();
+}
+
+function renderLeaderboard() {
+  const tbody = document.getElementById('leaderboardBody');
+  if (!tbody) return;
+
+  const entries = getStoredLeaderboard();
+  tbody.innerHTML = '';
+
+  entries.forEach((item, index) => {
+    const rankNum = index + 1;
+    let rankBadge = `${rankNum}`;
+    let rankClass = '';
+    if (rankNum === 1) { rankBadge = '🥇'; rankClass = 'lb-rank-1'; }
+    else if (rankNum === 2) { rankBadge = '🥈'; rankClass = 'lb-rank-2'; }
+    else if (rankNum === 3) { rankBadge = '🥉'; rankClass = 'lb-rank-3'; }
+
+    const initial = (item.name || 'P').charAt(0).toUpperCase();
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="lb-rank-badge ${rankClass}">${rankBadge}</span></td>
+      <td>
+        <div class="lb-player-cell">
+          <div class="lb-player-avatar">${initial}</div>
+          <span>${item.name}</span>
+        </div>
+      </td>
+      <td class="lb-time">${item.time}</td>
+      <td>${item.solved} / 100</td>
+      <td>${item.coins} 🪙</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// Attach to window for direct HTML accessibility
+window.openLeaderboard = openLeaderboard;
+window.closeLeaderboard = closeLeaderboard;
+window.toggleLeaderboard = toggleLeaderboard;
+window.handleLeaderboardBackdropClick = handleLeaderboardBackdropClick;
+window.switchLbTab = switchLbTab;
+
+// Initialize event listeners on page load
+setupEventListeners();

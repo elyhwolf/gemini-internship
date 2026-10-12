@@ -398,6 +398,111 @@
     </div>
   </div>
 
+  <!-- INCOMING 1v1 CHALLENGE OFFER MODAL -->
+  <div id="challengeOfferModal" class="modal-backdrop hidden" aria-hidden="true">
+    <div class="challenge-offer-card">
+      <div class="challenge-offer-glow"></div>
+      <div class="challenge-offer-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <line x1="6" y1="26" x2="26" y2="6"></line>
+          <polyline points="20,6 26,6 26,12"></polyline>
+          <line x1="9" y1="21" x2="11" y2="23"></line>
+        </svg>
+        <span>1v1 CHALLENGE OFFER</span>
+      </div>
+
+      <div class="challenge-sender-profile">
+        <div id="challengeSenderAvatar" class="challenge-sender-avatar">P</div>
+        <div class="challenge-sender-details">
+          <h3 id="challengeSenderName" class="challenge-sender-name">Player</h3>
+          <span class="challenge-sender-subtitle">wants to battle you right now!</span>
+        </div>
+      </div>
+
+      <div class="challenge-game-info-card">
+        <div class="challenge-game-icon-box" id="challengeGameIcon">🎮</div>
+        <div class="challenge-game-meta">
+          <h4 id="challengeGameTitle" class="challenge-game-title">Shark Bait 1v1</h4>
+          <p id="challengeGameDesc" class="challenge-game-desc">1v1 at Go Fish where you can see your own deck only</p>
+        </div>
+      </div>
+
+      <div class="challenge-modal-actions">
+        <button type="button" id="btnAcceptChallenge" class="btn-challenge-accept">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>ACCEPT ⚔️</span>
+        </button>
+        <button type="button" id="btnDeclineChallenge" class="btn-challenge-decline">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+          <span>DECLINE</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHALLENGE GAME PICKER MODAL -->
+  <div id="challengePickerModal" class="modal-backdrop hidden" aria-hidden="true">
+    <div class="challenge-picker-card">
+      <button id="closeChallengePickerBtn" class="close-modal-btn" title="Close">✕</button>
+      <div class="challenge-picker-header">
+        <div class="challenge-picker-tag">SELECT CHALLENGE</div>
+        <h3 class="challenge-picker-title">CHALLENGE <span id="challengeTargetPlayerName">PLAYER</span></h3>
+        <p class="challenge-picker-sub">Choose a 1v1 challenge mode to send an offer:</p>
+      </div>
+
+      <div class="challenge-games-grid">
+        <button type="button" class="btn-challenge-pick-game" data-game="Shark Bait">
+          <div class="pick-game-icon visual-shark-icon">
+            <svg viewBox="0 0 32 32" fill="none" stroke="#38bdf8" stroke-width="2"><path d="M4,16 C8,10 16,6 26,10 C28,14 26,20 22,24 C16,28 8,24 4,16 Z"></path><circle cx="21" cy="12" r="1.5" fill="#38bdf8"></circle><path d="M12,18 C14,20 18,20 20,18"></path></svg>
+          </div>
+          <div class="pick-game-text">
+            <div class="pick-game-title">Shark Bait (Go-Fish)</div>
+            <div class="pick-game-desc">1v1 duel where you see your own deck only</div>
+          </div>
+          <div class="pick-game-arrow">⚔️</div>
+        </button>
+
+        <button type="button" class="btn-challenge-pick-game" data-game="Album Memory">
+          <div class="pick-game-icon visual-album-icon">
+            <svg viewBox="0 0 32 32" fill="none" stroke="#a855f7" stroke-width="2"><circle cx="16" cy="16" r="12"></circle><circle cx="16" cy="16" r="4"></circle></svg>
+          </div>
+          <div class="pick-game-text">
+            <div class="pick-game-title">Album Memory</div>
+            <div class="pick-game-desc">3, 2, 1 Countdown race — whoever finishes first wins!</div>
+          </div>
+          <div class="pick-game-arrow">⚔️</div>
+        </button>
+
+        <button type="button" class="btn-challenge-pick-game" data-game="Maze Runner 100">
+          <div class="pick-game-icon visual-maze-icon">
+            <svg viewBox="0 0 32 32" fill="none" stroke="#10b981" stroke-width="2"><rect x="4" y="4" width="24" height="24" rx="4"></rect><path d="M10,4 V16 H22 V28"></path></svg>
+          </div>
+          <div class="pick-game-text">
+            <div class="pick-game-title">Maze Runner 100</div>
+            <div class="pick-game-desc">See each other's live ghosts & username in the same level</div>
+          </div>
+          <div class="pick-game-arrow">⚔️</div>
+        </button>
+
+        <button type="button" class="btn-challenge-pick-game" data-game="Math Gauntlet">
+          <div class="pick-game-icon visual-math-icon">
+            <svg viewBox="0 0 32 32" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="16" cy="16" r="12"></circle><path d="M12,16 H20 M16,12 V20"></path></svg>
+          </div>
+          <div class="pick-game-text">
+            <div class="pick-game-title">Math Gauntlet</div>
+            <div class="pick-game-desc">Speedrun showdown with live open/close leaderboard</div>
+          </div>
+          <div class="pick-game-arrow">⚔️</div>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="app.js"></script>
 </body>
 </html>

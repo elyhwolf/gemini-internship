@@ -134,6 +134,15 @@ let globalChatCache = loadUniversalChatHistory();
 const syncChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('elywolf_arcade_sync') : null;
 const localPresenceMap = new Map();
 
+// Challenge & Maze State Listeners
+const challengeOfferListeners = new Set();
+const challengeResponseListeners = new Set();
+const mazePlayersListeners = new Set();
+
+let pendingChallengeAction = null;
+let localMazePos = null;
+const processedChallengeIds = new Set();
+
 let activeGameStatus = null;
 
 export function setActiveGameStatus(status) {
@@ -163,6 +172,33 @@ function isDuplicateChatMessage(msg) {
   );
 }
 
+function handleIncomingChallengeInvite(chal) {
+  if (!chal || !chal.id || !chal.to) return;
+  const user = getLocalSessionUser();
+  const myName = (user ? (user.displayName || user.email.split('@')[0]) : getOrCreateGuestId()).trim().toLowerCase();
+  if (chal.to.trim().toLowerCase() === myName && chal.status === 'pending') {
+    if (!processedChallengeIds.has(chal.id)) {
+      processedChallengeIds.add(chal.id);
+      challengeOfferListeners.forEach(cb => { try { cb(chal); } catch (e) {} });
+    }
+  }
+}
+
+function handleIncomingChallengeResponse(resp) {
+  if (!resp || !resp.id) return;
+  const user = getLocalSessionUser();
+  const myName = (user ? (user.displayName || user.email.split('@')[0]) : getOrCreateGuestId()).trim().toLowerCase();
+  const isHost = resp.from && resp.from.trim().toLowerCase() === myName;
+  const isGuest = resp.to && resp.to.trim().toLowerCase() === myName;
+  if (isHost || isGuest) {
+    const key = `${resp.id}_${resp.response || resp.status}`;
+    if (!processedChallengeIds.has(key)) {
+      processedChallengeIds.add(key);
+      challengeResponseListeners.forEach(cb => { try { cb(resp); } catch (e) {} });
+    }
+  }
+}
+
 // Listen to local BroadcastChannel updates from other tabs on same machine
 if (syncChannel) {
   syncChannel.onmessage = (event) => {
@@ -176,6 +212,12 @@ if (syncChannel) {
         globalChatCache.push(payload);
         notifyChatListeners(globalChatCache);
       }
+    } else if (type === 'CHALLENGE_INVITE' && payload) {
+      handleIncomingChallengeInvite(payload);
+    } else if (type === 'CHALLENGE_RESPONSE' && payload) {
+      handleIncomingChallengeResponse(payload);
+    } else if (type === 'MAZE_POS' && payload) {
+      mazePlayersListeners.forEach(cb => { try { cb([payload]); } catch (e) {} });
     }
   };
 }
@@ -240,13 +282,30 @@ async function sendPresenceHeartbeat() {
     photoURL: photoURL,
     status: getPageLabel(),
     isGuest: !user,
-    lastSeen: Date.now()
+    lastSeen: Date.now(),
+    challengeAction: pendingChallengeAction,
+    mazePos: localMazePos
   };
+  pendingChallengeAction = null;
 
   // Broadcast to other tabs on same machine immediately
   localPresenceMap.set(TAB_SESSION_ID, payload);
   if (syncChannel) {
     try { syncChannel.postMessage({ type: 'PRESENCE_HEARTBEAT', payload }); } catch (e) {}
+  }
+
+  function handlePresenceData(data) {
+    if (!data) return;
+    if (data.players) lastApiPlayers = data.players;
+    if (Array.isArray(data.challenges)) {
+      data.challenges.forEach(c => {
+        handleIncomingChallengeInvite(c);
+        handleIncomingChallengeResponse(c);
+      });
+    }
+    if (Array.isArray(data.mazePlayers)) {
+      mazePlayersListeners.forEach(cb => { try { cb(data.mazePlayers); } catch (e) {} });
+    }
   }
 
   try {
@@ -258,9 +317,7 @@ async function sendPresenceHeartbeat() {
     const contentType = res.headers.get('content-type') || '';
     if (res.ok && contentType.includes('application/json')) {
       const data = await res.json();
-      if (data && data.players) {
-        lastApiPlayers = data.players;
-      }
+      handlePresenceData(data);
     } else {
       throw new Error('Local endpoint returned non-JSON');
     }
@@ -275,9 +332,7 @@ async function sendPresenceHeartbeat() {
         });
         if (prodRes.ok) {
           const prodData = await prodRes.json();
-          if (prodData && prodData.players) {
-            lastApiPlayers = prodData.players;
-          }
+          handlePresenceData(prodData);
         }
       } catch (e) {}
     }
@@ -461,6 +516,101 @@ export async function sendChallenge(targetName, gameName) {
     });
     fetchGlobalChat();
   } catch (err) {}
+}
+
+/**
+ * Send Interactive 1v1 Challenge Offer to a player
+ */
+export function sendChallengeOffer(targetPlayerName, gameName) {
+  const user = getLocalSessionUser();
+  const myName = user ? (user.displayName || user.email.split('@')[0]) : getOrCreateGuestId();
+  const myPhoto = user ? user.photoURL : null;
+  const challengeId = 'chal_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+
+  const chal = {
+    id: challengeId,
+    from: myName,
+    fromPhoto: myPhoto,
+    to: targetPlayerName,
+    game: gameName,
+    status: 'pending',
+    timestamp: Date.now()
+  };
+
+  pendingChallengeAction = { type: 'INVITE', challenge: chal };
+
+  if (syncChannel) {
+    try { syncChannel.postMessage({ type: 'CHALLENGE_INVITE', payload: chal }); } catch (e) {}
+  }
+
+  // Also post an announcement in chat
+  sendChallenge(targetPlayerName, `${gameName} 1v1`);
+
+  sendPresenceHeartbeat();
+  return chal;
+}
+
+/**
+ * Respond to Challenge Offer ('accepted' or 'declined')
+ */
+export function respondToChallengeOffer(challengeId, responseStatus, gameName, hostName, guestName) {
+  const matchId = 'match_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+  const respData = {
+    id: challengeId,
+    from: hostName,
+    to: guestName,
+    game: gameName,
+    response: responseStatus,
+    status: responseStatus,
+    matchId: matchId,
+    timestamp: Date.now()
+  };
+
+  pendingChallengeAction = { type: 'RESPONSE', challenge: respData };
+
+  if (syncChannel) {
+    try { syncChannel.postMessage({ type: 'CHALLENGE_RESPONSE', payload: respData }); } catch (e) {}
+  }
+
+  sendPresenceHeartbeat();
+  return respData;
+}
+
+export function onChallengeOffer(cb) {
+  challengeOfferListeners.add(cb);
+  return () => challengeOfferListeners.delete(cb);
+}
+
+export function onChallengeResponse(cb) {
+  challengeResponseListeners.add(cb);
+  return () => challengeResponseListeners.delete(cb);
+}
+
+/**
+ * Live Maze Runner Ghost Synchronization
+ */
+export function updateMazeRunnerPosition(pos) {
+  localMazePos = pos;
+  const user = getLocalSessionUser();
+  const myName = user ? (user.displayName || user.email.split('@')[0]) : getOrCreateGuestId();
+  if (syncChannel) {
+    try {
+      syncChannel.postMessage({
+        type: 'MAZE_POS',
+        payload: {
+          username: myName,
+          photoURL: user ? user.photoURL : null,
+          ...pos,
+          lastSeen: Date.now()
+        }
+      });
+    } catch (e) {}
+  }
+}
+
+export function onMazePlayersUpdate(cb) {
+  mazePlayersListeners.add(cb);
+  return () => mazePlayersListeners.delete(cb);
 }
 
 

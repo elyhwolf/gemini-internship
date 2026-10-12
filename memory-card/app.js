@@ -24,6 +24,17 @@ let secondsElapsed = 0;
 let gameStarted = false;
 let audioMuted = false;
 
+// 1v1 Countdown Race Mode Variables
+const urlParams = new URLSearchParams(window.location.search);
+const is1v1Mode = urlParams.get('mode') === '1v1';
+const matchId = urlParams.get('match') || 'race_default';
+const playerRole = urlParams.get('role') || 'host';
+const opponentName = (urlParams.get('opp') || (playerRole === 'host' ? 'Challenger' : 'Host')).trim();
+
+const raceChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('elywolf_memory_race_' + matchId) : null;
+let oppMatchesFound = 0;
+let raceFinished = false;
+
 // Audio Context (Web Audio API Synthesizer)
 let audioCtx = null;
 
@@ -151,6 +162,128 @@ const finalMoves = document.getElementById('finalMoves');
 const starRating = document.getElementById('starRating');
 const modalPlayAgainBtn = document.getElementById('modalPlayAgainBtn');
 
+// PRNG Seeded Shuffle for 1v1 Mode
+function hashString(str) {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 16777619);
+  }
+  return h >>> 0;
+}
+
+function mulberry32(a) {
+  return function() {
+    let t = a += 0x6D2B79F5;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+// 3, 2, 1 Countdown Engine
+function playCountdownBeep(isFinal) {
+  if (audioMuted) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = isFinal ? 'triangle' : 'sine';
+  osc.frequency.setValueAtTime(isFinal ? 1046.50 : 523.25, ctx.currentTime);
+  gain.gain.setValueAtTime(isFinal ? 0.28 : 0.18, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (isFinal ? 0.4 : 0.18));
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + (isFinal ? 0.4 : 0.18));
+}
+
+function start321Countdown() {
+  const overlay = document.getElementById('countdownOverlay');
+  const numEl = document.getElementById('countdownNumber');
+  const subEl = document.getElementById('countdownSub');
+  if (!overlay || !numEl) return;
+
+  overlay.classList.remove('hidden');
+  overlay.setAttribute('aria-hidden', 'false');
+  lockBoard = true;
+
+  let step = 3;
+  numEl.textContent = '3';
+  if (subEl) subEl.textContent = `1v1 RACE VS ${opponentName.toUpperCase()}`;
+  playCountdownBeep(false);
+
+  const timer = setInterval(() => {
+    step--;
+    if (step > 0) {
+      numEl.textContent = step;
+      playCountdownBeep(false);
+      numEl.style.animation = 'none';
+      void numEl.offsetWidth;
+      numEl.style.animation = 'countdownPop 0.95s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+    } else if (step === 0) {
+      numEl.textContent = 'GO!';
+      if (subEl) subEl.textContent = 'MATCH CARDS FIRST TO WIN!';
+      playCountdownBeep(true);
+      numEl.style.animation = 'none';
+      void numEl.offsetWidth;
+      numEl.style.animation = 'countdownPop 0.95s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+    } else {
+      clearInterval(timer);
+      overlay.classList.add('hidden');
+      overlay.setAttribute('aria-hidden', 'true');
+      lockBoard = false;
+      startTimer();
+    }
+  }, 1000);
+}
+
+function updatePvpScore() {
+  const pill = document.getElementById('pvpRacePill');
+  const score = document.getElementById('pvpScoreDisplay');
+  if (pill && is1v1Mode) {
+    pill.classList.remove('hidden');
+    if (score) {
+      score.textContent = `YOU ${matchesFound} — ${oppMatchesFound} ${opponentName.toUpperCase()}`;
+    }
+  }
+}
+
+// 1v1 Race Cross-Tab Channel Listener
+if (raceChannel) {
+  raceChannel.onmessage = (e) => {
+    const data = e.data;
+    if (!data || !is1v1Mode) return;
+
+    if (data.type === 'MEMORY_MATCH_UPDATE' && data.role !== playerRole) {
+      oppMatchesFound = data.matches || 0;
+      updatePvpScore();
+    } else if (data.type === 'MEMORY_RACE_WON' && data.role !== playerRole) {
+      if (!raceFinished) {
+        raceFinished = true;
+        showDefeatModal(data.winner || opponentName, data.time);
+      }
+    }
+  };
+}
+
+function showDefeatModal(winnerName, time) {
+  stopTimer();
+  playMismatchSound();
+
+  const title = document.querySelector('#winModal .modal-title');
+  const sub = document.querySelector('#winModal .modal-subtitle');
+  if (title) title.textContent = "FINISHED 2ND PLACE";
+  if (sub) sub.textContent = `${winnerName} finished all 6 pairs first in ${time}!`;
+
+  finalTime.textContent = timerDisplay.textContent;
+  finalMoves.textContent = moves;
+
+  setTimeout(() => {
+    winModal.classList.remove('hidden');
+    winModal.setAttribute('aria-hidden', 'false');
+  }, 400);
+}
+
 // Initialize Deck
 function initDeck() {
   // Pair 6 albums => 12 cards total
@@ -160,9 +293,10 @@ function initDeck() {
     paired.push({ ...item, uniqueId: item.id + '_b' });
   });
 
-  // Fisher-Yates Shuffle
+  // Fisher-Yates Shuffle (Deterministic in 1v1 match so both players get identical boards)
+  const randomFn = is1v1Mode ? mulberry32(hashString(matchId)) : Math.random;
   for (let i = paired.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(randomFn() * (i + 1));
     [paired[i], paired[j]] = [paired[j], paired[i]];
   }
 
@@ -228,7 +362,9 @@ function handleCardClick(cardEl) {
   if (lockBoard) return;
   if (cardEl.classList.contains('flipped') || cardEl.classList.contains('matched')) return;
 
-  startTimer();
+  if (!is1v1Mode) {
+    startTimer();
+  }
   playFlipSound();
 
   cardEl.classList.add('flipped');
@@ -264,6 +400,16 @@ function disableMatchedCards() {
   matchesFound++;
   matchesDisplay.textContent = `${matchesFound} / ${ALBUM_ASSETS.length}`;
   playMatchSound();
+  updatePvpScore();
+
+  if (is1v1Mode && raceChannel) {
+    raceChannel.postMessage({
+      type: 'MEMORY_MATCH_UPDATE',
+      matchId,
+      role: playerRole,
+      matches: matchesFound
+    });
+  }
 
   resetBoardPointers();
 
@@ -288,6 +434,9 @@ function resetBoardPointers() {
 
 // Victory Event
 function handleVictory() {
+  if (raceFinished) return;
+  raceFinished = true;
+
   stopTimer();
   playWinSound();
 
@@ -295,8 +444,27 @@ function handleVictory() {
   finalTime.textContent = timeText;
   finalMoves.textContent = moves;
 
+  if (is1v1Mode && raceChannel) {
+    raceChannel.postMessage({
+      type: 'MEMORY_RACE_WON',
+      matchId,
+      winner: 'You',
+      role: playerRole,
+      time: timeText
+    });
+  }
+
+  const title = document.querySelector('#winModal .modal-title');
+  const sub = document.querySelector('#winModal .modal-subtitle');
+  if (is1v1Mode) {
+    if (title) title.textContent = "1v1 RACE VICTORY!";
+    if (sub) sub.textContent = `You finished first and defeated ${opponentName}!`;
+  } else {
+    if (title) title.textContent = "COLLECTION COMPLETE!";
+    if (sub) sub.textContent = "You matched all 6 album cover sleeves.";
+  }
+
   // Compute Star Rating
-  // Perfect <= 8 moves (3 stars), <= 12 (2 stars), > 12 (1 star)
   const stars = starRating.querySelectorAll('.star-svg');
   stars.forEach((star, idx) => {
     if (moves <= 8) {
@@ -323,6 +491,8 @@ function resetGame() {
   secondsElapsed = 0;
   moves = 0;
   matchesFound = 0;
+  oppMatchesFound = 0;
+  raceFinished = false;
   firstCard = null;
   secondCard = null;
   lockBoard = false;
@@ -332,11 +502,17 @@ function resetGame() {
   movesDisplay.textContent = '0';
   matchesDisplay.textContent = `0 / ${ALBUM_ASSETS.length}`;
 
+  updatePvpScore();
+
   winModal.classList.add('hidden');
   winModal.setAttribute('aria-hidden', 'true');
 
   initDeck();
   renderBoard();
+
+  if (is1v1Mode) {
+    start321Countdown();
+  }
 }
 
 // Audio Toggle Event

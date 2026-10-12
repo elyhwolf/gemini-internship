@@ -81,6 +81,12 @@
         <span class="stat-label">MATCHES</span>
         <span id="matchesDisplay" class="stat-val">0 / 6</span>
       </div>
+
+      <div class="stat-pill pvp-pill hidden" id="pvpRacePill">
+        <span class="pvp-pulse-dot"></span>
+        <span class="stat-label" id="pvpRaceLabel">1v1 RACE</span>
+        <span id="pvpScoreDisplay" class="stat-val pvp-val">YOU 0 — 0 OPP</span>
+      </div>
     </div>
 
     <!-- MEMORY CARDS GRID -->
@@ -91,6 +97,14 @@
       <span>Crafted by <strong>Ely Wolf</strong></span>
     </footer>
 
+  </div>
+
+  <!-- 3, 2, 1 COUNTDOWN RACE OVERLAY -->
+  <div id="countdownOverlay" class="countdown-overlay hidden" aria-hidden="true">
+    <div class="countdown-content">
+      <div class="countdown-number" id="countdownNumber">3</div>
+      <div class="countdown-sub" id="countdownSub">GET READY...</div>
+    </div>
   </div>
 
   <!-- VICTORY OVERLAY MODAL -->

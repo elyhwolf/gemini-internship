@@ -3,24 +3,73 @@ import json
 import time
 import urllib.request
 
-# Primary and fallback cloud presence storage IDs
+# Fixed permanent cloud presence & challenge storage ID
 ACTIVE_PRESENCE_ID = "ff808181a09d98f701a1284d689438fb"
 IN_MEMORY_PRESENCE = {}
+IN_MEMORY_CHALLENGES = {}
 
-def _create_new_cloud_presence():
-    global ACTIVE_PRESENCE_ID
+def _fetch_from_cloud(retry=True):
+    global IN_MEMORY_PRESENCE, IN_MEMORY_CHALLENGES
+    url = f"https://api.restful-api.dev/objects/{ACTIVE_PRESENCE_ID}"
+    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (ElyWolfArcade/1.0)'})
     try:
-        url = "https://api.restful-api.dev/objects"
-        payload = json.dumps({"name": "elywolf_presence_v3", "data": {"presence": IN_MEMORY_PRESENCE}}).encode('utf-8')
-        req = urllib.request.Request(url, data=payload, headers={'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0'}, method='POST')
-        with urllib.request.urlopen(req, timeout=6) as resp:
+        with urllib.request.urlopen(req, timeout=7) as resp:
             data = json.loads(resp.read().decode('utf-8'))
-            if isinstance(data, dict) and 'id' in data:
-                ACTIVE_PRESENCE_ID = data['id']
-                return ACTIVE_PRESENCE_ID
+            if isinstance(data, dict) and 'data' in data:
+                res_map = data['data'].get('presence', {})
+                if isinstance(res_map, dict) and res_map:
+                    IN_MEMORY_PRESENCE = res_map
+                chals = data['data'].get('challenges', {})
+                if isinstance(chals, dict):
+                    IN_MEMORY_CHALLENGES.update(chals)
+                return IN_MEMORY_PRESENCE, IN_MEMORY_CHALLENGES
     except Exception:
-        pass
-    return ACTIVE_PRESENCE_ID
+        if retry:
+            time.sleep(0.3)
+            return _fetch_from_cloud(retry=False)
+    return IN_MEMORY_PRESENCE, IN_MEMORY_CHALLENGES
+
+def _save_to_cloud(presence_map, challenges_map, retry=True):
+    global IN_MEMORY_PRESENCE, IN_MEMORY_CHALLENGES
+    IN_MEMORY_PRESENCE = presence_map
+    IN_MEMORY_CHALLENGES = challenges_map
+    url = f"https://api.restful-api.dev/objects/{ACTIVE_PRESENCE_ID}"
+    payload = {
+        "name": "elywolf_presence_v3",
+        "data": { 
+            "presence": presence_map,
+            "challenges": challenges_map
+        }
+    }
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(payload).encode('utf-8'),
+        headers={'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0 (ElyWolfArcade/1.0)'},
+        method='PUT'
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=7):
+            return True
+    except Exception:
+        if retry:
+            time.sleep(0.3)
+            return _save_to_cloud(presence_map, challenges_map, retry=False)
+    return False
+
+def _clean_expired(presence_map, challenges_map):
+    now = time.time() * 1000
+    clean_players = {}
+    for tab_id, player in list(presence_map.items()):
+        if now - player.get('lastSeen', 0) <= 35000:
+            clean_players[tab_id] = player
+
+    clean_challenges = {}
+    for cid, chal in list(challenges_map.items()):
+        # Expire challenges after 45 seconds
+        if now - chal.get('timestamp', 0) <= 45000:
+            clean_challenges[cid] = chal
+
+    return clean_players, clean_challenges
 
 class handler(BaseHTTPRequestHandler):
     def _send_json(self, data, code=200):
@@ -28,7 +77,7 @@ class handler(BaseHTTPRequestHandler):
         self.send_header('Content-Type', 'application/json')
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
         self.end_headers()
         self.wfile.write(json.dumps(data).encode('utf-8'))
 
@@ -36,62 +85,35 @@ class handler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
         self.end_headers()
 
-    def _get_cloud_presence(self):
-        global IN_MEMORY_PRESENCE
-        try:
-            url = f"https://api.restful-api.dev/objects/{ACTIVE_PRESENCE_ID}"
-            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req, timeout=6) as resp:
-                data = json.loads(resp.read().decode('utf-8'))
-                if isinstance(data, dict) and 'data' in data:
-                    res_map = data['data'].get('presence', {})
-                    if res_map:
-                        IN_MEMORY_PRESENCE = res_map
-                    return IN_MEMORY_PRESENCE
-        except Exception:
-            _create_new_cloud_presence()
-
-        return IN_MEMORY_PRESENCE
-
-    def _save_cloud_presence(self, presence_map):
-        global IN_MEMORY_PRESENCE
-        IN_MEMORY_PRESENCE = presence_map
-        try:
-            url = f"https://api.restful-api.dev/objects/{ACTIVE_PRESENCE_ID}"
-            payload = {
-                "name": "elywolf_presence_v3",
-                "data": { "presence": presence_map }
-            }
-            req = urllib.request.Request(
-                url,
-                data=json.dumps(payload).encode('utf-8'),
-                headers={'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0'},
-                method='PUT'
-            )
-            with urllib.request.urlopen(req, timeout=6):
-                pass
-        except Exception:
-            _create_new_cloud_presence()
-
     def do_GET(self):
-        now = time.time() * 1000
-        presence_map = self._get_cloud_presence()
-        
-        # Filter active sessions (seen within 35 seconds)
-        active_users = []
-        clean_map = {}
-        for tab_id, player in presence_map.items():
-            if now - player.get('lastSeen', 0) <= 35000:
-                clean_map[tab_id] = player
-                active_users.append(player)
+        presence_map, challenges_map = _fetch_from_cloud()
+        clean_players, clean_challenges = _clean_expired(presence_map, challenges_map)
 
-        if len(clean_map) != len(presence_map):
-            self._save_cloud_presence(clean_map)
+        # Collect live maze runners
+        maze_players = []
+        for p in clean_players.values():
+            if 'mazePos' in p and p['mazePos']:
+                maze_players.append({
+                    'username': p.get('displayName'),
+                    'photoURL': p.get('photoURL'),
+                    'level': p['mazePos'].get('level'),
+                    'x': p['mazePos'].get('x'),
+                    'y': p['mazePos'].get('y'),
+                    'vx': p['mazePos'].get('vx', 0),
+                    'vy': p['mazePos'].get('vy', 0),
+                    'facing': p['mazePos'].get('facing', 1),
+                    'lastSeen': p.get('lastSeen')
+                })
 
-        self._send_json({'players': active_users, 'count': len(active_users)})
+        self._send_json({
+            'players': list(clean_players.values()),
+            'count': len(clean_players),
+            'challenges': list(clean_challenges.values()),
+            'mazePlayers': maze_players
+        })
 
     def do_POST(self):
         try:
@@ -104,36 +126,88 @@ class handler(BaseHTTPRequestHandler):
             avatar = payload.get('avatar', 'P')
             status = payload.get('status', 'In Arcade Hub')
             is_guest = payload.get('isGuest', True)
+            maze_pos = payload.get('mazePos')
+            challenge_action = payload.get('challengeAction')
 
             if not tab_id:
                 self._send_json({'error': 'Missing tabId'}, 400)
                 return
 
             now = time.time() * 1000
-            presence_map = self._get_cloud_presence()
-            uid = payload.get('uid', tab_id)
+            presence_map, challenges_map = _fetch_from_cloud()
+            clean_players, clean_challenges = _clean_expired(presence_map, challenges_map)
 
-            # Clean dead entries older than 35 seconds
-            clean_map = {}
-            for k, v in presence_map.items():
-                if (now - v.get('lastSeen', 0)) <= 35000:
-                    clean_map[k] = v
-
-            clean_map[tab_id] = {
+            # Update this player's presence
+            clean_players[tab_id] = {
                 'tabId': tab_id,
-                'uid': uid,
+                'uid': payload.get('uid', tab_id),
                 'displayName': display_name,
                 'avatar': avatar,
                 'photoURL': payload.get('photoURL'),
                 'status': status,
                 'lastSeen': now,
-                'isGuest': is_guest
+                'isGuest': is_guest,
+                'mazePos': maze_pos
             }
 
-            self._save_cloud_presence(clean_map)
-            active_users = list(clean_map.values())
+            # Handle challenge invite or response
+            if challenge_action and isinstance(challenge_action, dict):
+                act_type = challenge_action.get('type')
+                chal_data = challenge_action.get('challenge') or {}
+                cid = chal_data.get('id')
+                if cid:
+                    if act_type == 'INVITE':
+                        clean_challenges[cid] = {
+                            'id': cid,
+                            'from': chal_data.get('from', display_name),
+                            'fromPhoto': chal_data.get('fromPhoto'),
+                            'to': chal_data.get('to'),
+                            'game': chal_data.get('game', 'Shark Bait'),
+                            'status': 'pending',
+                            'timestamp': now
+                        }
+                    elif act_type == 'RESPONSE':
+                        resp = chal_data.get('response') # 'accepted' or 'declined'
+                        match_id = chal_data.get('matchId')
+                        if cid in clean_challenges:
+                            clean_challenges[cid]['status'] = resp
+                            if match_id:
+                                clean_challenges[cid]['matchId'] = match_id
+                        else:
+                            clean_challenges[cid] = {
+                                'id': cid,
+                                'from': chal_data.get('from'),
+                                'to': chal_data.get('to'),
+                                'game': chal_data.get('game', 'Shark Bait'),
+                                'status': resp,
+                                'matchId': match_id,
+                                'timestamp': now
+                            }
 
-            self._send_json({'success': True, 'players': active_users, 'count': len(active_users)})
+            _save_to_cloud(clean_players, clean_challenges)
+
+            # Collect live maze runners
+            maze_players = []
+            for p in clean_players.values():
+                if 'mazePos' in p and p['mazePos']:
+                    maze_players.append({
+                        'username': p.get('displayName'),
+                        'photoURL': p.get('photoURL'),
+                        'level': p['mazePos'].get('level'),
+                        'x': p['mazePos'].get('x'),
+                        'y': p['mazePos'].get('y'),
+                        'vx': p['mazePos'].get('vx', 0),
+                        'vy': p['mazePos'].get('vy', 0),
+                        'facing': p['mazePos'].get('facing', 1),
+                        'lastSeen': p.get('lastSeen')
+                    })
+
+            self._send_json({
+                'success': True,
+                'players': list(clean_players.values()),
+                'count': len(clean_players),
+                'challenges': list(clean_challenges.values()),
+                'mazePlayers': maze_players
+            })
         except Exception as e:
             self._send_json({'error': str(e)}, 500)
-

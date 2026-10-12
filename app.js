@@ -7,6 +7,10 @@ import {
   onAuthChange,
   sendChatMessage,
   sendChallenge,
+  sendChallengeOffer,
+  respondToChallengeOffer,
+  onChallengeOffer,
+  onChallengeResponse,
   onChatUpdate,
   onOnlinePlayersUpdate,
   getLocalSessionUser,
@@ -81,6 +85,21 @@ function playHubSound(type) {
       osc2.start(now);
       osc1.stop(now + 0.7);
       osc2.stop(now + 0.7);
+    } else if (type === 'challenge') {
+      const notes = [523.25, 659.25, 783.99, 1046.50];
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+        gain.gain.setValueAtTime(0, now + idx * 0.08);
+        gain.gain.linearRampToValueAtTime(0.2, now + idx * 0.08 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + idx * 0.08);
+        osc.stop(now + idx * 0.08 + 0.4);
+      });
     }
   } catch (e) {}
 }
@@ -772,9 +791,7 @@ function renderOnlinePlayers(players) {
         const btn = chip.querySelector('.chip-challenge-btn');
         if (btn) {
           btn.addEventListener('click', () => {
-            const gameToChallenge = currentActiveGame || 'Shark Bait';
-            sendChallenge(p.displayName, `${gameToChallenge} 1v1`);
-            toggleChatDrawer(true);
+            openChallengePicker(p.displayName);
           });
         }
         onlinePlayersList.appendChild(chip);
@@ -805,9 +822,7 @@ function renderOnlinePlayers(players) {
         const hudBtn = hudChip.querySelector('.hud-challenge-btn');
         if (hudBtn) {
           hudBtn.addEventListener('click', () => {
-            const gameToChallenge = currentActiveGame || 'Shark Bait';
-            sendChallenge(p.displayName, `${gameToChallenge} 1v1`);
-            toggleChatDrawer(true);
+            openChallengePicker(p.displayName);
           });
         }
         hudPlayersList.appendChild(hudChip);
@@ -815,6 +830,193 @@ function renderOnlinePlayers(players) {
     }
   }
 }
+
+// ==========================================================================
+// 1v1 CHALLENGE SYSTEM: ACCEPT / DECLINE & GAME SPECIFIC LAUNCHERS
+// ==========================================================================
+let currentChallengeTarget = null;
+let currentIncomingChallenge = null;
+
+export function openChallengePicker(targetName) {
+  currentChallengeTarget = targetName;
+  const modal = document.getElementById('challengePickerModal');
+  const targetNameEl = document.getElementById('challengeTargetPlayerName');
+  if (targetNameEl) targetNameEl.textContent = targetName.toUpperCase();
+  if (modal) {
+    modal.classList.remove('hidden');
+    modal.setAttribute('aria-hidden', 'false');
+    playHubSound('hover');
+  }
+}
+
+export function closeChallengePicker() {
+  const modal = document.getElementById('challengePickerModal');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+  currentChallengeTarget = null;
+}
+
+window.openChallengePicker = openChallengePicker;
+window.closeChallengePicker = closeChallengePicker;
+
+function showToast(msg) {
+  const existing = document.querySelector('.arcade-hub-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.className = 'arcade-hub-toast';
+  toast.innerHTML = `<span>${msg}</span>`;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    if (toast.parentNode) {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translate(-50%, -10px)';
+      setTimeout(() => toast.remove(), 300);
+    }
+  }, 4000);
+}
+
+function launchChallengeMatch(gameName, matchId, role, oppName) {
+  let targetUrl = '';
+  let cleanGameName = gameName;
+
+  if (gameName.includes('Shark') || gameName.includes('Fish')) {
+    cleanGameName = 'Shark Bait';
+    targetUrl = `./go-fish/?mode=1v1&match=${encodeURIComponent(matchId)}&role=${role}&opp=${encodeURIComponent(oppName)}`;
+  } else if (gameName.includes('Memory') || gameName.includes('Album')) {
+    cleanGameName = 'Album Memory';
+    targetUrl = `./memory-card/?mode=1v1&match=${encodeURIComponent(matchId)}&role=${role}&opp=${encodeURIComponent(oppName)}`;
+  } else if (gameName.includes('Maze')) {
+    cleanGameName = 'Maze Runner 100';
+    targetUrl = `./maze-runner/?mode=live&match=${encodeURIComponent(matchId)}&opp=${encodeURIComponent(oppName)}`;
+  } else if (gameName.includes('Math')) {
+    cleanGameName = 'Math Gauntlet';
+    targetUrl = `./math-gauntlet/?mode=1v1&match=${encodeURIComponent(matchId)}&opp=${encodeURIComponent(oppName)}`;
+  } else {
+    cleanGameName = 'Shark Bait';
+    targetUrl = `./go-fish/?mode=1v1&match=${encodeURIComponent(matchId)}&role=${role}&opp=${encodeURIComponent(oppName)}`;
+  }
+
+  launchGame(cleanGameName, targetUrl, '1v1 CHALLENGE MATCH');
+}
+
+// Wire up challenge picker game buttons
+const closePickerBtn = document.getElementById('closeChallengePickerBtn');
+if (closePickerBtn) closePickerBtn.addEventListener('click', closeChallengePicker);
+
+document.querySelectorAll('.btn-challenge-pick-game').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const game = btn.getAttribute('data-game') || 'Shark Bait';
+    if (currentChallengeTarget) {
+      sendChallengeOffer(currentChallengeTarget, game);
+      closeChallengePicker();
+      showToast(`Challenge offer sent to ${currentChallengeTarget} for ${game}!`);
+      playHubSound('message');
+    }
+  });
+});
+
+const offerModal = document.getElementById('challengeOfferModal');
+const btnAccept = document.getElementById('btnAcceptChallenge');
+const btnDecline = document.getElementById('btnDeclineChallenge');
+
+if (btnAccept) {
+  btnAccept.addEventListener('click', () => {
+    if (!currentIncomingChallenge) return;
+    if (offerModal) {
+      offerModal.classList.add('hidden');
+      offerModal.setAttribute('aria-hidden', 'true');
+    }
+    const chal = currentIncomingChallenge;
+    currentIncomingChallenge = null;
+    const resp = respondToChallengeOffer(chal.id, 'accepted', chal.game, chal.from, chal.to);
+    showToast(`Challenge accepted! Launching 1v1 match against ${chal.from}...`);
+    setTimeout(() => {
+      launchChallengeMatch(chal.game, resp.matchId, 'guest', chal.from);
+    }, 500);
+  });
+}
+
+if (btnDecline) {
+  btnDecline.addEventListener('click', () => {
+    if (!currentIncomingChallenge) return;
+    if (offerModal) {
+      offerModal.classList.add('hidden');
+      offerModal.setAttribute('aria-hidden', 'true');
+    }
+    const chal = currentIncomingChallenge;
+    currentIncomingChallenge = null;
+    respondToChallengeOffer(chal.id, 'declined', chal.game, chal.from, chal.to);
+    showToast('Challenge declined.');
+  });
+}
+
+// Subscribe to incoming challenge offers
+onChallengeOffer((chal) => {
+  currentIncomingChallenge = chal;
+  playHubSound('challenge');
+
+  const nameEl = document.getElementById('challengeSenderName');
+  const avatarEl = document.getElementById('challengeSenderAvatar');
+  const titleEl = document.getElementById('challengeGameTitle');
+  const descEl = document.getElementById('challengeGameDesc');
+
+  if (nameEl) nameEl.textContent = chal.from;
+  if (avatarEl) {
+    if (chal.fromPhoto) {
+      avatarEl.innerHTML = `<img src="${chal.fromPhoto}" alt="${chal.from}" />`;
+    } else {
+      avatarEl.textContent = (chal.from || 'P').charAt(0).toUpperCase();
+    }
+  }
+
+  if (titleEl && descEl) {
+    if (chal.game.includes('Shark') || chal.game.includes('Fish')) {
+      titleEl.textContent = "Shark Bait (Go-Fish 1v1)";
+      descEl.textContent = "1v1 Go Fish match (you see your own deck only)";
+    } else if (chal.game.includes('Memory') || chal.game.includes('Album')) {
+      titleEl.textContent = "Album Memory (1v1 Race)";
+      descEl.textContent = "3, 2, 1 Countdown race — whoever finishes first wins!";
+    } else if (chal.game.includes('Maze')) {
+      titleEl.textContent = "Maze Runner 100";
+      descEl.textContent = "See other people and where they are & usernames in the same level!";
+    } else if (chal.game.includes('Math')) {
+      titleEl.textContent = "Math Gauntlet";
+      descEl.textContent = "100 equation speedrun challenge with Live Leaderboard";
+    } else {
+      titleEl.textContent = `${chal.game} 1v1`;
+      descEl.textContent = `1v1 challenge offer from ${chal.from}!`;
+    }
+  }
+
+  if (offerModal) {
+    offerModal.classList.remove('hidden');
+    offerModal.setAttribute('aria-hidden', 'false');
+  }
+});
+
+// Subscribe to challenge responses (acceptance or decline)
+onChallengeResponse((resp) => {
+  const user = getLocalSessionUser();
+  const myName = (user ? (user.displayName || user.email.split('@')[0]) : '').trim().toLowerCase();
+  const isChallenger = resp.from && resp.from.trim().toLowerCase() === myName;
+
+  if (resp.status === 'accepted' || resp.response === 'accepted') {
+    if (isChallenger) {
+      playHubSound('challenge');
+      showToast(`${resp.to} ACCEPTED your challenge! Launching match...`);
+      setTimeout(() => {
+        launchChallengeMatch(resp.game, resp.matchId, 'host', resp.to);
+      }, 700);
+    }
+  } else if (resp.status === 'declined' || resp.response === 'declined') {
+    if (isChallenger) {
+      showToast(`${resp.to} declined the challenge.`);
+    }
+  }
+});
 
 // Format chat time to user's actual local time (e.g. 8:15 PM, not 00:15)
 function formatChatTime(m) {

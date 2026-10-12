@@ -1298,6 +1298,25 @@ class MazeMusicPlayer {
   }
 }
 
+// Retrieve local user identity for live maze runner multiplayer
+function getMazeLocalUsername() {
+  try {
+    const u = localStorage.getItem('elywolf_arcade_session_user') || sessionStorage.getItem('elywolf_arcade_session_user');
+    if (u) {
+      const parsed = JSON.parse(u);
+      if (parsed && (parsed.displayName || parsed.email)) {
+        return parsed.displayName || parsed.email.split('@')[0];
+      }
+    }
+  } catch (e) {}
+  let g = sessionStorage.getItem('elywolf_arcade_guest_id') || localStorage.getItem('elywolf_arcade_guest_id');
+  if (!g) {
+    g = `Guest #${Math.floor(1000 + Math.random() * 9000)}`;
+    sessionStorage.setItem('elywolf_arcade_guest_id', g);
+  }
+  return g;
+}
+
 // ==========================================================================
 // MAIN GAME CONTROLLER
 // ==========================================================================
@@ -1361,6 +1380,15 @@ class MazeGame {
     this.levelClearModal = document.getElementById('levelClearModal');
     this.levelSelectModal = document.getElementById('levelSelectModal');
     this.levelsGrid = document.getElementById('levelsGrid');
+    this.hudRunnersPill = document.getElementById('hudRunnersPill');
+    this.hudRunnersText = document.getElementById('hudRunnersText');
+
+    // Live Multiplayer Synchronization State
+    this.localPlayerName = getMazeLocalUsername();
+    this.syncChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('elywolf_arcade_sync') : null;
+    this.remotePlayers = new Map();
+    this.lastPosBroadcast = 0;
+    this.initNetworkSync();
 
     this.initCanvasSize();
     window.addEventListener('resize', () => this.initCanvasSize());
@@ -1370,6 +1398,95 @@ class MazeGame {
 
     this.lastFrameTime = performance.now();
     requestAnimationFrame((t) => this.gameLoop(t));
+  }
+
+  initNetworkSync() {
+    if (this.syncChannel) {
+      this.syncChannel.onmessage = (e) => {
+        const data = e.data;
+        if (!data || data.type !== 'MAZE_RUNNER_POS' || !data.name || data.name === this.localPlayerName) return;
+
+        const existing = this.remotePlayers.get(data.name);
+        if (existing) {
+          existing.targetX = data.x;
+          existing.targetY = data.y;
+          existing.level = data.level;
+          existing.vx = data.vx;
+          existing.vy = data.vy;
+          existing.facing = data.facing;
+          existing.lastSeen = performance.now();
+        } else {
+          this.remotePlayers.set(data.name, {
+            name: data.name,
+            level: data.level,
+            x: data.x,
+            y: data.y,
+            targetX: data.x,
+            targetY: data.y,
+            vx: data.vx,
+            vy: data.vy,
+            facing: data.facing,
+            lastSeen: performance.now()
+          });
+        }
+      };
+    }
+
+    // Polling presence cloud API every 4s for cross-device & cloud players
+    const pollPresence = async () => {
+      try {
+        const res = await fetch('/api/presence', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: this.localPlayerName,
+            displayName: this.localPlayerName,
+            status: 'in-game',
+            game: 'Maze Runner 100',
+            mazePos: {
+              level: this.currentLevel,
+              x: Math.round(this.player ? this.player.x : 0),
+              y: Math.round(this.player ? this.player.y : 0),
+              facing: this.player ? this.player.facing : 1
+            }
+          })
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json && Array.isArray(json.players)) {
+            json.players.forEach(p => {
+              if (p && p.displayName && p.displayName !== this.localPlayerName && p.mazePos) {
+                const pos = p.mazePos;
+                const existing = this.remotePlayers.get(p.displayName);
+                if (existing) {
+                  existing.targetX = pos.x;
+                  existing.targetY = pos.y;
+                  existing.level = pos.level;
+                  existing.facing = pos.facing || 1;
+                  existing.lastSeen = performance.now();
+                } else {
+                  this.remotePlayers.set(p.displayName, {
+                    name: p.displayName,
+                    level: pos.level,
+                    x: pos.x,
+                    y: pos.y,
+                    targetX: pos.x,
+                    targetY: pos.y,
+                    vx: 0,
+                    vy: 0,
+                    facing: pos.facing || 1,
+                    lastSeen: performance.now()
+                  });
+                }
+              }
+            });
+          }
+        }
+      } catch (err) {}
+    };
+
+    pollPresence();
+    this.presencePollInterval = setInterval(pollPresence, 4000);
   }
 
   initCanvasSize() {
@@ -1810,6 +1927,38 @@ class MazeGame {
 
     // Update Player
     this.player.update(this.keys, this.maze, this.particles, this.theme);
+
+    // Throttled Broadcast of local player position (every 60ms)
+    if (this.syncChannel && performance.now() - this.lastPosBroadcast > 60) {
+      this.lastPosBroadcast = performance.now();
+      this.syncChannel.postMessage({
+        type: 'MAZE_RUNNER_POS',
+        name: this.localPlayerName,
+        level: this.currentLevel,
+        x: Math.round(this.player.x),
+        y: Math.round(this.player.y),
+        vx: this.player.vx,
+        vy: this.player.vy,
+        facing: this.player.facing
+      });
+    }
+
+    // Update HUD indicator of other runners on this level
+    if (this.hudRunnersPill && this.hudRunnersText) {
+      const sameLevelRunners = [];
+      const now = performance.now();
+      this.remotePlayers.forEach(p => {
+        if (p.name !== this.localPlayerName && p.level === this.currentLevel && (now - p.lastSeen < 12000)) {
+          sameLevelRunners.push(p.name);
+        }
+      });
+      if (sameLevelRunners.length > 0) {
+        this.hudRunnersPill.classList.remove('hidden');
+        this.hudRunnersText.textContent = `${sameLevelRunners.length} RUNNER${sameLevelRunners.length > 1 ? 'S' : ''}: ${sameLevelRunners.join(', ')}`;
+      } else {
+        this.hudRunnersPill.classList.add('hidden');
+      }
+    }
 
     // Camera follow player smoothly or center maze if smaller than viewport
     if (this.viewportW <= this.maze.width) {
@@ -4237,11 +4386,129 @@ class MazeGame {
     }
     ctx.restore();
 
+    // 5.5 Draw Other Live Players on this level
+    this.drawRemotePlayers(ctx, offset);
+
     // 6. Draw Player
     this.player.draw(ctx, this.camera, this.theme, offset);
 
     // 7. Draw Particles
     this.particles.draw(ctx, this.camera, offset);
+  }
+
+  drawRemotePlayers(ctx, offset) {
+    const ox = offset ? offset.x : 0;
+    const oy = offset ? offset.y : 0;
+    const now = performance.now();
+
+    this.remotePlayers.forEach(p => {
+      if (!p || p.name === this.localPlayerName) return;
+      if (p.level !== this.currentLevel) return;
+      if (now - p.lastSeen > 15000) return;
+
+      // Smooth position interpolation
+      if (typeof p.x !== 'number') p.x = p.targetX || 0;
+      if (typeof p.y !== 'number') p.y = p.targetY || 0;
+      p.x += (p.targetX - p.x) * 0.35;
+      p.y += (p.targetY - p.y) * 0.35;
+
+      const drawX = p.x - this.camera.x + ox;
+      const drawY = p.y - this.camera.y + oy;
+
+      // Offscreen culling
+      if (drawX < -120 || drawX > this.viewportW + 120 || drawY < -120 || drawY > this.viewportH + 120) return;
+
+      ctx.save();
+
+      // Emissive Hologram Bloom Glow
+      const glowGrad = ctx.createRadialGradient(
+        drawX + 9, drawY + 12, 3,
+        drawX + 9, drawY + 12, 36
+      );
+      glowGrad.addColorStop(0, 'rgba(56, 189, 248, 0.45)');
+      glowGrad.addColorStop(0.5, 'rgba(99, 102, 241, 0.2)');
+      glowGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = glowGrad;
+      ctx.beginPath();
+      ctx.arc(drawX + 9, drawY + 12, 36, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Ghost Runner Body Capsule
+      ctx.globalAlpha = 0.88;
+      ctx.fillStyle = '#0f172a';
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2;
+      ctx.shadowColor = '#38bdf8';
+      ctx.shadowBlur = 12;
+
+      ctx.beginPath();
+      if (typeof ctx.roundRect === 'function') {
+        ctx.roundRect(drawX, drawY, 18, 24, 5);
+      } else {
+        ctx.rect(drawX, drawY, 18, 24);
+      }
+      ctx.fill();
+      ctx.stroke();
+
+      // Visor / Eyes
+      ctx.fillStyle = '#38bdf8';
+      const eyeOffset = p.facing === 1 ? 8 : 2;
+      ctx.beginPath();
+      if (typeof ctx.roundRect === 'function') {
+        ctx.roundRect(drawX + eyeOffset, drawY + 6, 8, 4, 2);
+      } else {
+        ctx.fillRect(drawX + eyeOffset, drawY + 6, 8, 4);
+      }
+      ctx.fill();
+
+      // Glowing Eye Shimmer
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(drawX + eyeOffset + (p.facing === 1 ? 6 : 2), drawY + 8, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+
+      // FLOATING USERNAME PILL BADGE ABOVE PLAYER'S HEAD
+      ctx.save();
+      ctx.font = 'bold 11px "JetBrains Mono", monospace';
+      const displayName = p.name;
+      const textMetrics = ctx.measureText(displayName);
+      const pillW = Math.max(textMetrics.width + 20, 52);
+      const pillH = 20;
+      const pillX = drawX + 9 - pillW / 2;
+      const pillY = drawY - 26;
+
+      // Dark glass backdrop with cyan outline & drop shadow
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 1.2;
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+      ctx.shadowBlur = 8;
+
+      ctx.beginPath();
+      if (typeof ctx.roundRect === 'function') {
+        ctx.roundRect(pillX, pillY, pillW, pillH, 10);
+      } else {
+        ctx.rect(pillX, pillY, pillW, pillH);
+      }
+      ctx.fill();
+      ctx.stroke();
+
+      // Live green online indicator dot
+      ctx.fillStyle = '#4ade80';
+      ctx.beginPath();
+      ctx.arc(pillX + 8, pillY + pillH / 2, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Username text
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(displayName, pillX + 15, pillY + pillH / 2);
+
+      ctx.restore();
+    });
   }
 }
 

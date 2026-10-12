@@ -124,6 +124,44 @@ html, body {
   transition: all 0.3s ease;
 }
 
+.hud-runners-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  padding: 4px 12px;
+  border-radius: 20px;
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+}
+
+.hud-runners-pill.hidden {
+  display: none !important;
+}
+
+.hud-runners-pill .runners-text {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #38bdf8;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.live-dot-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+  animation: runnerPulse 1.2s infinite alternate;
+}
+
+@keyframes runnerPulse {
+  from { transform: scale(0.8); opacity: 0.5; }
+  to { transform: scale(1.3); opacity: 1; }
+}
+
 .theme-dot {
   width: 8px;
   height: 8px;
