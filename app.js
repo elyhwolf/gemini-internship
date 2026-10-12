@@ -284,21 +284,57 @@ const btnConfirmExit = document.getElementById('btnConfirmExit');
 
 let currentActiveGame = null;
 
+function loadGameIframe(gameUrl) {
+  const container = document.querySelector('.game-stage-viewport');
+  const oldIframe = document.getElementById('gameStageIframe');
+  const newIframe = document.createElement('iframe');
+  newIframe.id = 'gameStageIframe';
+  newIframe.title = 'Arcade Game Viewport';
+  newIframe.allow = 'autoplay; fullscreen; encrypted-media';
+  newIframe.setAttribute('frameborder', '0');
+  newIframe.src = gameUrl;
+
+  newIframe.addEventListener('load', () => {
+    try {
+      const loc = newIframe.contentWindow.location;
+      if (loc.href === 'about:blank') {
+        if (currentActiveGame) {
+          exitGame(false);
+        }
+      } else if (loc.pathname === '/' || (loc.pathname.endsWith('/index.html') && !loc.pathname.includes('/maze-runner/') && !loc.pathname.includes('/go-fish/') && !loc.pathname.includes('/math-gauntlet/') && !loc.pathname.includes('/wardrobe/') && !loc.pathname.includes('/memory-card/'))) {
+        exitGame(false);
+      }
+    } catch (err) {}
+  });
+
+  if (oldIframe) {
+    oldIframe.replaceWith(newIframe);
+  } else if (container) {
+    container.prepend(newIframe);
+  }
+  return newIframe;
+}
+
 export function launchGame(gameName, gameUrl, gameTag) {
-  if (!gameStageOverlay || !gameStageIframe) return;
+  if (!gameStageOverlay) return;
   currentActiveGame = gameName;
   if (stageGameName) stageGameName.textContent = gameName;
   if (stageGameTag) stageGameTag.textContent = gameTag || '1v1 MULTIPLAYER';
   if (exitConfirmGameName) exitConfirmGameName.textContent = gameName;
 
-  // Load game directly inside arcade fullscreen viewport
-  gameStageIframe.src = gameUrl;
+  // Re-create iframe with the game URL so Chrome doesn't push a subframe history entry
+  loadGameIframe(gameUrl);
+
   gameStageOverlay.classList.remove('hidden');
   gameStageOverlay.setAttribute('aria-hidden', 'false');
   hideExitConfirmModal();
 
-  // Track browser history so browser back button triggers exit flow properly
-  history.pushState({ inGame: true, game: gameName }, '', window.location.href);
+  // Push dedicated game hash so Chrome's browser back arrow works and navigates back to home
+  const gameSlug = (gameName || 'game').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const targetHash = `#game=${gameSlug}`;
+  if (window.location.hash !== targetHash) {
+    history.pushState({ inGame: true, game: gameName, slug: gameSlug }, '', targetHash);
+  }
 
   // Hide the main arcade lobby chat button so only the top-bar button shows
   const chatWidgetWrapper = document.querySelector('.chat-widget-wrapper');
@@ -320,7 +356,7 @@ export function requestExitGame() {
     exitConfirmModal.setAttribute('aria-hidden', 'false');
     playHubSound('hover');
   } else {
-    exitGame();
+    exitGame(true);
   }
 }
 
@@ -331,12 +367,16 @@ export function hideExitConfirmModal() {
   }
 }
 
-export function exitGame() {
-  if (!gameStageOverlay || !gameStageIframe) return;
+export function exitGame(updateHistory = true) {
+  if (!gameStageOverlay) return;
   hideExitConfirmModal();
   gameStageOverlay.classList.add('hidden');
   gameStageOverlay.setAttribute('aria-hidden', 'true');
-  gameStageIframe.src = 'about:blank';
+  
+  const iframe = document.getElementById('gameStageIframe');
+  if (iframe) {
+    iframe.src = 'about:blank';
+  }
   currentActiveGame = null;
 
   // Restore the main arcade lobby chat button on the home screen
@@ -347,6 +387,15 @@ export function exitGame() {
   // Reset status back to arcade hub
   setActiveGameStatus(null);
   playHubSound('hover');
+
+  // Clean up URL hash if user exited via UI button (not browser back button)
+  if (updateHistory && window.location.hash.startsWith('#game=')) {
+    if (window.history.length > 1) {
+      history.back();
+    } else {
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+  }
 }
 
 window.launchGame = launchGame;
@@ -1169,38 +1218,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Handle browser back button / swipe back gesture
-  window.addEventListener('popstate', () => {
-    if (currentActiveGame && gameStageOverlay && !gameStageOverlay.classList.contains('hidden')) {
-      requestExitGame();
-      history.pushState({ inGame: true, game: currentActiveGame }, '', window.location.href);
-    } else {
-      exitGame();
-    }
-  });
+  // Handle Chrome browser back arrow / swipe back gesture / history changes
+  function handleBrowserNavigation(e) {
+    const hash = window.location.hash || '';
+    const hasGameHash = hash.startsWith('#game=');
+    const hasGameState = e && e.state && e.state.inGame;
 
-  // Listen for child game iframe requests to toggle lobby chat or exit game
+    if (!hasGameHash && !hasGameState) {
+      // User clicked Chrome back arrow to return to home screen: exit immediately!
+      if (currentActiveGame || (gameStageOverlay && !gameStageOverlay.classList.contains('hidden'))) {
+        exitGame(false);
+      }
+    }
+  }
+
+  window.addEventListener('popstate', handleBrowserNavigation);
+  window.addEventListener('hashchange', handleBrowserNavigation);
+
+  // If user refreshes or initial loads with #game= hash, clean it up so home screen is displayed
+  if (window.location.hash.startsWith('#game=')) {
+    try {
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+    } catch (err) {}
+  }
+
+  // Listen for child game iframe requests to toggle lobby chat, exit game, or browser back
   window.addEventListener('message', (e) => {
     if (e.data) {
       if (e.data.type === 'TOGGLE_LOBBY_CHAT') {
         toggleChatDrawer(chatDrawer.classList.contains('hidden'));
       } else if (e.data.type === 'REQUEST_EXIT_GAME') {
         requestExitGame();
+      } else if (e.data.type === 'BROWSER_BACK_REQUEST' || e.data.type === 'IFRAME_POPSTATE') {
+        if (currentActiveGame || (gameStageOverlay && !gameStageOverlay.classList.contains('hidden'))) {
+          exitGame(true);
+        }
       }
     }
   });
-
-  // Safety guard on iframe navigation: if iframe navigates to root / main menu, close overlay immediately
-  if (gameStageIframe) {
-    gameStageIframe.addEventListener('load', () => {
-      try {
-        const path = gameStageIframe.contentWindow.location.pathname;
-        if (path === '/' || (path.endsWith('/index.html') && !path.includes('/maze-runner/') && !path.includes('/go-fish/') && !path.includes('/math-gauntlet/') && !path.includes('/wardrobe/') && !path.includes('/memory-card/'))) {
-          exitGame();
-        }
-      } catch (err) {}
-    });
-  }
 
   // Observe Auth State Changes
   onAuthChange((user) => {

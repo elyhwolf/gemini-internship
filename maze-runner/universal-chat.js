@@ -552,6 +552,12 @@
         }
       }
     }, true);
+    // If browser back was pressed while focus is inside this iframe
+    window.addEventListener('popstate', () => {
+      try {
+        window.parent.postMessage({ type: 'BROWSER_BACK_REQUEST' }, '*');
+      } catch (e) {}
+    });
     return;
   }
 
