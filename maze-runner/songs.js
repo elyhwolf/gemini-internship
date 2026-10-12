@@ -447,7 +447,7 @@ window.MAZE_SONGS = [
     "level": 75,
     "videoId": "J3DWAJGaf7o",
     "title": "Lost",
-    "author": "Blonded"
+    "author": "Frank Ocean"
   },
   {
     "level": 76,
