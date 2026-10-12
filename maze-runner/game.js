@@ -832,10 +832,10 @@ class Player {
 // YOUTUBE MUSIC CONTROLLER (100 UNIQUE SONGS FOR 100 PUZZLES)
 // ==========================================================================
 class MazeMusicPlayer {
-  constructor(game) {
+  constructor(game, initialLevel = 1) {
     this.game = game;
     this.songs = window.MAZE_SONGS || [];
-    this.currentLevel = 1;
+    this.currentLevel = Math.max(1, Math.min(100, initialLevel));
     this.isPlaying = false;
     this.isMuted = false;
     this.volume = 80;
@@ -857,7 +857,21 @@ class MazeMusicPlayer {
     this.toastTitle = document.getElementById('toastTitle');
     this.toastSub = document.getElementById('toastSub');
 
+    // Immediately update HUD and modals with the active level's track info
+    this.updateTrackInfo(this.currentLevel);
+
     this.init();
+  }
+
+  updateTrackInfo(level) {
+    const song = this.getSong(level);
+    if (this.titleEl) this.titleEl.textContent = `Song ${level}: ${song.title}`;
+    if (this.authorEl) this.authorEl.textContent = song.author;
+    if (this.ytLink) this.ytLink.href = `https://music.youtube.com/watch?v=${song.videoId}`;
+    const vTrackName = document.getElementById('vTrackName');
+    if (vTrackName) {
+      vTrackName.textContent = `Song ${level}: ${song.title} — ${song.author}`;
+    }
   }
 
   init() {
@@ -909,6 +923,13 @@ class MazeMusicPlayer {
             onReady: (event) => {
               this.ytReady = true;
               event.target.setVolume(this.volume);
+              const song = this.getSong(this.currentLevel);
+              if (typeof event.target.cueVideoById === 'function') {
+                event.target.cueVideoById({
+                  videoId: song.videoId,
+                  suggestedQuality: 'small'
+                });
+              }
               if (this.hasUserInteracted) {
                 this.playLevel(this.currentLevel);
               }
@@ -965,9 +986,7 @@ class MazeMusicPlayer {
     const song = this.getSong(level);
 
     // Update HUD metadata
-    if (this.titleEl) this.titleEl.textContent = `Song ${level}: ${song.title}`;
-    if (this.authorEl) this.authorEl.textContent = song.author;
-    if (this.ytLink) this.ytLink.href = `https://music.youtube.com/watch?v=${song.videoId}`;
+    this.updateTrackInfo(level);
 
     // Pop toast notification on level entry
     if (isNewLevel) {
@@ -1057,10 +1076,7 @@ class MazeGame {
     this.minimapCanvas = document.getElementById('minimapCanvas');
     this.minimapCtx = this.minimapCanvas ? this.minimapCanvas.getContext('2d') : null;
 
-    // YouTube Music Player
-    this.music = new MazeMusicPlayer(this);
-
-    // Progress State
+    // Progress State (load saved level before player initialization)
     let startLvl = 1;
     try {
       const urlParams = new URLSearchParams(window.location.search);
@@ -1080,6 +1096,9 @@ class MazeGame {
       parseInt(localStorage.getItem('elywolf_maze_max_unlocked') || '100', 10)
     );
     if (this.maxUnlockedLevel > 100) this.maxUnlockedLevel = 100;
+
+    // YouTube Music Player initialized with active level so song never resets to mist
+    this.music = new MazeMusicPlayer(this, this.currentLevel);
 
     this.theme = getThemeForLevel(this.currentLevel);
     this.particles = new ParticleSystem();

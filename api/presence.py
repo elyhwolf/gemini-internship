@@ -13,7 +13,7 @@ def _create_new_cloud_presence():
         url = "https://api.restful-api.dev/objects"
         payload = json.dumps({"name": "elywolf_presence_v3", "data": {"presence": IN_MEMORY_PRESENCE}}).encode('utf-8')
         req = urllib.request.Request(url, data=payload, headers={'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0'}, method='POST')
-        with urllib.request.urlopen(req, timeout=3) as resp:
+        with urllib.request.urlopen(req, timeout=6) as resp:
             data = json.loads(resp.read().decode('utf-8'))
             if isinstance(data, dict) and 'id' in data:
                 ACTIVE_PRESENCE_ID = data['id']
@@ -44,7 +44,7 @@ class handler(BaseHTTPRequestHandler):
         try:
             url = f"https://api.restful-api.dev/objects/{ACTIVE_PRESENCE_ID}"
             req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req, timeout=3) as resp:
+            with urllib.request.urlopen(req, timeout=6) as resp:
                 data = json.loads(resp.read().decode('utf-8'))
                 if isinstance(data, dict) and 'data' in data:
                     res_map = data['data'].get('presence', {})
@@ -71,7 +71,7 @@ class handler(BaseHTTPRequestHandler):
                 headers={'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0'},
                 method='PUT'
             )
-            with urllib.request.urlopen(req, timeout=3):
+            with urllib.request.urlopen(req, timeout=6):
                 pass
         except Exception:
             _create_new_cloud_presence()
@@ -80,11 +80,11 @@ class handler(BaseHTTPRequestHandler):
         now = time.time() * 1000
         presence_map = self._get_cloud_presence()
         
-        # Filter active sessions (seen within 10 seconds)
+        # Filter active sessions (seen within 35 seconds)
         active_users = []
         clean_map = {}
         for tab_id, player in presence_map.items():
-            if now - player.get('lastSeen', 0) <= 10000:
+            if now - player.get('lastSeen', 0) <= 35000:
                 clean_map[tab_id] = player
                 active_users.append(player)
 
@@ -102,7 +102,7 @@ class handler(BaseHTTPRequestHandler):
             tab_id = payload.get('tabId')
             display_name = payload.get('displayName', 'Player')
             avatar = payload.get('avatar', 'P')
-            status = payload.get('status', 'Online')
+            status = payload.get('status', 'In Arcade Hub')
             is_guest = payload.get('isGuest', True)
 
             if not tab_id:
@@ -113,14 +113,10 @@ class handler(BaseHTTPRequestHandler):
             presence_map = self._get_cloud_presence()
             uid = payload.get('uid', tab_id)
 
-            # Clean dead entries AND remove any existing session for the same user/name
+            # Clean dead entries older than 35 seconds
             clean_map = {}
             for k, v in presence_map.items():
-                if (now - v.get('lastSeen', 0)) <= 10000:
-                    v_name = v.get('displayName', '').strip().lower()
-                    cur_name = display_name.strip().lower()
-                    if (v_name and v_name == cur_name) or (uid and v.get('uid') == uid):
-                        continue
+                if (now - v.get('lastSeen', 0)) <= 35000:
                     clean_map[k] = v
 
             clean_map[tab_id] = {

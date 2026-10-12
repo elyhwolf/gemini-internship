@@ -734,18 +734,8 @@ function scrollChatToBottom() {
 
 // Render Presence Bar (Hub & In-Game Fullscreen HUD)
 function renderOnlinePlayers(players) {
-  const user = getLocalSessionUser();
-  const currentName = (user ? (user.displayName || user.email.split('@')[0]) : '').trim().toLowerCase();
-  const currentUid = user ? user.uid : '';
-
-  // Strict filter: you should NEVER be able to see or challenge yourself
-  const otherPlayers = players.filter(p => {
-    if (p.isSelf) return false;
-    const pName = (p.displayName || '').trim().toLowerCase();
-    if (currentName && pName && pName === currentName) return false;
-    if (currentUid && p.uid && p.uid === currentUid) return false;
-    return true;
-  });
+  // Only filter out the exact current tab session (p.isSelf)
+  const otherPlayers = players.filter(p => !p.isSelf);
 
   latestOtherPlayers = otherPlayers;
 
@@ -769,11 +759,12 @@ function renderOnlinePlayers(players) {
         const avatarHtml = p.photoURL 
           ? `<img src="${p.photoURL}" alt="${p.displayName}" class="chip-avatar-img" />`
           : `<span class="chip-avatar">${p.avatar || 'P'}</span>`;
+        const displayNameText = p.isSameAccountTab ? `${p.displayName} (Other Tab)` : p.displayName;
         chip.innerHTML = `
           ${avatarHtml}
           <div style="display:flex; flex-direction:column; line-height:1.2;">
-            <span class="chip-name">${p.displayName}</span>
-            <span style="font-size:0.62rem; color:#a1a1aa; font-family:var(--font-mono);">${p.status || 'Online'}</span>
+            <span class="chip-name">${displayNameText}</span>
+            <span style="font-size:0.62rem; color:#a1a1aa; font-family:var(--font-mono);">${p.status || 'In Arcade Hub'}</span>
           </div>
           <button class="chip-challenge-btn" title="Challenge ${p.displayName} to a match">CHALLENGE ⚔️</button>
         `;
@@ -803,10 +794,11 @@ function renderOnlinePlayers(players) {
         const hudAvatarHtml = p.photoURL
           ? `<img src="${p.photoURL}" alt="${p.displayName}" class="hud-avatar-img" />`
           : `<span class="hud-avatar">${p.avatar || 'P'}</span>`;
+        const displayNameText = p.isSameAccountTab ? `${p.displayName} (Other Tab)` : p.displayName;
         hudChip.innerHTML = `
           ${hudAvatarHtml}
-          <span class="hud-name">${p.displayName}</span>
-          <span class="hud-status">${p.status || 'Online'}</span>
+          <span class="hud-name">${displayNameText}</span>
+          <span class="hud-status">${p.status || 'In Arcade Hub'}</span>
           <button class="hud-challenge-btn" title="Challenge ${p.displayName} to 1v1">CHALLENGE ⚔️</button>
         `;
 

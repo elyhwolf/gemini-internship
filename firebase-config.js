@@ -204,9 +204,9 @@ function getMergedPlayers(apiPlayers = []) {
     if (p && p.tabId) playerMap.set(p.tabId, p);
   });
 
-  // 2. Add local tab presence (valid within 10s)
+  // 2. Add local tab presence (valid within 35s)
   for (const [tabId, player] of localPresenceMap.entries()) {
-    if (now - (player.lastSeen || 0) <= 10000) {
+    if (now - (player.lastSeen || 0) <= 35000) {
       playerMap.set(tabId, player);
     } else {
       localPresenceMap.delete(tabId);
@@ -243,16 +243,6 @@ async function sendPresenceHeartbeat() {
     lastSeen: Date.now()
   };
 
-  // Purge any ghost tabs for the same user
-  for (const [id, entry] of localPresenceMap.entries()) {
-    if (id !== TAB_SESSION_ID) {
-      const eName = (entry.displayName || '').trim().toLowerCase();
-      if ((eName && eName === displayName.trim().toLowerCase()) || (user && entry.uid === user.uid)) {
-        localPresenceMap.delete(id);
-      }
-    }
-  }
-
   // Broadcast to other tabs on same machine immediately
   localPresenceMap.set(TAB_SESSION_ID, payload);
   if (syncChannel) {
@@ -265,14 +255,32 @@ async function sendPresenceHeartbeat() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    if (res.ok) {
+    const contentType = res.headers.get('content-type') || '';
+    if (res.ok && contentType.includes('application/json')) {
       const data = await res.json();
       if (data && data.players) {
         lastApiPlayers = data.players;
       }
+    } else {
+      throw new Error('Local endpoint returned non-JSON');
     }
   } catch (err) {
-    // API fail fallback
+    // Localhost fallback: sync with live production presence API
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      try {
+        const prodRes = await fetch(`${PROD_API_ORIGIN}/api/presence`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (prodRes.ok) {
+          const prodData = await prodRes.json();
+          if (prodData && prodData.players) {
+            lastApiPlayers = prodData.players;
+          }
+        }
+      } catch (e) {}
+    }
   }
 
   triggerPresenceBroadcast();
@@ -334,13 +342,13 @@ function notifyPresenceListeners(rawPlayers) {
 
   const processed = rawPlayers.map(p => {
     const pName = (p.displayName || '').trim().toLowerCase();
-    const isSelfName = Boolean(pName && pName === currentName);
-    const isSelfUid = Boolean(currentUid && p.uid && p.uid === currentUid);
+    const isSameAccount = Boolean((pName && pName === currentName) || (currentUid && p.uid && p.uid === currentUid));
     const isSelfTab = p.tabId === TAB_SESSION_ID;
 
     return {
       ...p,
-      isSelf: isSelfTab || isSelfName || isSelfUid
+      isSelf: isSelfTab,
+      isSameAccountTab: !isSelfTab && isSameAccount
     };
   });
   presenceListeners.forEach(cb => { try { cb(processed); } catch (e) {} });
