@@ -51,17 +51,22 @@ class handler(BaseHTTPRequestHandler):
                 if isinstance(data, dict) and 'data' in data:
                     msgs = data['data'].get('messages', [])
                     if msgs:
-                        IN_MEMORY_MESSAGES = msgs
-                    return IN_MEMORY_MESSAGES
+                        existing_ids = {m.get('id') for m in msgs if 'id' in m}
+                        for m in IN_MEMORY_MESSAGES:
+                            if m.get('id') and m.get('id') not in existing_ids:
+                                msgs.append(m)
+                        msgs.sort(key=lambda x: x.get('timestamp', 0) if isinstance(x.get('timestamp'), (int, float)) else 0)
+                        IN_MEMORY_MESSAGES = msgs[-150:]
+                        return IN_MEMORY_MESSAGES
         except Exception:
-            # If 403 or failure, try self-healing creation once
             _create_new_cloud_chat()
 
         return IN_MEMORY_MESSAGES
 
     def _save_cloud_messages(self, messages):
         global IN_MEMORY_MESSAGES
-        IN_MEMORY_MESSAGES = messages[-60:]
+        messages.sort(key=lambda x: x.get('timestamp', 0) if isinstance(x.get('timestamp'), (int, float)) else 0)
+        IN_MEMORY_MESSAGES = messages[-150:]
         try:
             url = f"https://api.restful-api.dev/objects/{ACTIVE_CHAT_ID}"
             payload = {

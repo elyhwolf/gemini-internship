@@ -737,6 +737,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Listen for child game iframe requests to toggle lobby chat
+  window.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'TOGGLE_LOBBY_CHAT') {
+      toggleChatDrawer(chatDrawer.classList.contains('hidden'));
+    }
+  });
+
   // Observe Auth State Changes
   onAuthChange((user) => {
     if (user) {

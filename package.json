@@ -5,7 +5,7 @@
   "main": "index.html",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && cp phone.html dist/phone.html && cp -r focus-timer dist/focus-timer && cp instructions.md dist/instructions.md && cp -r distro dist/distro && cp -r yt2mp3 dist/yt2mp3 && cp -r wardrobe dist/wardrobe && cp -r math-gauntlet dist/math-gauntlet && cp -r go-fish dist/go-fish && cp -r memory-card dist/memory-card && cp -r maze-runner dist/maze-runner",
+    "build": "vite build && cp phone.html dist/phone.html && cp -r focus-timer dist/focus-timer && cp instructions.md dist/instructions.md && cp -r distro dist/distro && cp -r yt2mp3 dist/yt2mp3 && cp -r wardrobe dist/wardrobe && cp -r math-gauntlet dist/math-gauntlet && cp -r go-fish dist/go-fish && cp -r memory-card dist/memory-card && cp -r maze-runner dist/maze-runner && cp universal-chat.js dist/universal-chat.js",
     "preview": "vite preview"
   },
   "keywords": [],

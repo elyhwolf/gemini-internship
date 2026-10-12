@@ -103,7 +103,32 @@ if (auth) {
 const TAB_SESSION_ID = 'tab_' + Math.random().toString(36).substr(2, 9);
 const presenceListeners = new Set();
 const chatListeners = new Set();
-let globalChatCache = [];
+
+const UNIVERSAL_CHAT_STORAGE_KEY = 'elywolf_universal_chat_history';
+const PROD_API_ORIGIN = 'https://gemini-internship.vercel.app';
+
+function loadUniversalChatHistory() {
+  try {
+    const raw = localStorage.getItem(UNIVERSAL_CHAT_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (e) {}
+  return [
+    { id: 'm1', sender: 'System 🤖', text: 'Welcome to ElyWolf Arcade Global Lobby Chat!', time: 'System', isSystem: true, timestamp: 0 }
+  ];
+}
+
+function saveUniversalChatHistory(messages) {
+  try {
+    localStorage.setItem(UNIVERSAL_CHAT_STORAGE_KEY, JSON.stringify(messages.slice(-150)));
+  } catch (e) {}
+}
+
+let globalChatCache = loadUniversalChatHistory();
 
 // BroadcastChannel for instant zero-latency cross-tab communication
 const syncChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('elywolf_arcade_sync') : null;
@@ -253,41 +278,53 @@ async function sendPresenceHeartbeat() {
   triggerPresenceBroadcast();
 }
 
-/**
- * Fetch Global Chat Messages
- */
 async function fetchGlobalChat() {
+  let fetchedMessages = null;
   try {
     const res = await fetch(API_CHAT);
-    if (res.ok) {
+    const contentType = res.headers.get('content-type') || '';
+    if (res.ok && contentType.includes('application/json')) {
       const data = await res.json();
-      if (data && data.messages) {
-        let hasNew = false;
-        data.messages.forEach(m => {
-          // Check by exact ID
-          if (globalChatCache.some(existing => existing.id === m.id)) return;
-
-          // Check by sender, text, and timestamp proximity (< 4s)
-          const existingByContent = globalChatCache.find(existing => 
-            existing.sender === m.sender && 
-            existing.text === m.text && 
-            Math.abs((existing.timestamp || 0) - (m.timestamp || 0)) < 4000
-          );
-          if (existingByContent) {
-            existingByContent.id = m.id; // reconcile ID without duplicating
-            return;
-          }
-
-          globalChatCache.push(m);
-          hasNew = true;
-        });
-
-        if (hasNew) {
-          notifyChatListeners(globalChatCache);
-        }
-      }
+      if (data && data.messages) fetchedMessages = data.messages;
     }
   } catch (err) {}
+
+  // Localhost fallback: if local endpoint returned HTML (Vite) or failed, pull from cloud production
+  if (!fetchedMessages && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    try {
+      const res = await fetch(`${PROD_API_ORIGIN}/api/chat`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.messages) fetchedMessages = data.messages;
+      }
+    } catch (e) {}
+  }
+
+  if (fetchedMessages && Array.isArray(fetchedMessages)) {
+    let hasNew = false;
+    fetchedMessages.forEach(m => {
+      // Check by exact ID
+      if (globalChatCache.some(existing => existing.id === m.id)) return;
+
+      // Check by sender, text, and timestamp proximity (< 4s)
+      const existingByContent = globalChatCache.find(existing => 
+        existing.sender === m.sender && 
+        existing.text === m.text && 
+        Math.abs((existing.timestamp || 0) - (m.timestamp || 0)) < 4000
+      );
+      if (existingByContent) {
+        existingByContent.id = m.id;
+        return;
+      }
+
+      globalChatCache.push(m);
+      hasNew = true;
+    });
+
+    if (hasNew) {
+      notifyChatListeners(globalChatCache);
+    }
+  }
 }
 
 function notifyPresenceListeners(rawPlayers) {
@@ -310,6 +347,8 @@ function notifyPresenceListeners(rawPlayers) {
 }
 
 function notifyChatListeners(messages) {
+  messages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+  saveUniversalChatHistory(messages);
   chatListeners.forEach(cb => { try { cb(messages); } catch (e) {} });
 }
 
@@ -357,19 +396,15 @@ export async function sendChatMessage(text) {
     } catch (e) {}
   }
 
+  const endpoint = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? `${PROD_API_ORIGIN}/api/chat`
+    : API_CHAT;
+
   try {
-    await fetch(API_CHAT, {
+    await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: msgId,
-        sender: senderName,
-        text: text.trim(),
-        time: nowStr,
-        timestamp: timestamp,
-        photoURL: photoURL,
-        isSystem: false
-      })
+      body: JSON.stringify(newMsg)
     });
     fetchGlobalChat();
   } catch (err) {}
@@ -406,18 +441,15 @@ export async function sendChallenge(targetName, gameName) {
     } catch (e) {}
   }
 
+  const endpoint = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? `${PROD_API_ORIGIN}/api/chat`
+    : API_CHAT;
+
   try {
-    await fetch(API_CHAT, {
+    await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: msgId,
-        sender: 'System 🎮',
-        text: text,
-        time: nowStr,
-        timestamp: timestamp,
-        isSystem: true
-      })
+      body: JSON.stringify(sysMsg)
     });
     fetchGlobalChat();
   } catch (err) {}
