@@ -62,22 +62,50 @@
   let unreadCount = 0;
   let audioCtx = null;
 
-  function playChatChime() {
+  function playChatChime(isMention = false) {
     try {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (audioCtx.state === 'suspended') audioCtx.resume();
       const now = audioCtx.currentTime;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(600, now);
-      osc.frequency.exponentialRampToValueAtTime(1200, now + 0.08);
-      gain.gain.setValueAtTime(0.04, now);
-      gain.gain.linearRampToValueAtTime(0.001, now + 0.08);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start(now);
-      osc.stop(now + 0.08);
+
+      if (isMention) {
+        // Metallic crystal bell chime for @ mentions (D6 1174Hz + D7 2349Hz overtone)
+        const osc1 = audioCtx.createOscillator();
+        const osc2 = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(1174.66, now);
+        osc1.frequency.exponentialRampToValueAtTime(1170, now + 0.6);
+
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(2349.32, now);
+        osc2.frequency.exponentialRampToValueAtTime(2340, now + 0.5);
+
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.65);
+
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + 0.7);
+        osc2.stop(now + 0.7);
+      } else {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.08);
+        gain.gain.setValueAtTime(0.04, now);
+        gain.gain.linearRampToValueAtTime(0.001, now + 0.08);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      }
     } catch (e) {}
   }
 
@@ -307,12 +335,158 @@
       background: rgba(255, 255, 255, 0.18);
       transform: scale(1.15);
     }
+    .ely-chat-mention {
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.15);
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-block;
+      transition: all 0.15s ease;
+    }
+    .ely-chat-mention:hover {
+      background: rgba(56, 189, 248, 0.35);
+      color: #7dd3fc;
+    }
+    .ely-chat-mention.mention-me {
+      color: #facc15;
+      background: rgba(234, 179, 8, 0.22);
+      border: 1px solid rgba(234, 179, 8, 0.5);
+      font-weight: 800;
+      box-shadow: 0 0 8px rgba(234, 179, 8, 0.3);
+    }
+    .ely-chat-item.mentioned-me {
+      border-left: 3px solid #facc15;
+      background: rgba(234, 179, 8, 0.1);
+      box-shadow: 0 0 15px rgba(234, 179, 8, 0.15);
+    }
+    .ely-chat-sender {
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .ely-chat-sender:hover {
+      text-decoration: underline;
+      opacity: 0.8;
+    }
+    .ely-quick-mention-btn {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #38bdf8;
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-family: monospace;
+      font-size: 0.82rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .ely-quick-mention-btn:hover {
+      background: #38bdf8;
+      color: #0b0c10;
+      transform: scale(1.08);
+    }
     .ely-chat-form {
+      position: relative;
       display: flex;
       gap: 8px;
       padding: 10px 14px 14px;
       background: rgba(0, 0, 0, 0.4);
       border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .ely-mention-dropdown {
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 12px;
+      right: 12px;
+      background: #141722;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 14px;
+      box-shadow: 0 -12px 35px rgba(0, 0, 0, 0.85);
+      max-height: 180px;
+      overflow-y: auto;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      padding: 6px;
+    }
+    .ely-mention-header {
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      font-family: monospace;
+      letter-spacing: 0.05em;
+    }
+    .ely-mention-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      width: 100%;
+      text-align: left;
+      color: #f1f5f9;
+      font-size: 0.8rem;
+      transition: all 0.15s ease;
+    }
+    .ely-mention-item:hover, .ely-mention-item.active {
+      background: rgba(56, 189, 248, 0.18);
+      color: #ffffff;
+    }
+    .ely-mention-toast {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      background: linear-gradient(135deg, rgba(20, 23, 34, 0.95), rgba(30, 34, 48, 0.95));
+      border: 1px solid #facc15;
+      border-radius: 16px;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(234, 179, 8, 0.3);
+      z-index: 9999999;
+      cursor: pointer;
+      animation: elyMentionToastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes elyMentionToastIn {
+      from { opacity: 0; transform: translateY(-16px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .ely-mention-toast-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(234, 179, 8, 0.2);
+      color: #facc15;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .ely-mention-toast-body {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .ely-mention-toast-title {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #facc15;
+    }
+    .ely-mention-toast-text {
+      font-size: 0.74rem;
+      color: #cbd5e1;
+      max-width: 220px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .ely-chat-input {
       flex: 1;
@@ -392,6 +566,7 @@
       <div class="ely-universal-chat-feed" id="elyUniversalChatFeed"></div>
 
       <div class="ely-chat-emotes">
+        <button type="button" class="ely-quick-mention-btn" id="elyQuickMention" title="Mention a player (@)">@</button>
         <button class="ely-emote-btn" data-emote="🎮">🎮</button>
         <button class="ely-emote-btn" data-emote="⚔️">⚔️</button>
         <button class="ely-emote-btn" data-emote="🔥">🔥</button>
@@ -400,7 +575,8 @@
       </div>
 
       <form class="ely-chat-form" id="elyUniversalChatForm">
-        <input type="text" class="ely-chat-input" id="elyUniversalChatInput" placeholder="Say something in arcade..." maxlength="120" autocomplete="off" />
+        <div class="ely-mention-dropdown ely-hidden" id="elyMentionDropdown"></div>
+        <input type="text" class="ely-chat-input" id="elyUniversalChatInput" placeholder="Say something in arcade... (@ to mention)" maxlength="120" autocomplete="off" />
         <button type="submit" class="ely-chat-send" title="Send message">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -419,6 +595,190 @@
   const feedEl = document.getElementById('elyUniversalChatFeed');
   const formEl = document.getElementById('elyUniversalChatForm');
   const inputEl = document.getElementById('elyUniversalChatInput');
+  const quickMentionBtn = document.getElementById('elyQuickMention');
+  const mentionDropdownEl = document.getElementById('elyMentionDropdown');
+  let activeMentionIdx = 0;
+
+  function escapeHtml(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function isUserMentioned(text, targetName) {
+    if (!text || !targetName) return false;
+    const cleanTarget = targetName.trim().toLowerCase();
+    const cleanText = text.toLowerCase();
+    if (cleanText.includes('@' + cleanTarget)) return true;
+    if (cleanTarget.startsWith('guest #') || cleanTarget.startsWith('guest#')) {
+      const digits = cleanTarget.replace(/guest\s*#?/, '').trim();
+      if (digits && (cleanText.includes('@guest#' + digits) || cleanText.includes('@guest ' + digits))) return true;
+      if (/\b@guest\b/i.test(text)) return true;
+    }
+    const firstWord = cleanTarget.split(' ')[0];
+    if (firstWord && firstWord.length >= 3 && cleanText.includes('@' + firstWord)) return true;
+    return false;
+  }
+
+  function formatTextWithMentions(text, myName) {
+    const escaped = escapeHtml(text);
+    const myClean = (myName || '').trim().toLowerCase();
+
+    return escaped.replace(/@([a-zA-Z0-9_\-]+(?: #[0-9]+)?)/g, (fullMatch, username) => {
+      const userClean = username.trim().toLowerCase();
+      const isMe = myClean && (
+        userClean === myClean ||
+        (myClean.startsWith('guest') && userClean.startsWith('guest')) ||
+        (myClean.split(' ')[0] === userClean && userClean.length >= 3)
+      );
+      const cls = isMe ? 'ely-chat-mention mention-me' : 'ely-chat-mention';
+      return `<span class="${cls}" data-mention="${escapeHtml(username)}">@${username}</span>`;
+    });
+  }
+
+  function showMentionToast(sender, text) {
+    const existing = document.querySelector('.ely-mention-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'ely-mention-toast';
+    toast.innerHTML = `
+      <div class="ely-mention-toast-icon">@</div>
+      <div class="ely-mention-toast-body">
+        <div class="ely-mention-toast-title">${escapeHtml(sender)} mentioned you!</div>
+        <div class="ely-mention-toast-text">${escapeHtml(text)}</div>
+      </div>
+    `;
+    toast.addEventListener('click', () => {
+      toggleDrawer(true);
+      toast.remove();
+    });
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+        setTimeout(() => toast.remove(), 300);
+      }
+    }, 4500);
+  }
+
+  function getMentionCandidates() {
+    const currentName = getSenderInfo().name.toLowerCase();
+    const set = new Set();
+    const candidates = [];
+
+    chatMessages.forEach(m => {
+      if (!m.isSystem && m.sender) {
+        const name = m.sender.trim();
+        if (name && name.toLowerCase() !== currentName && !set.has(name.toLowerCase())) {
+          set.add(name.toLowerCase());
+          candidates.push({ name: name, avatar: name.charAt(0).toUpperCase() });
+        }
+      }
+    });
+    return candidates;
+  }
+
+  function getQueryInfo() {
+    if (!inputEl) return null;
+    const val = inputEl.value;
+    const pos = inputEl.selectionStart;
+    const before = val.slice(0, pos);
+    const match = before.match(/@([a-zA-Z0-9_\-# ]*)$/);
+    if (!match) return null;
+    return {
+      query: match[1].trim(),
+      startPos: pos - match[0].length,
+      endPos: pos
+    };
+  }
+
+  function hideMentionDropdown() {
+    if (mentionDropdownEl) {
+      mentionDropdownEl.classList.add('ely-hidden');
+      mentionDropdownEl.innerHTML = '';
+    }
+    activeMentionIdx = 0;
+  }
+
+  function applyMention(name, info) {
+    if (!inputEl) return;
+    const val = inputEl.value;
+    const queryInfo = info || getQueryInfo();
+    let newVal;
+    let nextPos;
+
+    if (queryInfo) {
+      const before = val.slice(0, queryInfo.startPos);
+      const after = val.slice(queryInfo.endPos);
+      newVal = `${before}@${name} ${after}`;
+      nextPos = (before + `@${name} `).length;
+    } else {
+      newVal = val ? `${val} @${name} ` : `@${name} `;
+      nextPos = newVal.length;
+    }
+
+    inputEl.value = newVal;
+    inputEl.focus();
+    inputEl.setSelectionRange(nextPos, nextPos);
+    hideMentionDropdown();
+  }
+
+  function updateMentionDropdown() {
+    if (!mentionDropdownEl || !inputEl) return;
+    const info = getQueryInfo();
+    if (!info) {
+      hideMentionDropdown();
+      return;
+    }
+    const q = info.query.toLowerCase();
+    const candidates = getMentionCandidates().filter(c => !q || c.name.toLowerCase().includes(q));
+    if (candidates.length === 0) {
+      hideMentionDropdown();
+      return;
+    }
+
+    if (activeMentionIdx >= candidates.length) activeMentionIdx = 0;
+
+    mentionDropdownEl.innerHTML = `<div class="ely-mention-header">Mention Player (@)</div>`;
+    candidates.slice(0, 5).forEach((c, idx) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `ely-mention-item ${idx === activeMentionIdx ? 'active' : ''}`;
+      btn.innerHTML = `<span style="font-weight:700;">@${escapeHtml(c.name)}</span>`;
+      btn.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        applyMention(c.name, info);
+      });
+      mentionDropdownEl.appendChild(btn);
+    });
+    mentionDropdownEl.classList.remove('ely-hidden');
+  }
+
+  function setupClickToMention() {
+    if (!feedEl) return;
+    feedEl.querySelectorAll('.ely-chat-sender').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const senderName = el.textContent.trim();
+        if (senderName && !senderName.includes('System')) {
+          applyMention(senderName);
+        }
+      });
+    });
+    feedEl.querySelectorAll('.ely-chat-mention').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const mName = el.getAttribute('data-mention') || el.textContent.replace(/^@/, '').trim();
+        if (mName) applyMention(mName);
+      });
+    });
+  }
 
   function updateBadge() {
     if (unreadCount > 0) {
@@ -438,6 +798,7 @@
       scrollFeed();
     } else {
       drawerEl.classList.add('ely-hidden');
+      hideMentionDropdown();
     }
   }
 
@@ -448,9 +809,12 @@
   function renderFeed() {
     if (!feedEl) return;
     feedEl.innerHTML = '';
+    const myName = getSenderInfo().name;
+
     chatMessages.forEach(m => {
+      const isMeMentioned = isUserMentioned(m.text, myName);
       const item = document.createElement('div');
-      item.className = `ely-chat-item ${m.isSystem ? 'system-msg' : ''}`;
+      item.className = `ely-chat-item ${m.isSystem ? 'system-msg' : ''} ${isMeMentioned ? 'mentioned-me' : ''}`;
       const timeStr = formatTime(m);
       const avatarHtml = m.photoURL
         ? `<img src="${m.photoURL}" alt="${m.sender}" class="ely-chat-avatar" />`
@@ -460,14 +824,15 @@
         <div class="ely-chat-meta">
           <div class="ely-chat-sender-wrap">
             ${!m.isSystem ? avatarHtml : ''}
-            <span class="ely-chat-sender">${m.sender}</span>
+            <span class="ely-chat-sender" title="Click to mention ${escapeHtml(m.sender)}">${escapeHtml(m.sender)}</span>
           </div>
           <span class="ely-chat-time">${timeStr}</span>
         </div>
-        <div class="ely-chat-text">${m.text}</div>
+        <div class="ely-chat-text">${formatTextWithMentions(m.text, myName)}</div>
       `;
       feedEl.appendChild(item);
     });
+    setupClickToMention();
     scrollFeed();
   }
 
@@ -477,6 +842,66 @@
   // Toggle events
   toggleBtn.addEventListener('click', () => toggleDrawer(drawerEl.classList.contains('ely-hidden')));
   closeBtn.addEventListener('click', () => toggleDrawer(false));
+
+  // Quick Mention Button
+  if (quickMentionBtn) {
+    quickMentionBtn.addEventListener('click', () => {
+      if (!inputEl) return;
+      const val = inputEl.value;
+      if (!val.endsWith('@') && !val.endsWith('@ ')) {
+        inputEl.value = val ? `${val} @` : '@';
+      }
+      inputEl.focus();
+      updateMentionDropdown();
+    });
+  }
+
+  if (inputEl) {
+    inputEl.addEventListener('input', () => {
+      updateMentionDropdown();
+    });
+
+    inputEl.addEventListener('keydown', (e) => {
+      if (mentionDropdownEl && !mentionDropdownEl.classList.contains('ely-hidden')) {
+        const items = mentionDropdownEl.querySelectorAll('.ely-mention-item');
+        if (items.length > 0) {
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            activeMentionIdx = (activeMentionIdx + 1) % items.length;
+            items.forEach((it, idx) => it.classList.toggle('active', idx === activeMentionIdx));
+            return;
+          }
+          if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            activeMentionIdx = (activeMentionIdx - 1 + items.length) % items.length;
+            items.forEach((it, idx) => it.classList.toggle('active', idx === activeMentionIdx));
+            return;
+          }
+          if (e.key === 'Enter' || e.key === 'Tab') {
+            const activeItem = items[activeMentionIdx];
+            if (activeItem) {
+              e.preventDefault();
+              const name = activeItem.textContent.replace(/^@/, '').trim();
+              if (name) applyMention(name);
+              return;
+            }
+          }
+          if (e.key === 'Escape') {
+            e.preventDefault();
+            hideMentionDropdown();
+            return;
+          }
+        }
+      }
+    });
+  }
+
+  // Close mention dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (mentionDropdownEl && !mentionDropdownEl.contains(e.target) && e.target !== inputEl && e.target !== quickMentionBtn) {
+      hideMentionDropdown();
+    }
+  });
 
   // Emotes
   wrap.querySelectorAll('.ely-emote-btn').forEach(b => {
@@ -493,6 +918,7 @@
     if (!text) return;
     sendMessage(text);
     inputEl.value = '';
+    hideMentionDropdown();
   });
 
   // Sending Logic
@@ -539,6 +965,17 @@
     } catch (err) {}
   }
 
+  function handleIncomingMessage(m) {
+    const myName = getSenderInfo().name;
+    const isMeMentioned = (m.sender !== myName) && isUserMentioned(m.text, myName);
+    if (isMeMentioned) {
+      showMentionToast(m.sender, m.text);
+      playChatChime(true); // Metallic bell DING
+    } else if (drawerEl.classList.contains('ely-hidden')) {
+      playChatChime(false);
+    }
+  }
+
   // Receive from BroadcastChannel
   if (syncChannel) {
     syncChannel.onmessage = (event) => {
@@ -551,8 +988,8 @@
         if (drawerEl.classList.contains('ely-hidden')) {
           unreadCount++;
           updateBadge();
-          playChatChime();
         }
+        handleIncomingMessage(payload);
       }
     };
   }
@@ -570,8 +1007,8 @@
           if (drawerEl.classList.contains('ely-hidden')) {
             unreadCount++;
             updateBadge();
-            playChatChime();
           }
+          handleIncomingMessage(msg);
         }
       } catch (err) {}
     }
@@ -601,9 +1038,11 @@
 
     if (cloudMsgs && Array.isArray(cloudMsgs)) {
       let hasNew = false;
+      const newArrivals = [];
       cloudMsgs.forEach(m => {
         if (!isDuplicate(m)) {
           chatMessages.push(m);
+          newArrivals.push(m);
           hasNew = true;
         }
       });
@@ -612,10 +1051,10 @@
         saveCachedMessages(chatMessages);
         renderFeed();
         if (drawerEl.classList.contains('ely-hidden')) {
-          unreadCount++;
+          unreadCount += newArrivals.length;
           updateBadge();
-          playChatChime();
         }
+        newArrivals.forEach(handleIncomingMessage);
       }
     }
   }

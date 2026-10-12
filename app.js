@@ -56,6 +56,31 @@ function playHubSound(type) {
       gain.connect(ctx.destination);
       osc.start(now);
       osc.stop(now + 0.08);
+    } else if (type === 'ding') {
+      // Crisp metallic bell chime for @ mentions (D6 + D7 overtone)
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(1174.66, now); // D6
+      osc1.frequency.exponentialRampToValueAtTime(1170, now + 0.6);
+
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(2349.32, now); // D7 chime shimmer
+      osc2.frequency.exponentialRampToValueAtTime(2340, now + 0.5);
+
+      gain.gain.setValueAtTime(0.22, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.65);
+
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc1.start(now);
+      osc2.start(now);
+      osc1.stop(now + 0.7);
+      osc2.stop(now + 0.7);
     }
   } catch (e) {}
 }
@@ -239,6 +264,8 @@ const chatFeed = document.getElementById('chatFeed');
 const chatForm = document.getElementById('chatForm');
 const chatInput = document.getElementById('chatInput');
 const chatBadgeCount = document.getElementById('chatBadgeCount');
+const btnQuickMention = document.getElementById('btnQuickMention');
+const mentionDropdown = document.getElementById('mentionDropdown');
 
 // Fullscreen In-Arcade Game Stage Elements
 const gameStageOverlay = document.getElementById('gameStageOverlay');
@@ -337,6 +364,258 @@ function setAuthMode(signUp) {
 let unreadMessageCount = 0;
 let lastSeenMessageCount = 0;
 
+// Mention & Autocomplete State
+let latestOtherPlayers = [];
+let latestChatHistory = [];
+let hasLoadedInitialChat = false;
+const processedMessageIds = new Set();
+let activeMentionIndex = 0;
+
+function getMyDisplayName() {
+  const user = getLocalSessionUser();
+  if (user) {
+    return (user.displayName || (user.email ? user.email.split('@')[0] : 'Player')).trim();
+  }
+  const guestId = sessionStorage.getItem('elywolf_arcade_guest_id') || localStorage.getItem('elywolf_arcade_guest_id');
+  return (guestId || 'Player').trim();
+}
+
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function isUserMentioned(text, targetName) {
+  if (!text || !targetName) return false;
+  const cleanTarget = targetName.trim().toLowerCase();
+  const cleanText = text.toLowerCase();
+
+  // 1. Direct @Name match
+  if (cleanText.includes('@' + cleanTarget)) return true;
+
+  // 2. Guest match: "Guest #1234" -> "@Guest #1234", "@Guest#1234", "@Guest"
+  if (cleanTarget.startsWith('guest #') || cleanTarget.startsWith('guest#')) {
+    const digits = cleanTarget.replace(/guest\s*#?/, '').trim();
+    if (digits && (cleanText.includes('@guest#' + digits) || cleanText.includes('@guest ' + digits))) {
+      return true;
+    }
+    if (/\b@guest\b/i.test(text)) return true;
+  }
+
+  // 3. First word match for multi-word usernames (e.g. "@Ely" for "Ely Wolf")
+  const firstWord = cleanTarget.split(' ')[0];
+  if (firstWord && firstWord.length >= 3 && cleanText.includes('@' + firstWord)) {
+    return true;
+  }
+
+  return false;
+}
+
+function formatChatText(text, myName) {
+  const escaped = escapeHtml(text);
+  const myClean = (myName || '').trim().toLowerCase();
+
+  return escaped.replace(/@([a-zA-Z0-9_\-]+(?: #[0-9]+)?)/g, (fullMatch, username) => {
+    const userClean = username.trim().toLowerCase();
+    const isMe = myClean && (
+      userClean === myClean ||
+      (myClean.startsWith('guest') && userClean.startsWith('guest')) ||
+      (myClean.split(' ')[0] === userClean && userClean.length >= 3)
+    );
+    const badgeClass = isMe ? 'chat-mention mention-me' : 'chat-mention';
+    return `<span class="${badgeClass}" data-mention="${escapeHtml(username)}">@${username}</span>`;
+  });
+}
+
+function showMentionToast(sender, text) {
+  const existing = document.querySelector('.mention-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.className = 'mention-toast';
+  toast.setAttribute('role', 'alert');
+  toast.innerHTML = `
+    <div class="mention-toast-icon">@</div>
+    <div class="mention-toast-body">
+      <div class="mention-toast-title">${escapeHtml(sender)} mentioned you!</div>
+      <div class="mention-toast-text">${escapeHtml(text)}</div>
+    </div>
+  `;
+
+  toast.addEventListener('click', () => {
+    toggleChatDrawer(true);
+    toast.remove();
+  });
+
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    if (toast.parentNode) {
+      toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(-12px)';
+      setTimeout(() => toast.remove(), 320);
+    }
+  }, 4500);
+}
+
+function getMentionCandidates() {
+  const myName = getMyDisplayName().toLowerCase();
+  const map = new Map();
+
+  // 1. Add other online players
+  latestOtherPlayers.forEach(p => {
+    const pName = (p.displayName || '').trim();
+    if (pName && pName.toLowerCase() !== myName && !map.has(pName.toLowerCase())) {
+      map.set(pName.toLowerCase(), {
+        name: pName,
+        avatar: p.avatar || 'P',
+        photoURL: p.photoURL || null,
+        status: p.status || 'Online'
+      });
+    }
+  });
+
+  // 2. Add recent chatters
+  latestChatHistory.forEach(m => {
+    if (!m.isSystem && m.sender) {
+      const sName = m.sender.trim();
+      if (sName && sName.toLowerCase() !== myName && !map.has(sName.toLowerCase())) {
+        map.set(sName.toLowerCase(), {
+          name: sName,
+          avatar: sName.charAt(0).toUpperCase(),
+          photoURL: m.photoURL || null,
+          status: 'Recent Chatter'
+        });
+      }
+    }
+  });
+
+  return Array.from(map.values());
+}
+
+function getMentionQueryInfo() {
+  if (!chatInput) return null;
+  const val = chatInput.value;
+  const pos = chatInput.selectionStart;
+  const before = val.slice(0, pos);
+  const match = before.match(/@([a-zA-Z0-9_\-# ]*)$/);
+  if (!match) return null;
+  return {
+    query: match[1].trim(),
+    startPos: pos - match[0].length,
+    endPos: pos
+  };
+}
+
+function hideMentionDropdown() {
+  if (mentionDropdown) {
+    mentionDropdown.classList.add('hidden');
+    mentionDropdown.innerHTML = '';
+  }
+  activeMentionIndex = 0;
+}
+
+function applyMention(name, info) {
+  if (!chatInput) return;
+  const val = chatInput.value;
+  const queryInfo = info || getMentionQueryInfo();
+  let newVal;
+  let nextPos;
+
+  if (queryInfo) {
+    const before = val.slice(0, queryInfo.startPos);
+    const after = val.slice(queryInfo.endPos);
+    newVal = `${before}@${name} ${after}`;
+    nextPos = (before + `@${name} `).length;
+  } else {
+    newVal = val ? `${val} @${name} ` : `@${name} `;
+    nextPos = newVal.length;
+  }
+
+  chatInput.value = newVal;
+  chatInput.focus();
+  chatInput.setSelectionRange(nextPos, nextPos);
+  hideMentionDropdown();
+}
+
+function updateMentionDropdown() {
+  if (!mentionDropdown || !chatInput) return;
+  const info = getMentionQueryInfo();
+  if (!info) {
+    hideMentionDropdown();
+    return;
+  }
+
+  const q = info.query.toLowerCase();
+  const allCandidates = getMentionCandidates();
+  const filtered = allCandidates.filter(c => !q || c.name.toLowerCase().includes(q));
+
+  if (filtered.length === 0) {
+    hideMentionDropdown();
+    return;
+  }
+
+  if (activeMentionIndex >= filtered.length) {
+    activeMentionIndex = 0;
+  }
+
+  mentionDropdown.innerHTML = `<div class="mention-header">Mention Player (@)</div>`;
+
+  filtered.slice(0, 6).forEach((c, idx) => {
+    const itemBtn = document.createElement('button');
+    itemBtn.type = 'button';
+    itemBtn.className = `mention-item ${idx === activeMentionIndex ? 'active' : ''}`;
+    const avatarHtml = c.photoURL
+      ? `<img src="${c.photoURL}" class="mention-item-avatar" alt="${c.name}" />`
+      : `<span class="chip-avatar" style="width:20px;height:20px;font-size:0.6rem;">${c.avatar}</span>`;
+
+    itemBtn.innerHTML = `
+      ${avatarHtml}
+      <span class="mention-item-name">${escapeHtml(c.name)}</span>
+      <span class="mention-item-status">${c.status}</span>
+    `;
+
+    itemBtn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      applyMention(c.name, info);
+    });
+
+    mentionDropdown.appendChild(itemBtn);
+  });
+
+  mentionDropdown.classList.remove('hidden');
+}
+
+function setupMentionClickHandlers() {
+  if (!chatFeed) return;
+  chatFeed.querySelectorAll('.chat-sender').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const senderName = el.textContent.trim();
+      if (senderName && !senderName.includes('System')) {
+        applyMention(senderName);
+        playHubSound('hover');
+      }
+    });
+  });
+
+  chatFeed.querySelectorAll('.chat-mention').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const mentionName = el.getAttribute('data-mention') || el.textContent.replace(/^@/, '').trim();
+      if (mentionName) {
+        applyMention(mentionName);
+        playHubSound('hover');
+      }
+    });
+  });
+}
+
 function updateBadgeUI() {
   const countStr = unreadMessageCount > 0 ? String(unreadMessageCount) : '0';
   const showBadge = unreadMessageCount > 0;
@@ -361,6 +640,7 @@ function toggleChatDrawer(show) {
     updateBadgeUI();
   } else {
     chatDrawer.classList.add('hidden');
+    hideMentionDropdown();
   }
 }
 
@@ -384,6 +664,8 @@ function renderOnlinePlayers(players) {
     if (currentUid && p.uid && p.uid === currentUid) return false;
     return true;
   });
+
+  latestOtherPlayers = otherPlayers;
 
   // Update Hub text and HUD count
   if (onlineCountText) {
@@ -499,24 +781,54 @@ function formatChatTime(m) {
 // Render Chat Feed
 function renderChatFeed(messages) {
   if (!chatFeed) return;
-  
-  const isDrawerOpen = !chatDrawer.classList.contains('hidden');
-  const newDiff = lastSeenMessageCount > 0 ? (messages.length - lastSeenMessageCount) : 0;
-  lastSeenMessageCount = messages.length;
+  latestChatHistory = messages;
 
-  if (newDiff > 0) {
+  const isDrawerOpen = !chatDrawer.classList.contains('hidden');
+  const myName = getMyDisplayName();
+  let hasMentionForMe = false;
+  let newMessagesCount = 0;
+
+  if (hasLoadedInitialChat) {
+    messages.forEach(m => {
+      const msgKey = m.id || `${m.sender}_${m.timestamp || m.text}`;
+      if (!processedMessageIds.has(msgKey)) {
+        processedMessageIds.add(msgKey);
+        newMessagesCount++;
+        // Play ding sound & trigger alert when mentioned by another user
+        if (m.sender !== myName && isUserMentioned(m.text, myName)) {
+          hasMentionForMe = true;
+          showMentionToast(m.sender, m.text);
+        }
+      }
+    });
+  } else {
+    // Initial load: populate cache without playing sounds
+    messages.forEach(m => {
+      const msgKey = m.id || `${m.sender}_${m.timestamp || m.text}`;
+      processedMessageIds.add(msgKey);
+    });
+    hasLoadedInitialChat = true;
+  }
+
+  // Crisp metallic DING sound on mention!
+  if (hasMentionForMe) {
+    playHubSound('ding');
     if (!isDrawerOpen) {
-      unreadMessageCount += newDiff;
+      unreadMessageCount += newMessagesCount;
       updateBadgeUI();
-      playHubSound('message');
     }
+  } else if (newMessagesCount > 0 && !isDrawerOpen) {
+    unreadMessageCount += newMessagesCount;
+    updateBadgeUI();
+    playHubSound('message');
   }
 
   chatFeed.innerHTML = '';
 
   messages.forEach(m => {
+    const isMeMentioned = isUserMentioned(m.text, myName);
     const item = document.createElement('div');
-    item.className = `chat-item ${m.isSystem ? 'system-msg' : ''}`;
+    item.className = `chat-item ${m.isSystem ? 'system-msg' : ''} ${isMeMentioned ? 'mentioned-me' : ''}`;
     const displayTime = formatChatTime(m);
     const chatAvatarHtml = m.photoURL
       ? `<img src="${m.photoURL}" alt="${m.sender}" class="chat-msg-avatar" />`
@@ -525,15 +837,16 @@ function renderChatFeed(messages) {
       <div class="chat-item-meta">
         <div class="chat-sender-wrap">
           ${!m.isSystem ? chatAvatarHtml : ''}
-          <span class="chat-sender">${m.sender}</span>
+          <span class="chat-sender" title="Click to @mention ${escapeHtml(m.sender)}">${escapeHtml(m.sender)}</span>
         </div>
         <span class="chat-time">${displayTime}</span>
       </div>
-      <div class="chat-text">${m.text}</div>
+      <div class="chat-text">${formatChatText(m.text, myName)}</div>
     `;
     chatFeed.appendChild(item);
   });
 
+  setupMentionClickHandlers();
   scrollChatToBottom();
 }
 
@@ -561,6 +874,70 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // Quick Mention Button (@)
+  if (btnQuickMention) {
+    btnQuickMention.addEventListener('click', () => {
+      if (!chatInput) return;
+      const val = chatInput.value;
+      if (!val.endsWith('@') && !val.endsWith('@ ')) {
+        chatInput.value = val ? `${val} @` : '@';
+      }
+      chatInput.focus();
+      updateMentionDropdown();
+      playHubSound('hover');
+    });
+  }
+
+  // Chat Input Mention & Key Navigation
+  if (chatInput) {
+    chatInput.addEventListener('input', () => {
+      updateMentionDropdown();
+    });
+
+    chatInput.addEventListener('keydown', (e) => {
+      if (mentionDropdown && !mentionDropdown.classList.contains('hidden')) {
+        const items = mentionDropdown.querySelectorAll('.mention-item');
+        if (items.length > 0) {
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            activeMentionIndex = (activeMentionIndex + 1) % items.length;
+            items.forEach((it, idx) => it.classList.toggle('active', idx === activeMentionIndex));
+            return;
+          }
+          if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            activeMentionIndex = (activeMentionIndex - 1 + items.length) % items.length;
+            items.forEach((it, idx) => it.classList.toggle('active', idx === activeMentionIndex));
+            return;
+          }
+          if (e.key === 'Enter' || e.key === 'Tab') {
+            const activeItem = items[activeMentionIndex];
+            if (activeItem) {
+              e.preventDefault();
+              const nameEl = activeItem.querySelector('.mention-item-name');
+              if (nameEl) {
+                applyMention(nameEl.textContent.trim());
+              }
+              return;
+            }
+          }
+          if (e.key === 'Escape') {
+            e.preventDefault();
+            hideMentionDropdown();
+            return;
+          }
+        }
+      }
+    });
+  }
+
+  // Close mention dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (mentionDropdown && !mentionDropdown.contains(e.target) && e.target !== chatInput && e.target !== btnQuickMention) {
+      hideMentionDropdown();
+    }
+  });
+
   // Chat Form Submit
   if (chatForm) {
     chatForm.addEventListener('submit', (e) => {
@@ -569,6 +946,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!text) return;
       sendChatMessage(text);
       chatInput.value = '';
+      hideMentionDropdown();
     });
   }
 

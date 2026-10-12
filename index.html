@@ -245,8 +245,9 @@
         <!-- Dynamically rendered messages -->
       </div>
 
-      <!-- QUICK EMOTE BAR -->
+      <!-- QUICK EMOTE & MENTION BAR -->
       <div class="chat-emotes">
+        <button type="button" class="mention-quick-btn" id="btnQuickMention" title="Mention a player (@)">@</button>
         <button class="emote-btn" data-emote="🎮">🎮</button>
         <button class="emote-btn" data-emote="⚔️">⚔️</button>
         <button class="emote-btn" data-emote="🔥">🔥</button>
@@ -256,7 +257,9 @@
 
       <!-- INPUT FORM -->
       <form id="chatForm" class="chat-form">
-        <input type="text" id="chatInput" placeholder="Say something in lobby..." maxlength="120" autocomplete="off" />
+        <!-- Autocomplete mention popup menu -->
+        <div id="mentionDropdown" class="mention-dropdown hidden"></div>
+        <input type="text" id="chatInput" placeholder="Say something in lobby... (@ to mention)" maxlength="120" autocomplete="off" />
         <button type="submit" class="chat-send-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="22" y1="2" x2="11" y2="13"></line>
