@@ -1396,10 +1396,15 @@ class MazeGame {
       const btn = document.createElement('button');
       btn.className = `lvl-btn ${isLocked ? 'locked' : ''} ${isCurrent ? 'active-current' : ''}`;
       btn.title = `Maze ${l}: ${song.title} by ${song.author}`;
+      const musicIconSvg = `<svg class="inline-music-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>`;
+      const lockIconSvg = `<svg class="lvl-lock-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`;
+      const starIconSvg = `<svg class="lvl-star-svg" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
+      const starsGroupHtml = `<span class="lvl-stars-group">${starIconSvg}${starIconSvg}${starIconSvg}</span>`;
+
       btn.innerHTML = `
         <span class="lvl-num">${l}</span>
-        <span class="lvl-song-name">🎵 ${song.title}</span>
-        <span class="lvl-stars">${isLocked ? '🔒' : '★★★'}</span>
+        <span class="lvl-song-name">${musicIconSvg} <span>${song.title}</span></span>
+        <span class="lvl-stars">${isLocked ? lockIconSvg : starsGroupHtml}</span>
       `;
 
       btn.onclick = () => {
@@ -2740,11 +2745,36 @@ class MazeGame {
     ctx.stroke();
 
     if (!allKeys) {
-      // Locked Icon
-      ctx.fillStyle = '#f87171';
-      ctx.font = '12px "JetBrains Mono", monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText('🔒', portalX, portalY + 4);
+      // Custom Canvas-Drawn Metallic Padlock (Zero emojis, 100% custom vector asset)
+      ctx.save();
+      // Shackle
+      ctx.strokeStyle = '#fca5a5';
+      ctx.lineWidth = 2.2;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.arc(portalX, portalY - 2.5, 4.5, Math.PI, 0);
+      ctx.stroke();
+
+      // Padlock Body
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      if (typeof ctx.roundRect === 'function') {
+        ctx.roundRect(portalX - 6.5, portalY - 2, 13, 10, 2);
+      } else {
+        ctx.rect(portalX - 6.5, portalY - 2, 13, 10);
+      }
+      ctx.fill();
+      ctx.strokeStyle = '#f87171';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Keyhole
+      ctx.fillStyle = '#450a0a';
+      ctx.beginPath();
+      ctx.arc(portalX, portalY + 1.5, 1.6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillRect(portalX - 0.9, portalY + 1.5, 1.8, 3.2);
+      ctx.restore();
     }
     ctx.restore();
 
