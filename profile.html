@@ -627,6 +627,13 @@
       gap: 10px;
     }
 
+    .lb-avatar-link {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
     .lb-avatar {
       width: 28px;
       height: 28px;
@@ -640,15 +647,17 @@
       color: #fff;
       overflow: hidden;
       flex-shrink: 0;
-      border: none;
-      outline: none;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
     }
 
     .lb-avatar:has(img),
     .lb-avatar.has-img {
-      background: transparent;
-      border: none;
-      outline: none;
+      background: transparent !important;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
     }
 
     .lb-avatar img {
@@ -657,8 +666,8 @@
       object-fit: cover;
       display: block;
       border-radius: 50%;
-      border: none;
-      outline: none;
+      border: none !important;
+      outline: none !important;
     }
 
     .lb-link {
@@ -1024,14 +1033,23 @@
           const rank = idx + 1;
           const tr = document.createElement('tr');
           const rankClass = rank === 1 ? 'r1' : rank === 2 ? 'r2' : rank === 3 ? 'r3' : '';
-          const avatarHtml = p.photoURL
-            ? `<div class="lb-avatar has-img" style="background:transparent;border:none;outline:none;"><img src="${safe(p.photoURL)}" alt="${safe(p.name)}" style="border:none;outline:none;" /></div>`
-            : `<div class="lb-avatar">${(p.name || 'P').charAt(0).toUpperCase()}</div>`;
+          const avatarCellId = `lbAvatarCell-${idx}`;
+
+          const isMe = myIdentity.name && p.name && myIdentity.name.trim().toLowerCase() === p.name.trim().toLowerCase();
+          let photo = p.photoURL || (isMe ? myIdentity.photoURL : null);
+          if (!photo && store.getLocalProfile) {
+            photo = store.getLocalProfile(p.name)?.photoURL || null;
+          }
+
           tr.innerHTML = `
             <td class="lb-rank ${rankClass}">#${rank}</td>
             <td>
               <div class="lb-user-cell">
-                ${avatarHtml}
+                <a href="profile.html?user=${encodeURIComponent(p.name)}" class="lb-avatar-link" title="View ${safe(p.name)}'s profile">
+                  <div class="lb-avatar ${photo ? 'has-img' : ''}" id="${avatarCellId}">
+                    ${(p.name || 'P').charAt(0).toUpperCase()}
+                  </div>
+                </a>
                 <a href="profile.html?user=${encodeURIComponent(p.name)}" class="lb-link">${safe(p.name)}</a>
               </div>
             </td>
@@ -1041,6 +1059,55 @@
             <td class="lb-mono"><span style="color:var(--green);">${p.wins}</span> / <span style="color:var(--red);">${p.losses}</span></td>
           `;
           leaderboardTbody.appendChild(tr);
+
+          const avatarEl = tr.querySelector(`#${avatarCellId}`);
+          if (photo && avatarEl) {
+            avatarEl.innerHTML = '';
+            avatarEl.classList.add('has-img');
+            avatarEl.style.background = 'transparent';
+            const img = document.createElement('img');
+            img.src = photo;
+            img.alt = p.name || 'Player';
+            img.style.border = 'none';
+            img.style.outline = 'none';
+            img.style.display = 'block';
+            avatarEl.appendChild(img);
+          }
+
+          // Asynchronously resolve photo from any available source if not yet displayed
+          const resolveRow = async () => {
+            let resolved = photo;
+            if (!resolved && store.findPhotoFromAnySource) {
+              resolved = await store.findPhotoFromAnySource(p.name);
+            }
+            if (!resolved && store.fetchProfile) {
+              try {
+                const res = await store.fetchProfile(p.name);
+                resolved = res?.profile?.photoURL;
+              } catch (e) {}
+            }
+            if (resolved) {
+              const el = document.getElementById(avatarCellId);
+              if (el) {
+                el.classList.add('has-img');
+                el.style.background = 'transparent';
+                el.style.border = 'none';
+                el.style.outline = 'none';
+                el.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = resolved;
+                img.alt = p.name || 'Player';
+                img.style.border = 'none';
+                img.style.outline = 'none';
+                img.style.display = 'block';
+                el.appendChild(img);
+              }
+              if (!p.photoURL && store.syncProfile) {
+                store.syncProfile(p.name, resolved);
+              }
+            }
+          };
+          resolveRow();
         });
       }
 

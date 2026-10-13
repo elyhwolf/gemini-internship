@@ -91,6 +91,10 @@
     try { localStorage.setItem(LOCAL_KEY, JSON.stringify(map)); } catch (e) {}
   }
 
+  const DEFAULT_AVATARS = {
+    'elylegend33': 'data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%20fill%3D%22none%22%20stroke%3D%22%2338bdf8%22%20stroke-width%3D%222%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%2216%22%20fill%3D%22%230f172a%22/%3E%3Cpolygon%20points%3D%2216%2C3%2028%2C12%2024%2C29%208%2C29%204%2C12%22%3E%3C/polygon%3E%3Ccircle%20cx%3D%2211%22%20cy%3D%2216%22%20r%3D%222%22%20fill%3D%22%2338bdf8%22%3E%3C/circle%3E%3Ccircle%20cx%3D%2221%22%20cy%3D%2216%22%20r%3D%222%22%20fill%3D%22%2338bdf8%22%3E%3C/circle%3E%3Cpolygon%20points%3D%2216%2C21%2013%2C25%2019%2C25%22%20fill%3D%22%2338bdf8%22%3E%3C/polygon%3E%3C/svg%3E'
+  };
+
   function findLocalPhoto(name) {
     if (!name) return null;
     const clean = String(name).trim().toLowerCase();
@@ -107,6 +111,9 @@
         }
       }
     } catch (e) {}
+    if (DEFAULT_AVATARS[clean]) {
+      return DEFAULT_AVATARS[clean];
+    }
     return null;
   }
 
@@ -313,6 +320,11 @@
         if (match && match.photoURL) return match.photoURL;
       }
     } catch (e) {}
+
+    // 6. Built-in arcade default avatars
+    if (DEFAULT_AVATARS[clean]) {
+      return DEFAULT_AVATARS[clean];
+    }
 
     return null;
   }

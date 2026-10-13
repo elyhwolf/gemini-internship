@@ -91,6 +91,10 @@
     try { localStorage.setItem(LOCAL_KEY, JSON.stringify(map)); } catch (e) {}
   }
 
+  const DEFAULT_AVATARS = {
+    'elylegend33': 'data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%20fill%3D%22none%22%20stroke%3D%22%2338bdf8%22%20stroke-width%3D%222%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%2216%22%20fill%3D%22%230f172a%22/%3E%3Cpolygon%20points%3D%2216%2C3%2028%2C12%2024%2C29%208%2C29%204%2C12%22%3E%3C/polygon%3E%3Ccircle%20cx%3D%2211%22%20cy%3D%2216%22%20r%3D%222%22%20fill%3D%22%2338bdf8%22%3E%3C/circle%3E%3Ccircle%20cx%3D%2221%22%20cy%3D%2216%22%20r%3D%222%22%20fill%3D%22%2338bdf8%22%3E%3C/circle%3E%3Cpolygon%20points%3D%2216%2C21%2013%2C25%2019%2C25%22%20fill%3D%22%2338bdf8%22%3E%3C/polygon%3E%3C/svg%3E'
+  };
+
   function findLocalPhoto(name) {
     if (!name) return null;
     const clean = String(name).trim().toLowerCase();
@@ -107,6 +111,9 @@
         }
       }
     } catch (e) {}
+    if (DEFAULT_AVATARS[clean]) {
+      return DEFAULT_AVATARS[clean];
+    }
     return null;
   }
 
@@ -264,26 +271,133 @@
     return { duplicate: false, xpDelta: delta, profile };
   }
 
+  async function findPhotoFromAnySource(name) {
+    if (!name) return null;
+    const clean = String(name).trim().toLowerCase();
+
+    // 1. Current identity or local DB
+    const local = findLocalPhoto(name);
+    if (local) return local;
+
+    // 2. Local profile store cache
+    try {
+      const all = loadAll();
+      const p = all[keyOf(name)];
+      if (p && p.photoURL) return p.photoURL;
+    } catch (e) {}
+
+    // 3. Presence cache in sessionStorage / localStorage
+    try {
+      const presRaw = sessionStorage.getItem('elywolf_presence_cache') || localStorage.getItem('elywolf_presence_cache');
+      if (presRaw) {
+        const list = JSON.parse(presRaw);
+        if (Array.isArray(list)) {
+          const match = list.find(p => String(p.displayName || p.name || '').trim().toLowerCase() === clean && p.photoURL);
+          if (match && match.photoURL) return match.photoURL;
+        }
+      }
+    } catch (e) {}
+
+    // 4. Universal chat history cache
+    try {
+      const chat = JSON.parse(localStorage.getItem('elywolf_universal_chat_history') || '[]');
+      if (Array.isArray(chat)) {
+        for (let i = chat.length - 1; i >= 0; i--) {
+          const m = chat[i];
+          if (m && String(m.sender || '').trim().toLowerCase() === clean && m.photoURL) {
+            return m.photoURL;
+          }
+        }
+      }
+    } catch (e) {}
+
+    // 5. Query live presence endpoint
+    try {
+      const out = await apiFetch('/api/presence');
+      if (out && out.data && Array.isArray(out.data.players)) {
+        try { sessionStorage.setItem('elywolf_presence_cache', JSON.stringify(out.data.players)); } catch (e) {}
+        const match = out.data.players.find(p => String(p.displayName || '').trim().toLowerCase() === clean && p.photoURL);
+        if (match && match.photoURL) return match.photoURL;
+      }
+    } catch (e) {}
+
+    // 6. Built-in arcade default avatars
+    if (DEFAULT_AVATARS[clean]) {
+      return DEFAULT_AVATARS[clean];
+    }
+
+    return null;
+  }
+
+  async function syncProfile(name, photoURL) {
+    if (!name) return;
+    const key = keyOf(name);
+    const all = loadAll();
+    if (all[key]) {
+      if (photoURL) all[key].photoURL = photoURL;
+      saveAll(all);
+    }
+    if (photoURL) {
+      try {
+        await apiFetch('/api/profiles', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'sync_profile', name, photoURL })
+        });
+      } catch (e) {}
+    }
+  }
+
+  async function syncFullProfile(name, profileData) {
+    if (!name || !profileData) return;
+    try {
+      await apiFetch('/api/profiles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'sync_full_profile', name, profile: profileData })
+      });
+    } catch (e) {}
+  }
+
   /**
-   * Fetch a profile by name. Prefers whichever copy (cloud / this browser)
-   * has recorded more matches, so un-synced local results are never hidden.
+   * Fetch a profile by name. Cloud is the universal source of truth
+   * so all players across all devices see identical match counts and XP.
    */
   async function fetchProfile(name) {
-    const local = getLocalProfile(name);
     let server = null;
     try {
       const out = await apiFetch('/api/profiles?name=' + encodeURIComponent(name));
       if (out.status === 200 && out.data && out.data.profile) server = out.data.profile;
     } catch (e) {}
 
-    let chosen = null;
-    if (server && local) chosen = local.matches > server.matches ? local : server;
-    else chosen = server || local;
+    const local = getLocalProfile(name);
 
-    if (!chosen) return { profile: emptyProfile(name), exists: false, source: 'none' };
-    if (!chosen.photoURL) chosen.photoURL = findLocalPhoto(name);
+    // Server is the universal ground truth
+    let chosen = server;
+    if (!chosen) {
+      chosen = local || emptyProfile(name);
+      if (local && (local.matches > 0 || local.xp > 0)) {
+        syncFullProfile(name, local);
+      }
+    } else {
+      // Keep local storage synchronized with universal server data
+      const all = loadAll();
+      all[keyOf(name)] = chosen;
+      saveAll(all);
+    }
+
+    if (!chosen.photoURL) {
+      const photo = await findPhotoFromAnySource(name);
+      if (photo) {
+        chosen.photoURL = photo;
+        const all = loadAll();
+        all[keyOf(name)] = chosen;
+        saveAll(all);
+        syncProfile(name, photo);
+      }
+    }
     chosen.level = levelFor(chosen.xp);
-    return { profile: chosen, exists: true, source: chosen === local ? 'local' : 'cloud' };
+    return { profile: chosen, exists: Boolean(server || local), source: server ? 'cloud' : (local ? 'local' : 'new') };
   }
 
   async function fetchLeaderboard() {
@@ -297,6 +411,14 @@
   // Retry any queued results shortly after load
   setTimeout(flushPending, 1500);
 
+  // Auto-sync current user's profile and photo on load
+  try {
+    const me = getIdentity();
+    if (me && me.name && me.photoURL) {
+      setTimeout(() => syncProfile(me.name, me.photoURL), 800);
+    }
+  } catch (e) {}
+
   window.ElyProfiles = {
     RULES,
     GAMES,
@@ -308,6 +430,9 @@
     fetchProfile,
     fetchLeaderboard,
     getLocalProfile,
-    flushPending
+    flushPending,
+    findPhotoFromAnySource,
+    syncProfile,
+    syncFullProfile
   };
 })();

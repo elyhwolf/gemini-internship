@@ -86,21 +86,34 @@ def _clean_name(name):
     return str(name or '').strip()[:40]
 
 
+DEFAULT_WOLF_AVATAR = 'data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%20fill%3D%22none%22%20stroke%3D%22%2338bdf8%22%20stroke-width%3D%222%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%2216%22%20fill%3D%22%230f172a%22/%3E%3Cpolygon%20points%3D%2216%2C3%2028%2C12%2024%2C29%208%2C29%204%2C12%22%3E%3C/polygon%3E%3Ccircle%20cx%3D%2211%22%20cy%3D%2216%22%20r%3D%222%22%20fill%3D%22%2338bdf8%22%3E%3C/circle%3E%3Ccircle%20cx%3D%2221%22%20cy%3D%2216%22%20r%3D%222%22%20fill%3D%22%2338bdf8%22%3E%3C/circle%3E%3Cpolygon%20points%3D%2216%2C21%2013%2C25%2019%2C25%22%20fill%3D%22%2338bdf8%22%3E%3C/polygon%3E%3C/svg%3E'
+
+
 def _safe_photo(url):
     if not isinstance(url, str):
         return None
     url = url.strip()
     if url.startswith(('http://', 'https://', 'data:image/')):
-        if len(url) <= 100000:
+        if len(url) <= 1000000:
             return url
+    return None
+
+
+def _photo_for(profile):
+    p = profile.get('photoURL')
+    if p:
+        return p
+    if str(profile.get('name') or '').strip().lower() == 'elylegend33':
+        return DEFAULT_WOLF_AVATAR
     return None
 
 
 def _new_profile(name):
     now = int(time.time() * 1000)
+    photo = DEFAULT_WOLF_AVATAR if str(name or '').strip().lower() == 'elylegend33' else None
     return {
         'name': name,
-        'photoURL': None,
+        'photoURL': photo,
         'xp': 0,
         'matches': 0,
         'wins': 0,
@@ -159,6 +172,7 @@ def _apply_result(profile, game, match_id, result, opponent, ts):
 def _public(profile):
     out = dict(profile)
     out.pop('seen', None)
+    out['photoURL'] = _photo_for(profile)
     out['level'] = profile['xp'] // XP_PER_LEVEL + 1
     return out
 
@@ -166,7 +180,7 @@ def _public(profile):
 def _summary(profile):
     return {
         'name': profile['name'],
-        'photoURL': profile.get('photoURL'),
+        'photoURL': _photo_for(profile),
         'xp': profile['xp'],
         'level': profile['xp'] // XP_PER_LEVEL + 1,
         'matches': profile['matches'],
@@ -252,9 +266,13 @@ class handler(BaseHTTPRequestHandler):
                 profiles = dict(_fetch_from_cloud())
                 key = _key(name)
                 p = profiles.get(key) or _new_profile(name)
-                for f in ('xp', 'wins', 'losses', 'draws', 'matches', 'streak', 'bestStreak', 'games', 'history', 'photoURL'):
+                for f in ('xp', 'wins', 'losses', 'draws', 'matches', 'streak', 'bestStreak', 'games', 'history'):
                     if f in stats:
                         p[f] = stats[f]
+                if stats.get('photoURL'):
+                    safe_url = _safe_photo(stats['photoURL'])
+                    if safe_url:
+                        p['photoURL'] = safe_url
                 p['updatedAt'] = int(time.time() * 1000)
                 profiles[key] = p
                 _save_to_cloud(profiles)
