@@ -336,23 +336,43 @@
     }
   }
 
+  async function syncFullProfile(name, profileData) {
+    if (!name || !profileData) return;
+    try {
+      await apiFetch('/api/profiles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'sync_full_profile', name, profile: profileData })
+      });
+    } catch (e) {}
+  }
+
   /**
-   * Fetch a profile by name. Prefers whichever copy (cloud / this browser)
-   * has recorded more matches, so un-synced local results are never hidden.
+   * Fetch a profile by name. Cloud is the universal source of truth
+   * so all players across all devices see identical match counts and XP.
    */
   async function fetchProfile(name) {
-    const local = getLocalProfile(name);
     let server = null;
     try {
       const out = await apiFetch('/api/profiles?name=' + encodeURIComponent(name));
       if (out.status === 200 && out.data && out.data.profile) server = out.data.profile;
     } catch (e) {}
 
-    let chosen = null;
-    if (server && local) chosen = local.matches > server.matches ? local : server;
-    else chosen = server || local;
+    const local = getLocalProfile(name);
 
-    if (!chosen) chosen = emptyProfile(name);
+    // Server is the universal ground truth
+    let chosen = server;
+    if (!chosen) {
+      chosen = local || emptyProfile(name);
+      if (local && (local.matches > 0 || local.xp > 0)) {
+        syncFullProfile(name, local);
+      }
+    } else {
+      // Keep local storage synchronized with universal server data
+      const all = loadAll();
+      all[keyOf(name)] = chosen;
+      saveAll(all);
+    }
 
     if (!chosen.photoURL) {
       const photo = await findPhotoFromAnySource(name);
@@ -365,7 +385,7 @@
       }
     }
     chosen.level = levelFor(chosen.xp);
-    return { profile: chosen, exists: Boolean(server || local), source: chosen === local ? 'local' : (server ? 'cloud' : 'new') };
+    return { profile: chosen, exists: Boolean(server || local), source: server ? 'cloud' : (local ? 'local' : 'new') };
   }
 
   async function fetchLeaderboard() {
@@ -400,6 +420,7 @@
     getLocalProfile,
     flushPending,
     findPhotoFromAnySource,
-    syncProfile
+    syncProfile,
+    syncFullProfile
   };
 })();

@@ -3,6 +3,8 @@ from urllib.parse import urlparse, parse_qs
 import json
 import time
 import urllib.request
+import zlib
+import base64
 
 # Fixed permanent cloud storage ID for player profiles & XP
 PROFILES_ID = "ff808181a09d98f701a132470b1b4def"
@@ -29,8 +31,18 @@ def _fetch_from_cloud(retry=True):
         with urllib.request.urlopen(req, timeout=7) as resp:
             data = json.loads(resp.read().decode('utf-8'))
             if isinstance(data, dict) and 'data' in data:
-                profiles = data['data'].get('profiles', {})
-                if isinstance(profiles, dict):
+                d = data['data']
+                if 'blob' in d:
+                    try:
+                        raw = zlib.decompress(base64.b64decode(d['blob'])).decode('utf-8')
+                        profiles = json.loads(raw)
+                        if isinstance(profiles, dict):
+                            IN_MEMORY_PROFILES = profiles
+                            return IN_MEMORY_PROFILES
+                    except Exception:
+                        pass
+                profiles = d.get('profiles', {})
+                if isinstance(profiles, dict) and profiles:
                     IN_MEMORY_PROFILES = profiles
                     return IN_MEMORY_PROFILES
     except Exception:
@@ -44,9 +56,11 @@ def _save_to_cloud(profiles, retry=True):
     global IN_MEMORY_PROFILES
     IN_MEMORY_PROFILES = profiles
     url = f"https://api.restful-api.dev/objects/{PROFILES_ID}"
+    raw_json = json.dumps(profiles)
+    compressed = base64.b64encode(zlib.compress(raw_json.encode('utf-8'))).decode('ascii')
     payload = {
         "name": "elywolf_profiles_v1",
-        "data": {"profiles": profiles}
+        "data": {"blob": compressed}
     }
     req = urllib.request.Request(
         url,
@@ -232,6 +246,21 @@ class handler(BaseHTTPRequestHandler):
                 self._send_json({'success': True, 'profile': _public(profile)})
                 return
 
+            # Full profile sync / set_stats
+            if action in ('set_stats', 'sync_full_profile'):
+                stats = body.get('profile') or {}
+                profiles = dict(_fetch_from_cloud())
+                key = _key(name)
+                p = profiles.get(key) or _new_profile(name)
+                for f in ('xp', 'wins', 'losses', 'draws', 'matches', 'streak', 'bestStreak', 'games', 'history', 'photoURL'):
+                    if f in stats:
+                        p[f] = stats[f]
+                p['updatedAt'] = int(time.time() * 1000)
+                profiles[key] = p
+                _save_to_cloud(profiles)
+                self._send_json({'success': True, 'profile': _public(p)})
+                return
+
             result = body.get('result')
             game = body.get('game')
             match_id = str(body.get('matchId') or '')[:80]
@@ -257,6 +286,15 @@ class handler(BaseHTTPRequestHandler):
 
             delta = _apply_result(profile, game, match_id, result, opponent, ts)
             profiles[key] = profile
+
+            # Universally record opposite outcome for opponent so both players always match
+            if opponent and not _is_guest(opponent) and opponent.lower() != name.lower():
+                opp_key = _key(opponent)
+                opp_profile = profiles.get(opp_key) or _new_profile(opponent)
+                opp_result = 'loss' if result == 'win' else ('win' if result == 'loss' else 'draw')
+                _apply_result(opp_profile, game, match_id, opp_result, name, ts)
+                profiles[opp_key] = opp_profile
+
             if delta is not None or photo:
                 _save_to_cloud(profiles)
 
