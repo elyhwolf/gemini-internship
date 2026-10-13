@@ -535,6 +535,18 @@
 
     .history-vs span { color: var(--text-body); }
 
+    .history-opponent-link {
+      color: var(--text-heading);
+      text-decoration: none;
+      font-weight: 700;
+      transition: color 0.15s;
+    }
+
+    .history-opponent-link:hover {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+
     .history-right {
       display: flex;
       flex-direction: column;
@@ -917,7 +929,10 @@
         heroLevel.textContent = profile.level;
         heroSource.textContent = isMe ? 'YOU' : (source === 'cloud' ? 'ONLINE' : (exists ? 'CACHED' : 'NEW PLAYER'));
 
-        const photo = profile.photoURL || (isMe ? myIdentity.photoURL : null);
+        let photo = profile.photoURL || (isMe ? myIdentity.photoURL : null);
+        if (!photo && store.findPhotoFromAnySource) {
+          photo = await store.findPhotoFromAnySource(name);
+        }
         if (photo) {
           heroAvatar.classList.add('has-img');
           heroAvatar.style.background = 'transparent';
@@ -985,7 +1000,7 @@
                 <span class="history-pill ${pillCls}">${h.result}</span>
                 <div class="history-meta">
                   <span class="history-game">${safe(h.game)}</span>
-                  <span class="history-vs">vs <span>${safe(h.opponent || 'Opponent')}</span></span>
+                  <span class="history-vs">vs <a href="profile.html?user=${encodeURIComponent(h.opponent || 'Opponent')}" class="history-opponent-link" title="View ${safe(h.opponent || 'Opponent')}'s profile">${safe(h.opponent || 'Opponent')}</a></span>
                 </div>
               </div>
               <div class="history-right">

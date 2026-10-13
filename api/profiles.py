@@ -73,9 +73,12 @@ def _clean_name(name):
 
 
 def _safe_photo(url):
-    # Only store small http(s) avatar URLs, never big data: URIs
-    if isinstance(url, str) and url.startswith('http') and len(url) <= 300:
-        return url
+    if not isinstance(url, str):
+        return None
+    url = url.strip()
+    if url.startswith(('http://', 'https://', 'data:image/')):
+        if len(url) <= 100000:
+            return url
     return None
 
 
@@ -210,6 +213,25 @@ class handler(BaseHTTPRequestHandler):
                 self._send_json({'error': 'name required'}, 400)
                 return
 
+            action = body.get('action')
+            match_id = str(body.get('matchId') or '')[:80]
+
+            # Direct profile photo sync
+            if action == 'sync_profile' or ('photoURL' in body and not match_id):
+                photo = _safe_photo(body.get('photoURL'))
+                profiles = dict(_fetch_from_cloud())
+                key = _key(name)
+                profile = profiles.get(key)
+                if not profile:
+                    profile = _new_profile(name)
+                if photo:
+                    profile['photoURL'] = photo
+                    profile['updatedAt'] = int(time.time() * 1000)
+                    profiles[key] = profile
+                    _save_to_cloud(profiles)
+                self._send_json({'success': True, 'profile': _public(profile)})
+                return
+
             result = body.get('result')
             game = body.get('game')
             match_id = str(body.get('matchId') or '')[:80]
@@ -235,7 +257,7 @@ class handler(BaseHTTPRequestHandler):
 
             delta = _apply_result(profile, game, match_id, result, opponent, ts)
             profiles[key] = profile
-            if delta is not None:
+            if delta is not None or photo:
                 _save_to_cloud(profiles)
 
             self._send_json({

@@ -1010,6 +1010,30 @@ body {
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-heading);
+  transition: color 0.15s ease;
+}
+
+.chip-name-link,
+.chip-avatar-link,
+.hud-name-link,
+.hud-avatar-link,
+.chat-sender-link,
+.chat-avatar-link,
+.ely-chat-sender-link,
+.ely-chat-avatar-link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+.chip-name-link:hover .chip-name,
+.hud-name-link:hover .hud-name,
+.chat-sender-link:hover .chat-sender,
+.ely-chat-sender-link:hover .ely-chat-sender {
+  color: #38bdf8;
+  text-decoration: underline;
 }
 
 .chip-challenge-btn {

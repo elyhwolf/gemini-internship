@@ -264,6 +264,78 @@
     return { duplicate: false, xpDelta: delta, profile };
   }
 
+  async function findPhotoFromAnySource(name) {
+    if (!name) return null;
+    const clean = String(name).trim().toLowerCase();
+
+    // 1. Current identity or local DB
+    const local = findLocalPhoto(name);
+    if (local) return local;
+
+    // 2. Local profile store cache
+    try {
+      const all = loadAll();
+      const p = all[keyOf(name)];
+      if (p && p.photoURL) return p.photoURL;
+    } catch (e) {}
+
+    // 3. Presence cache in sessionStorage / localStorage
+    try {
+      const presRaw = sessionStorage.getItem('elywolf_presence_cache') || localStorage.getItem('elywolf_presence_cache');
+      if (presRaw) {
+        const list = JSON.parse(presRaw);
+        if (Array.isArray(list)) {
+          const match = list.find(p => String(p.displayName || p.name || '').trim().toLowerCase() === clean && p.photoURL);
+          if (match && match.photoURL) return match.photoURL;
+        }
+      }
+    } catch (e) {}
+
+    // 4. Universal chat history cache
+    try {
+      const chat = JSON.parse(localStorage.getItem('elywolf_universal_chat_history') || '[]');
+      if (Array.isArray(chat)) {
+        for (let i = chat.length - 1; i >= 0; i--) {
+          const m = chat[i];
+          if (m && String(m.sender || '').trim().toLowerCase() === clean && m.photoURL) {
+            return m.photoURL;
+          }
+        }
+      }
+    } catch (e) {}
+
+    // 5. Query live presence endpoint
+    try {
+      const out = await apiFetch('/api/presence');
+      if (out && out.data && Array.isArray(out.data.players)) {
+        try { sessionStorage.setItem('elywolf_presence_cache', JSON.stringify(out.data.players)); } catch (e) {}
+        const match = out.data.players.find(p => String(p.displayName || '').trim().toLowerCase() === clean && p.photoURL);
+        if (match && match.photoURL) return match.photoURL;
+      }
+    } catch (e) {}
+
+    return null;
+  }
+
+  async function syncProfile(name, photoURL) {
+    if (!name) return;
+    const key = keyOf(name);
+    const all = loadAll();
+    if (all[key]) {
+      if (photoURL) all[key].photoURL = photoURL;
+      saveAll(all);
+    }
+    if (photoURL) {
+      try {
+        await apiFetch('/api/profiles', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'sync_profile', name, photoURL })
+        });
+      } catch (e) {}
+    }
+  }
+
   /**
    * Fetch a profile by name. Prefers whichever copy (cloud / this browser)
    * has recorded more matches, so un-synced local results are never hidden.
@@ -280,10 +352,20 @@
     if (server && local) chosen = local.matches > server.matches ? local : server;
     else chosen = server || local;
 
-    if (!chosen) return { profile: emptyProfile(name), exists: false, source: 'none' };
-    if (!chosen.photoURL) chosen.photoURL = findLocalPhoto(name);
+    if (!chosen) chosen = emptyProfile(name);
+
+    if (!chosen.photoURL) {
+      const photo = await findPhotoFromAnySource(name);
+      if (photo) {
+        chosen.photoURL = photo;
+        const all = loadAll();
+        all[keyOf(name)] = chosen;
+        saveAll(all);
+        syncProfile(name, photo);
+      }
+    }
     chosen.level = levelFor(chosen.xp);
-    return { profile: chosen, exists: true, source: chosen === local ? 'local' : 'cloud' };
+    return { profile: chosen, exists: Boolean(server || local), source: chosen === local ? 'local' : (server ? 'cloud' : 'new') };
   }
 
   async function fetchLeaderboard() {
@@ -297,6 +379,14 @@
   // Retry any queued results shortly after load
   setTimeout(flushPending, 1500);
 
+  // Auto-sync current user's profile and photo on load
+  try {
+    const me = getIdentity();
+    if (me && me.name && me.photoURL) {
+      setTimeout(() => syncProfile(me.name, me.photoURL), 800);
+    }
+  } catch (e) {}
+
   window.ElyProfiles = {
     RULES,
     GAMES,
@@ -308,6 +398,8 @@
     fetchProfile,
     fetchLeaderboard,
     getLocalProfile,
-    flushPending
+    flushPending,
+    findPhotoFromAnySource,
+    syncProfile
   };
 })();

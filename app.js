@@ -696,11 +696,9 @@ function setupMentionClickHandlers() {
   if (!chatFeed) return;
   chatFeed.querySelectorAll('.chat-sender').forEach(el => {
     el.addEventListener('click', (e) => {
-      e.stopPropagation();
       const senderName = el.textContent.trim();
       if (senderName && !senderName.includes('System')) {
-        applyMention(senderName);
-        playHubSound('hover');
+        window.location.href = `profile.html?user=${encodeURIComponent(senderName)}`;
       }
     });
   });
@@ -710,8 +708,7 @@ function setupMentionClickHandlers() {
       e.stopPropagation();
       const mentionName = el.getAttribute('data-mention') || el.textContent.replace(/^@/, '').trim();
       if (mentionName) {
-        applyMention(mentionName);
-        playHubSound('hover');
+        window.location.href = `profile.html?user=${encodeURIComponent(mentionName)}`;
       }
     });
   });
@@ -781,13 +778,13 @@ function renderOnlinePlayers(players) {
           : `<span class="chip-avatar">${p.avatar || 'P'}</span>`;
         const displayNameText = p.isSameAccountTab ? `${p.displayName} (Other Tab)` : p.displayName;
           chip.innerHTML = `
-            ${avatarHtml}
+            <a href="profile.html?user=${encodeURIComponent(p.displayName)}" class="chip-avatar-link" title="View ${escapeHtml(p.displayName)}'s profile">${avatarHtml}</a>
             <div style="display:flex; flex-direction:column; line-height:1.2;">
-              <span class="chip-name">${displayNameText}</span>
+              <a href="profile.html?user=${encodeURIComponent(p.displayName)}" class="chip-name-link" title="View ${escapeHtml(p.displayName)}'s profile"><span class="chip-name">${displayNameText}</span></a>
               <span style="font-size:0.62rem; color:#a1a1aa; font-family:var(--font-mono);">${p.status || 'In Main Arcade Menu'}</span>
             </div>
-            <a href="profile.html?user=${encodeURIComponent(p.displayName)}" class="chip-profile-btn" title="View ${p.displayName}'s stats">PROFILE</a>
-            <button class="chip-challenge-btn" title="Challenge ${p.displayName} to a match"><svg class="btn-sword-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:3px;"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"></path><path d="M13 19l6-6"></path><path d="M16 16l4 4"></path></svg>CHALLENGE</button>
+            <a href="profile.html?user=${encodeURIComponent(p.displayName)}" class="chip-profile-btn" title="View ${escapeHtml(p.displayName)}'s stats">PROFILE</a>
+            <button class="chip-challenge-btn" title="Challenge ${escapeHtml(p.displayName)} to a match"><svg class="btn-sword-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:3px;"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"></path><path d="M13 19l6-6"></path><path d="M16 16l4 4"></path></svg>CHALLENGE</button>
           `;
 
           const btn = chip.querySelector('.chip-challenge-btn');
@@ -815,11 +812,11 @@ function renderOnlinePlayers(players) {
             : `<span class="hud-avatar">${p.avatar || 'P'}</span>`;
           const displayNameText = p.isSameAccountTab ? `${p.displayName} (Other Tab)` : p.displayName;
           hudChip.innerHTML = `
-            ${hudAvatarHtml}
-            <span class="hud-name">${displayNameText}</span>
+            <a href="profile.html?user=${encodeURIComponent(p.displayName)}" target="_blank" class="hud-avatar-link" title="View ${escapeHtml(p.displayName)}'s profile">${hudAvatarHtml}</a>
+            <a href="profile.html?user=${encodeURIComponent(p.displayName)}" target="_blank" class="hud-name-link" title="View ${escapeHtml(p.displayName)}'s profile"><span class="hud-name">${displayNameText}</span></a>
             <span class="hud-status">${p.status || 'In Main Arcade Menu'}</span>
-            <a href="profile.html?user=${encodeURIComponent(p.displayName)}" target="_blank" class="chip-profile-btn" title="View ${p.displayName}'s stats">PROFILE</a>
-            <button class="hud-challenge-btn" title="Challenge ${p.displayName} to 1v1"><svg class="btn-sword-icon" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:3px;"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"></path><path d="M13 19l6-6"></path><path d="M16 16l4 4"></path></svg>CHALLENGE</button>
+            <a href="profile.html?user=${encodeURIComponent(p.displayName)}" target="_blank" class="chip-profile-btn" title="View ${escapeHtml(p.displayName)}'s stats">PROFILE</a>
+            <button class="hud-challenge-btn" title="Challenge ${escapeHtml(p.displayName)} to 1v1"><svg class="btn-sword-icon" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:3px;"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"></path><path d="M13 19l6-6"></path><path d="M16 16l4 4"></path></svg>CHALLENGE</button>
           `;
 
           const hudBtn = hudChip.querySelector('.hud-challenge-btn');
@@ -972,10 +969,15 @@ onChallengeOffer((chal) => {
   const titleEl = document.getElementById('challengeGameTitle');
   const descEl = document.getElementById('challengeGameDesc');
 
-  if (nameEl) nameEl.textContent = chal.from;
+  if (nameEl) {
+    nameEl.innerHTML = `<a href="profile.html?user=${encodeURIComponent(chal.from)}" style="color:inherit;text-decoration:none;" class="challenge-sender-link" title="View ${escapeHtml(chal.from)}'s profile">${escapeHtml(chal.from)}</a>`;
+  }
   if (avatarEl) {
+    avatarEl.style.cursor = 'pointer';
+    avatarEl.title = `View ${escapeHtml(chal.from)}'s profile`;
+    avatarEl.onclick = () => { window.location.href = `profile.html?user=${encodeURIComponent(chal.from)}`; };
     if (chal.fromPhoto) {
-      avatarEl.innerHTML = `<img src="${chal.fromPhoto}" alt="${chal.from}" />`;
+      avatarEl.innerHTML = `<img src="${chal.fromPhoto}" alt="${escapeHtml(chal.from)}" />`;
     } else {
       avatarEl.textContent = (chal.from || 'P').charAt(0).toUpperCase();
     }
@@ -1124,8 +1126,8 @@ function renderChatFeed(messages) {
     item.innerHTML = `
       <div class="chat-item-meta">
         <div class="chat-sender-wrap">
-          ${!m.isSystem ? chatAvatarHtml : ''}
-          <span class="chat-sender" title="Click to @mention ${escapeHtml(m.sender)}">${escapeHtml(m.sender)}</span>
+          ${!m.isSystem && m.sender ? `<a href="profile.html?user=${encodeURIComponent(m.sender)}" class="chat-avatar-link" title="View ${escapeHtml(m.sender)}'s profile">${chatAvatarHtml}</a>` : (!m.isSystem ? chatAvatarHtml : '')}
+          ${!m.isSystem && m.sender ? `<a href="profile.html?user=${encodeURIComponent(m.sender)}" class="chat-sender-link" title="View ${escapeHtml(m.sender)}'s profile"><span class="chat-sender">${escapeHtml(m.sender)}</span></a>` : `<span class="chat-sender">${escapeHtml(m.sender)}</span>`}
           ${profileLinkHtml}
         </div>
         <span class="chat-time">${displayTime}</span>

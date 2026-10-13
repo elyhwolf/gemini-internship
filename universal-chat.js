@@ -781,14 +781,22 @@
     mentionDropdownEl.classList.remove('ely-hidden');
   }
 
+  function getProfileUrl(name) {
+    const isSubdir = window.location.pathname.includes('/maze-runner/') ||
+                     window.location.pathname.includes('/go-fish/') ||
+                     window.location.pathname.includes('/memory-card/') ||
+                     window.location.pathname.includes('/wardrobe/');
+    const base = isSubdir ? '../profile.html?user=' : 'profile.html?user=';
+    return base + encodeURIComponent(name);
+  }
+
   function setupClickToMention() {
     if (!feedEl) return;
     feedEl.querySelectorAll('.ely-chat-sender').forEach(el => {
       el.addEventListener('click', (e) => {
-        e.stopPropagation();
         const senderName = el.textContent.trim();
         if (senderName && !senderName.includes('System')) {
-          applyMention(senderName);
+          window.location.href = getProfileUrl(senderName);
         }
       });
     });
@@ -796,7 +804,7 @@
       el.addEventListener('click', (e) => {
         e.stopPropagation();
         const mName = el.getAttribute('data-mention') || el.textContent.replace(/^@/, '').trim();
-        if (mName) applyMention(mName);
+        if (mName) window.location.href = getProfileUrl(mName);
       });
     });
   }
@@ -840,12 +848,13 @@
       const avatarHtml = m.photoURL
         ? `<img src="${m.photoURL}" alt="${m.sender}" class="ely-chat-avatar" />`
         : `<span class="ely-chat-avatar-initial">${(m.sender || 'P').charAt(0).toUpperCase()}</span>`;
+      const pUrl = !m.isSystem && m.sender ? getProfileUrl(m.sender) : null;
 
       item.innerHTML = `
         <div class="ely-chat-meta">
           <div class="ely-chat-sender-wrap">
-            ${!m.isSystem ? avatarHtml : ''}
-            <span class="ely-chat-sender" title="Click to mention ${escapeHtml(m.sender)}">${escapeHtml(m.sender)}</span>
+            ${!m.isSystem ? (pUrl ? `<a href="${pUrl}" class="ely-chat-avatar-link" title="View ${escapeHtml(m.sender)}'s profile">${avatarHtml}</a>` : avatarHtml) : ''}
+            ${pUrl ? `<a href="${pUrl}" class="ely-chat-sender-link" title="View ${escapeHtml(m.sender)}'s profile"><span class="ely-chat-sender">${escapeHtml(m.sender)}</span></a>` : `<span class="ely-chat-sender">${escapeHtml(m.sender)}</span>`}
           </div>
           <span class="ely-chat-time">${timeStr}</span>
         </div>

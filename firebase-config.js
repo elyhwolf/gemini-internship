@@ -295,8 +295,10 @@ async function sendPresenceHeartbeat() {
   }
 
   function handlePresenceData(data) {
-    if (!data) return;
-    if (data.players) lastApiPlayers = data.players;
+    if (data.players) {
+      lastApiPlayers = data.players;
+      try { sessionStorage.setItem('elywolf_presence_cache', JSON.stringify(data.players)); } catch (e) {}
+    }
     if (Array.isArray(data.challenges)) {
       data.challenges.forEach(c => {
         handleIncomingChallengeInvite(c);
@@ -745,6 +747,12 @@ export async function updateUserProfilePic(photoURL) {
   }
 
   sendPresenceHeartbeat();
+  try {
+    const pName = user.displayName || user.email.split('@')[0];
+    if (window.ElyProfiles && window.ElyProfiles.syncProfile) {
+      window.ElyProfiles.syncProfile(pName, photoURL);
+    }
+  } catch (e) {}
   return user;
 }
 
