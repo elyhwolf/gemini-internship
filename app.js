@@ -1280,7 +1280,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         if (isSignUpMode) {
-          await signUpWithEmail(email, password, displayName || email.split('@')[0], selectedAvatarDataUrl);
+          await signUpWithEmail(email, password, displayName || (email.includes('@') ? email.split('@')[0] : email), selectedAvatarDataUrl);
           showAlert("Account created successfully! Welcome to ElyWolf Arcade.", "success");
         } else {
           await signInWithEmail(email, password);

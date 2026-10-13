@@ -632,9 +632,29 @@ export function onOnlinePlayersUpdate(callback) {
 // ==========================================================================
 // AUTHENTICATION METHODS
 // ==========================================================================
+// Accept either an email or a plain username. Usernames resolve to the
+// matching local account's email, or a synthetic arcade email for Firebase.
+function resolveLoginEmail(identifier) {
+  const id = String(identifier || '').trim();
+  if (id.includes('@')) return id.toLowerCase();
+  const lower = id.toLowerCase();
+  const users = getLocalUsers();
+  for (const key of Object.keys(users)) {
+    const u = users[key];
+    if (u && String(u.displayName || '').trim().toLowerCase() === lower) return key;
+  }
+  return `${lower.replace(/[^a-z0-9._-]/g, '_')}@elywolf.arcade`;
+}
+
 export async function signUpWithEmail(email, password, displayName, photoURL = null) {
-  const cleanEmail = email.toLowerCase().trim();
-  const name = displayName.trim() || cleanEmail.split('@')[0];
+  const rawId = String(email || '').trim();
+  const isUsername = !rawId.includes('@');
+  if (isUsername) {
+    const taken = Object.values(getLocalUsers()).some(u => String(u.displayName || '').trim().toLowerCase() === rawId.toLowerCase());
+    if (taken) throw new Error("This username is already taken.");
+  }
+  const cleanEmail = isUsername ? resolveLoginEmail(rawId) : rawId.toLowerCase();
+  const name = (displayName || '').trim() || (isUsername ? rawId : cleanEmail.split('@')[0]);
 
   if (auth) {
     try {
@@ -678,7 +698,9 @@ export async function signUpWithEmail(email, password, displayName, photoURL = n
 }
 
 export async function signInWithEmail(email, password) {
-  const cleanEmail = email.toLowerCase().trim();
+  const rawId = String(email || '').trim();
+  const isUsername = !rawId.includes('@');
+  const cleanEmail = resolveLoginEmail(rawId);
 
   if (auth) {
     try {
@@ -689,7 +711,7 @@ export async function signInWithEmail(email, password) {
       const u = { 
         uid: userCredential.user.uid, 
         email: userCredential.user.email, 
-        displayName: userCredential.user.displayName || cleanEmail.split('@')[0],
+        displayName: userCredential.user.displayName || (isUsername ? rawId : cleanEmail.split('@')[0]),
         photoURL: photo
       };
       setLocalSessionUser(u);
@@ -710,7 +732,7 @@ export async function signInWithEmail(email, password) {
       uid: 'usr_' + Math.random().toString(36).substr(2, 9),
       email: cleanEmail,
       password: password,
-      displayName: cleanEmail.split('@')[0],
+      displayName: isUsername ? rawId : cleanEmail.split('@')[0],
       photoURL: null
     };
     users[cleanEmail] = newUser;
