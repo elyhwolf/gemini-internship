@@ -777,26 +777,44 @@ function renderOnlinePlayers(players) {
           ? `<img src="${p.photoURL}" alt="${p.displayName}" class="chip-avatar-img" />`
           : `<span class="chip-avatar">${p.avatar || 'P'}</span>`;
         const displayNameText = p.isSameAccountTab ? `${p.displayName} (Other Tab)` : p.displayName;
-          chip.innerHTML = `
-            <a href="profile.html?user=${encodeURIComponent(p.displayName)}" class="chip-avatar-link" title="View ${escapeHtml(p.displayName)}'s profile">${avatarHtml}</a>
-            <div style="display:flex; flex-direction:column; line-height:1.2;">
-              <a href="profile.html?user=${encodeURIComponent(p.displayName)}" class="chip-name-link" title="View ${escapeHtml(p.displayName)}'s profile"><span class="chip-name">${displayNameText}</span></a>
-              <span style="font-size:0.62rem; color:#a1a1aa; font-family:var(--font-mono);">${p.status || 'In Main Arcade Menu'}</span>
-            </div>
-            <a href="profile.html?user=${encodeURIComponent(p.displayName)}" class="chip-profile-btn" title="View ${escapeHtml(p.displayName)}'s stats">PROFILE</a>
-            <button class="chip-challenge-btn" title="Challenge ${escapeHtml(p.displayName)} to a match"><svg class="btn-sword-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:3px;"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"></path><path d="M13 19l6-6"></path><path d="M16 16l4 4"></path></svg>CHALLENGE</button>
-          `;
+          const isFriended = window.ElyProfiles && window.ElyProfiles.isFriend && window.ElyProfiles.isFriend(p.displayName);
+        const friendBtnHtml = `<button class="chip-friend-btn ${isFriended ? 'is-friend' : ''}" title="${isFriended ? 'Friends (click to remove)' : 'Add Friend'}">${isFriended ? '★ Friend' : '+ Friend'}</button>`;
 
-          const btn = chip.querySelector('.chip-challenge-btn');
-          if (btn) {
-            btn.addEventListener('click', () => {
-              openChallengePicker(p.displayName);
-            });
-          }
-          onlinePlayersList.appendChild(chip);
-        });
-      }
+        chip.innerHTML = `
+          <a href="profile.html?user=${encodeURIComponent(p.displayName)}" class="chip-avatar-link" title="View ${escapeHtml(p.displayName)}'s profile">${avatarHtml}</a>
+          <div style="display:flex; flex-direction:column; line-height:1.2;">
+            <a href="profile.html?user=${encodeURIComponent(p.displayName)}" class="chip-name-link" title="View ${escapeHtml(p.displayName)}'s profile"><span class="chip-name">${displayNameText}</span></a>
+            <span style="font-size:0.62rem; color:#a1a1aa; font-family:var(--font-mono);">${p.status || 'In Main Arcade Menu'}</span>
+          </div>
+          ${friendBtnHtml}
+          <a href="profile.html?user=${encodeURIComponent(p.displayName)}" class="chip-profile-btn" title="View ${escapeHtml(p.displayName)}'s stats">PROFILE</a>
+          <button class="chip-challenge-btn" title="Challenge ${escapeHtml(p.displayName)} to a match"><svg class="btn-sword-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:3px;"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"></path><path d="M13 19l6-6"></path><path d="M16 16l4 4"></path></svg>CHALLENGE</button>
+        `;
+
+        const friendBtn = chip.querySelector('.chip-friend-btn');
+        if (friendBtn) {
+          friendBtn.addEventListener('click', () => {
+            if (window.ElyProfiles) {
+              if (window.ElyProfiles.isFriend(p.displayName)) {
+                window.ElyProfiles.removeFriend(p.displayName);
+              } else {
+                window.ElyProfiles.addFriend({ name: p.displayName, photoURL: p.photoURL || null });
+              }
+              renderPresence(presenceMap);
+            }
+          });
+        }
+
+        const btn = chip.querySelector('.chip-challenge-btn');
+        if (btn) {
+          btn.addEventListener('click', () => {
+            openChallengePicker(p.displayName);
+          });
+        }
+        onlinePlayersList.appendChild(chip);
+      });
     }
+  }
 
     // 2. Render In-Game Topbar HUD Strip
     if (hudPlayersList) {

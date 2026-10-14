@@ -679,6 +679,108 @@
 
     .lb-link:hover { color: var(--accent); }
 
+    /* FRIEND BUTTON & BADGES */
+    .btn-friend-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-sans);
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--accent);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .btn-friend-action:hover {
+      background: var(--accent);
+      color: #0b0c10;
+      border-color: var(--accent);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+    }
+
+    .btn-friend-action.is-friend {
+      background: rgba(34, 197, 94, 0.15);
+      border-color: rgba(34, 197, 94, 0.4);
+      color: var(--green);
+    }
+
+    .btn-friend-action.is-friend:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.5);
+      color: #ef4444;
+    }
+
+    /* FRIENDS GRID */
+    .friends-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px;
+    }
+
+    .friend-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      transition: all 0.2s;
+    }
+
+    .friend-card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(56, 189, 248, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .friend-card-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .friend-card-name {
+      font-weight: 700;
+      color: var(--text-heading);
+      font-size: 0.88rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color 0.15s;
+    }
+
+    .friend-card-left:hover .friend-card-name {
+      color: var(--accent);
+    }
+
+    .friend-remove-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-subtle);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s;
+    }
+
+    .friend-remove-btn:hover {
+      color: #ef4444;
+    }
+
     .lb-mono {
       font-family: var(--font-mono);
       font-weight: 700;
@@ -736,6 +838,15 @@
           <div class="hero-badge-row">
             <span class="hero-title-pill" id="heroTitle">Rookie</span>
             <span class="hero-source-pill" id="heroSource">Syncing...</span>
+            <button type="button" class="btn-friend-action" id="btnToggleFriend" style="display:none;">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="8.5" cy="7" r="4"></circle>
+                <line x1="20" y1="8" x2="20" y2="14"></line>
+                <line x1="23" y1="11" x2="17" y2="11"></line>
+              </svg>
+              <span id="friendBtnText">Add Friend</span>
+            </button>
           </div>
           <h1 class="hero-name" id="heroName">Loading...</h1>
         </div>
@@ -785,6 +896,25 @@
         <span class="stat-card-value" id="statBestStreak">0</span>
       </div>
     </div>
+
+    <!-- FRIENDS LIST PANEL -->
+    <section class="panel" id="friendsPanel" style="margin-top: 1.8rem; margin-bottom: 1.8rem;">
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          Friends List
+        </h2>
+        <span class="panel-badge" id="friendsCount">0 Friends</span>
+      </div>
+      <div class="friends-grid" id="friendsGrid">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
 
     <!-- DETAILS: BREAKDOWN & HISTORY -->
     <div class="profile-sections">
@@ -1019,6 +1149,112 @@
             `;
             historyList.appendChild(item);
           });
+        }
+
+        // Friends
+        updateFriendBtn(name, photo);
+        renderFriendsList();
+      }
+
+      const friendsPanel = document.getElementById('friendsPanel');
+      const friendsCount = document.getElementById('friendsCount');
+      const friendsGrid = document.getElementById('friendsGrid');
+      const btnToggleFriend = document.getElementById('btnToggleFriend');
+      const friendBtnText = document.getElementById('friendBtnText');
+
+      let currentProfileData = null;
+
+      function updateFriendBtn(name, photo) {
+        if (!btnToggleFriend) return;
+        const isMe = name.toLowerCase() === myIdentity.name.toLowerCase();
+        if (isMe) {
+          btnToggleFriend.style.display = 'none';
+          return;
+        }
+
+        btnToggleFriend.style.display = 'inline-flex';
+        currentProfileData = { name, photoURL: photo };
+
+        const already = store.isFriend && store.isFriend(name);
+        if (already) {
+          btnToggleFriend.classList.add('is-friend');
+          friendBtnText.textContent = 'Friends ✓';
+        } else {
+          btnToggleFriend.classList.remove('is-friend');
+          friendBtnText.textContent = 'Add Friend';
+        }
+      }
+
+      if (btnToggleFriend) {
+        btnToggleFriend.addEventListener('click', () => {
+          if (!currentProfileData || !currentProfileData.name) return;
+          const name = currentProfileData.name;
+          const already = store.isFriend && store.isFriend(name);
+          if (already) {
+            store.removeFriend(name);
+          } else {
+            store.addFriend(currentProfileData);
+          }
+          updateFriendBtn(name, currentProfileData.photoURL);
+          renderFriendsList();
+        });
+      }
+
+      async function renderFriendsList() {
+        if (!friendsGrid) return;
+        const list = store.getFriends ? store.getFriends() : [];
+        if (friendsCount) {
+          friendsCount.textContent = `${list.length} Friend${list.length === 1 ? '' : 's'}`;
+        }
+        friendsGrid.innerHTML = '';
+
+        if (list.length === 0) {
+          friendsGrid.innerHTML = `
+            <div style="grid-column: 1 / -1; padding: 1.5rem; text-align: center; color: var(--text-subtle); font-size: 0.85rem; background: rgba(255,255,255,0.02); border-radius: 8px;">
+              No friends added yet. Browse profiles or rankings and click <strong>Add Friend</strong> to connect!
+            </div>
+          `;
+          return;
+        }
+
+        for (const f of list) {
+          const card = document.createElement('div');
+          card.className = 'friend-card';
+
+          let photo = f.photoURL;
+          if (!photo && store.findPhotoFromAnySource) {
+            photo = await store.findPhotoFromAnySource(f.name);
+          }
+
+          const avatarHtml = photo
+            ? `<div class="lb-avatar has-img"><img src="${photo}" alt="${safe(f.name)}" style="border:none;outline:none;" /></div>`
+            : `<div class="lb-avatar">${(f.name || 'P').charAt(0).toUpperCase()}</div>`;
+
+          card.innerHTML = `
+            <a href="profile.html?user=${encodeURIComponent(f.name)}" class="friend-card-left" title="View ${safe(f.name)}'s profile">
+              ${avatarHtml}
+              <span class="friend-card-name">${safe(f.name)}</span>
+            </a>
+            <button type="button" class="friend-remove-btn" title="Remove Friend" data-friend="${safe(f.name)}">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          `;
+
+          const removeBtn = card.querySelector('.friend-remove-btn');
+          if (removeBtn) {
+            removeBtn.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              store.removeFriend(f.name);
+              updateFriendBtn(targetPlayer, null);
+              renderFriendsList();
+            });
+          }
+
+          friendsGrid.appendChild(card);
         }
       }
 

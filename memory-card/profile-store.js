@@ -87,8 +87,51 @@
     } catch (e) { return {}; }
   }
 
-  function saveAll(map) {
-    try { localStorage.setItem(LOCAL_KEY, JSON.stringify(map)); } catch (e) {}
+  const FRIENDS_KEY = 'elywolf_friends_v1';
+
+  function getFriends() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(FRIENDS_KEY) || '[]');
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) { return []; }
+  }
+
+  function saveFriends(list) {
+    try { localStorage.setItem(FRIENDS_KEY, JSON.stringify(list)); } catch (e) {}
+  }
+
+  function isFriend(name) {
+    if (!name) return false;
+    const clean = String(name).trim().toLowerCase();
+    return getFriends().some(f => String(f.name || f).trim().toLowerCase() === clean);
+  }
+
+  function addFriend(friendObj) {
+    if (!friendObj) return;
+    const name = typeof friendObj === 'string' ? friendObj : friendObj.name;
+    if (!name) return;
+    const clean = String(name).trim().toLowerCase();
+    const me = getIdentity();
+    if (me.name && me.name.trim().toLowerCase() === clean) return; // Cannot friend self
+
+    const list = getFriends();
+    if (list.some(f => String(f.name || f).trim().toLowerCase() === clean)) return;
+
+    const item = {
+      name: String(name).trim(),
+      photoURL: typeof friendObj === 'object' ? (friendObj.photoURL || null) : null,
+      addedAt: Date.now()
+    };
+    list.unshift(item);
+    saveFriends(list);
+    return item;
+  }
+
+  function removeFriend(name) {
+    if (!name) return;
+    const clean = String(name).trim().toLowerCase();
+    const list = getFriends().filter(f => String(f.name || f).trim().toLowerCase() !== clean);
+    saveFriends(list);
   }
 
   const DEFAULT_AVATARS = {
@@ -433,6 +476,10 @@
     flushPending,
     findPhotoFromAnySource,
     syncProfile,
-    syncFullProfile
+    syncFullProfile,
+    getFriends,
+    isFriend,
+    addFriend,
+    removeFriend
   };
 })();
