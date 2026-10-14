@@ -225,21 +225,30 @@
     return delta;
   }
 
-  // ---------------------------------------------------------------------
-  // Cloud sync
-  // ---------------------------------------------------------------------
   async function apiFetch(path, options) {
     const attempt = async (origin) => {
-      const res = await fetch(origin + path, options);
-      const type = res.headers.get('content-type') || '';
-      if (!type.includes('application/json')) throw new Error('non-json');
-      return { status: res.status, data: await res.json() };
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 4000);
+      try {
+        const fetchOpts = Object.assign({}, options || {}, { signal: controller.signal });
+        const res = await fetch(origin + path, fetchOpts);
+        clearTimeout(timer);
+        const type = res.headers.get('content-type') || '';
+        if (!type.includes('application/json')) throw new Error('non-json');
+        return { status: res.status, data: await res.json() };
+      } catch (e) {
+        clearTimeout(timer);
+        throw e;
+      }
     };
     try {
       return await attempt('');
     } catch (err) {
-      // Local dev server has no Python API: fall back to the deployed one
-      if (isLocalHost) return await attempt(PROD_API_ORIGIN);
+      if (PROD_API_ORIGIN && !window.location.origin.includes('gemini-internship.vercel.app')) {
+        try {
+          return await attempt(PROD_API_ORIGIN);
+        } catch (e2) {}
+      }
       throw err;
     }
   }

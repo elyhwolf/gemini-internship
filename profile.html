@@ -1059,7 +1059,46 @@
         targetInput.value = name;
         document.title = `${name} — XP Profile | ElyWolf Arcade`;
 
-        const { profile, exists, source } = await store.fetchProfile(name);
+        let res;
+        try {
+          res = await store.fetchProfile(name);
+        } catch (err) {
+          console.warn('fetchProfile failed, using local/empty fallback', err);
+          res = {
+            profile: (store.getLocalProfile && store.getLocalProfile(name)) || {
+              name,
+              photoURL: null,
+              xp: 0,
+              level: 1,
+              matches: 0,
+              wins: 0,
+              losses: 0,
+              draws: 0,
+              streak: 0,
+              bestStreak: 0,
+              games: {},
+              history: []
+            },
+            exists: false,
+            source: 'local'
+          };
+        }
+        const profile = res?.profile || {
+          name,
+          photoURL: null,
+          xp: 0,
+          level: 1,
+          matches: 0,
+          wins: 0,
+          losses: 0,
+          draws: 0,
+          streak: 0,
+          bestStreak: 0,
+          games: {},
+          history: []
+        };
+        const exists = res?.exists;
+        const source = res?.source;
         const isMe = name.toLowerCase() === myIdentity.name.toLowerCase();
 
         // Hero identity
