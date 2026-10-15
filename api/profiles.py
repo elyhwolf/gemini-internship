@@ -260,6 +260,34 @@ class handler(BaseHTTPRequestHandler):
                 self._send_json({'success': True, 'profile': _public(profile)})
                 return
 
+            # Rename player / username
+            if action == 'rename_user':
+                new_name = _clean_name(body.get('newName'))
+                if not new_name:
+                    self._send_json({'error': 'newName required'}, 400)
+                    return
+                profiles = dict(_fetch_from_cloud())
+                old_key = _key(name)
+                new_key = _key(new_name)
+                old_profile = profiles.pop(old_key, None)
+                if not old_profile:
+                    old_profile = _new_profile(new_name)
+                else:
+                    old_profile['name'] = new_name
+                    old_profile['updatedAt'] = int(time.time() * 1000)
+                profiles[new_key] = old_profile
+
+                # Update opponent references in all other match histories
+                for p in profiles.values():
+                    if 'history' in p and isinstance(p['history'], list):
+                        for h in p['history']:
+                            if isinstance(h, dict) and _key(h.get('opponent')) == old_key:
+                                h['opponent'] = new_name
+
+                _save_to_cloud(profiles)
+                self._send_json({'success': True, 'profile': _public(old_profile)})
+                return
+
             # Full profile sync / set_stats
             if action in ('set_stats', 'sync_full_profile'):
                 stats = body.get('profile') or {}
