@@ -100,20 +100,14 @@ def _safe_photo(url):
 
 
 def _photo_for(profile):
-    p = profile.get('photoURL')
-    if p:
-        return p
-    if str(profile.get('name') or '').strip().lower() == 'elylegend33':
-        return DEFAULT_WOLF_AVATAR
-    return None
+    return profile.get('photoURL') or None
 
 
 def _new_profile(name):
     now = int(time.time() * 1000)
-    photo = DEFAULT_WOLF_AVATAR if str(name or '').strip().lower() == 'elylegend33' else None
     return {
         'name': name,
-        'photoURL': photo,
+        'photoURL': None,
         'xp': 0,
         'matches': 0,
         'wins': 0,

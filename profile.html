@@ -1342,7 +1342,10 @@
           const avatarCellId = `lbAvatarCell-${idx}`;
 
           const isMe = myIdentity.name && p.name && myIdentity.name.trim().toLowerCase() === p.name.trim().toLowerCase();
-          let photo = p.photoURL || (isMe ? myIdentity.photoURL : null);
+          let photo = (isMe && myIdentity.photoURL) ? myIdentity.photoURL : (p.photoURL || null);
+          if (!photo && store.findLocalPhoto) {
+            photo = store.findLocalPhoto(p.name);
+          }
           if (!photo && store.getLocalProfile) {
             photo = store.getLocalProfile(p.name)?.photoURL || null;
           }
@@ -1383,14 +1386,18 @@
           // Asynchronously resolve photo from any available source if not yet displayed
           const resolveRow = async () => {
             let resolved = photo;
-            if (!resolved && store.findPhotoFromAnySource) {
-              resolved = await store.findPhotoFromAnySource(p.name);
-            }
-            if (!resolved && store.fetchProfile) {
-              try {
-                const res = await store.fetchProfile(p.name);
-                resolved = res?.profile?.photoURL;
-              } catch (e) {}
+            if (isMe && myIdentity.photoURL) {
+              resolved = myIdentity.photoURL;
+            } else {
+              if (!resolved && store.findPhotoFromAnySource) {
+                resolved = await store.findPhotoFromAnySource(p.name);
+              }
+              if (!resolved && store.fetchProfile) {
+                try {
+                  const res = await store.fetchProfile(p.name);
+                  resolved = res?.profile?.photoURL;
+                } catch (e) {}
+              }
             }
             if (resolved) {
               const el = document.getElementById(avatarCellId);
@@ -1408,8 +1415,8 @@
                 img.style.display = 'block';
                 el.appendChild(img);
               }
-              if (!p.photoURL && store.syncProfile) {
-                store.syncProfile(p.name, resolved);
+              if (store.syncProfile && (isMe ? myIdentity.photoURL : resolved)) {
+                store.syncProfile(p.name, isMe ? myIdentity.photoURL : resolved);
               }
             }
           };

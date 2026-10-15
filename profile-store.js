@@ -33,9 +33,19 @@
       if (raw) {
         const u = JSON.parse(raw);
         if (u && (u.displayName || u.email)) {
+          let photo = u.photoURL || null;
+          if (!photo) {
+            try {
+              const users = JSON.parse(localStorage.getItem('elywolf_arcade_users_db') || '{}');
+              const cleanEmail = (u.email || '').toLowerCase().trim();
+              if (users[cleanEmail] && users[cleanEmail].photoURL) {
+                photo = users[cleanEmail].photoURL;
+              }
+            } catch (e) {}
+          }
           return {
             name: (u.displayName || u.email.split('@')[0]).trim(),
-            photoURL: u.photoURL || null,
+            photoURL: photo,
             isGuest: false
           };
         }
