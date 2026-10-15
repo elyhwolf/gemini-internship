@@ -103,12 +103,27 @@
   function getFriends() {
     try {
       const parsed = JSON.parse(localStorage.getItem(FRIENDS_KEY) || '[]');
-      return Array.isArray(parsed) ? parsed : [];
+      const list = Array.isArray(parsed) ? parsed : [];
+      const me = getIdentity();
+      const myClean = (me.name || '').trim().toLowerCase();
+      // Filter out self and sanitize
+      return list.filter(f => {
+        const fname = String(f.name || f || '').trim().toLowerCase();
+        return fname && fname !== myClean;
+      });
     } catch (e) { return []; }
   }
 
   function saveFriends(list) {
-    try { localStorage.setItem(FRIENDS_KEY, JSON.stringify(list)); } catch (e) {}
+    try {
+      const me = getIdentity();
+      const myClean = (me.name || '').trim().toLowerCase();
+      const cleanList = (Array.isArray(list) ? list : []).filter(f => {
+        const fname = String(f.name || f || '').trim().toLowerCase();
+        return fname && fname !== myClean;
+      });
+      localStorage.setItem(FRIENDS_KEY, JSON.stringify(cleanList));
+    } catch (e) {}
   }
 
   function isFriend(name) {

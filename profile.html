@@ -1272,7 +1272,16 @@
 
       async function renderFriendsList() {
         if (!friendsGrid) return;
-        const list = store.getFriends ? store.getFriends() : [];
+        const myName = (myIdentity.name || '').trim().toLowerCase();
+        let rawList = store.getFriends ? store.getFriends() : [];
+        const list = rawList.filter(f => {
+          const fname = String(f.name || f || '').trim().toLowerCase();
+          return fname && fname !== myName;
+        });
+        if (store.saveFriends && rawList.length !== list.length) {
+          store.saveFriends(list);
+        }
+
         if (friendsCount) {
           friendsCount.textContent = `${list.length} Friend${list.length === 1 ? '' : 's'}`;
         }
