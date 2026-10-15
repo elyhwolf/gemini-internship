@@ -11,6 +11,10 @@ import {
   respondToChallengeOffer,
   onChallengeOffer,
   onChallengeResponse,
+  sendFriendRequest,
+  respondToFriendRequest,
+  onFriendOffer,
+  onFriendResponse,
   onChatUpdate,
   onOnlinePlayersUpdate,
   getLocalSessionUser,
@@ -778,7 +782,8 @@ function renderOnlinePlayers(players) {
           : `<span class="chip-avatar">${p.avatar || 'P'}</span>`;
         const displayNameText = p.isSameAccountTab ? `${p.displayName} (Other Tab)` : p.displayName;
           const isFriended = window.ElyProfiles && window.ElyProfiles.isFriend && window.ElyProfiles.isFriend(p.displayName);
-        const friendBtnHtml = `<button class="chip-friend-btn ${isFriended ? 'is-friend' : ''}" title="${isFriended ? 'Friends (click to remove)' : 'Add Friend'}">${isFriended ? '★ Friend' : '+ Friend'}</button>`;
+        const isPending = window.ElyProfiles && window.ElyProfiles.hasPendingRequestTo && window.ElyProfiles.hasPendingRequestTo(p.displayName);
+        const friendBtnHtml = `<button class="chip-friend-btn ${isFriended ? 'is-friend' : (isPending ? 'is-pending' : '')}" title="${isFriended ? 'Friends (click to remove)' : (isPending ? 'Friend Request Sent' : 'Send Friend Request')}">${isFriended ? '★ Friend' : (isPending ? '⌛ Sent' : '+ Friend')}</button>`;
 
         chip.innerHTML = `
           <a href="profile.html?user=${encodeURIComponent(p.displayName)}" class="chip-avatar-link" title="View ${escapeHtml(p.displayName)}'s profile">${avatarHtml}</a>
@@ -797,10 +802,18 @@ function renderOnlinePlayers(players) {
             if (window.ElyProfiles) {
               if (window.ElyProfiles.isFriend(p.displayName)) {
                 window.ElyProfiles.removeFriend(p.displayName);
+                showToast(`Removed ${p.displayName} from friends.`);
+                renderPresence(presenceMap);
+              } else if (window.ElyProfiles.hasPendingRequestTo && window.ElyProfiles.hasPendingRequestTo(p.displayName)) {
+                showToast(`Friend request already sent to ${p.displayName}. Waiting for acceptance!`);
               } else {
-                window.ElyProfiles.addFriend({ name: p.displayName, photoURL: p.photoURL || null });
+                sendFriendRequest(p.displayName, p.photoURL || null);
+                if (window.ElyProfiles.markRequestSent) {
+                  window.ElyProfiles.markRequestSent(p.displayName, p.photoURL || null);
+                }
+                showToast(`Friend request sent to ${p.displayName}!`);
+                renderPresence(presenceMap);
               }
-              renderPresence(presenceMap);
             }
           });
         }
@@ -1043,6 +1056,100 @@ onChallengeResponse((resp) => {
   } else if (resp.status === 'declined' || resp.response === 'declined') {
     if (isChallenger) {
       showToast(`${resp.to} declined the challenge.`);
+    }
+  }
+});
+
+// Friend Request Modal Elements & Listeners
+let currentIncomingFriendReq = null;
+const friendReqModal = document.getElementById('friendRequestModal');
+const btnAcceptFriend = document.getElementById('btnAcceptFriend');
+const btnDeclineFriend = document.getElementById('btnDeclineFriend');
+
+if (btnAcceptFriend) {
+  btnAcceptFriend.addEventListener('click', () => {
+    if (!currentIncomingFriendReq) return;
+    if (friendReqModal) {
+      friendReqModal.classList.add('hidden');
+      friendReqModal.setAttribute('aria-hidden', 'true');
+    }
+    const req = currentIncomingFriendReq;
+    currentIncomingFriendReq = null;
+
+    respondToFriendRequest(req.id, 'accepted', req.from, req.fromPhoto);
+    if (window.ElyProfiles) {
+      window.ElyProfiles.addFriend({ name: req.from, photoURL: req.fromPhoto || null });
+    }
+    showToast(`You are now friends with ${req.from}!`);
+    renderPresence(latestPresenceMap);
+  });
+}
+
+if (btnDeclineFriend) {
+  btnDeclineFriend.addEventListener('click', () => {
+    if (!currentIncomingFriendReq) return;
+    if (friendReqModal) {
+      friendReqModal.classList.add('hidden');
+      friendReqModal.setAttribute('aria-hidden', 'true');
+    }
+    const req = currentIncomingFriendReq;
+    currentIncomingFriendReq = null;
+
+    respondToFriendRequest(req.id, 'declined', req.from, req.fromPhoto);
+    showToast(`Friend request from ${req.from} declined.`);
+  });
+}
+
+// Subscribe to incoming friend requests
+onFriendOffer((req) => {
+  currentIncomingFriendReq = req;
+  playHubSound('challenge');
+
+  const nameEl = document.getElementById('friendRequestName');
+  const avatarEl = document.getElementById('friendRequestAvatar');
+
+  if (nameEl) {
+    nameEl.innerHTML = `<a href="profile.html?user=${encodeURIComponent(req.from)}" style="color:inherit;text-decoration:none;" class="challenge-sender-link" title="View ${escapeHtml(req.from)}'s profile">${escapeHtml(req.from)}</a>`;
+  }
+  if (avatarEl) {
+    avatarEl.style.cursor = 'pointer';
+    avatarEl.title = `View ${escapeHtml(req.from)}'s profile`;
+    avatarEl.onclick = () => { window.location.href = `profile.html?user=${encodeURIComponent(req.from)}`; };
+    if (req.fromPhoto) {
+      avatarEl.innerHTML = `<img src="${req.fromPhoto}" alt="${escapeHtml(req.from)}" />`;
+    } else {
+      avatarEl.textContent = (req.from || 'P').charAt(0).toUpperCase();
+    }
+  }
+
+  if (friendReqModal) {
+    friendReqModal.classList.remove('hidden');
+    friendReqModal.setAttribute('aria-hidden', 'false');
+  }
+});
+
+// Subscribe to friend request responses
+onFriendResponse((resp) => {
+  const user = getLocalSessionUser();
+  const myName = (user ? (user.displayName || user.email.split('@')[0]) : '').trim().toLowerCase();
+  const isSender = resp.from && resp.from.trim().toLowerCase() === myName;
+
+  if (resp.status === 'accepted' || resp.response === 'accepted') {
+    if (isSender) {
+      playHubSound('challenge');
+      if (window.ElyProfiles) {
+        window.ElyProfiles.addFriend({ name: resp.to, photoURL: resp.toPhoto || null });
+      }
+      showToast(`${resp.to} ACCEPTED your friend request!`);
+      renderPresence(latestPresenceMap);
+    }
+  } else if (resp.status === 'declined' || resp.response === 'declined') {
+    if (isSender) {
+      if (window.ElyProfiles && window.ElyProfiles.clearRequestSent) {
+        window.ElyProfiles.clearRequestSent(resp.to);
+      }
+      showToast(`${resp.to} declined your friend request.`);
+      renderPresence(latestPresenceMap);
     }
   }
 });

@@ -88,6 +88,7 @@
   }
 
   const FRIENDS_KEY = 'elywolf_friends_v1';
+  const SENT_FRIEND_REQS_KEY = 'elywolf_sent_friend_reqs_v1';
 
   function getFriends() {
     try {
@@ -106,6 +107,123 @@
     return getFriends().some(f => String(f.name || f).trim().toLowerCase() === clean);
   }
 
+  function getSentFriendRequests() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(SENT_FRIEND_REQS_KEY) || '[]');
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) { return []; }
+  }
+
+  function hasPendingRequestTo(name) {
+    if (!name) return false;
+    const clean = String(name).trim().toLowerCase();
+    return getSentFriendRequests().some(r => String(r.to || r.name || r).trim().toLowerCase() === clean);
+  }
+
+  function markRequestSent(name, photoURL) {
+    if (!name) return;
+    const clean = String(name).trim().toLowerCase();
+    const list = getSentFriendRequests().filter(r => String(r.to || r.name || r).trim().toLowerCase() !== clean);
+    list.unshift({ to: String(name).trim(), photoURL: photoURL || null, sentAt: Date.now() });
+    try { localStorage.setItem(SENT_FRIEND_REQS_KEY, JSON.stringify(list.slice(0, 50))); } catch (e) {}
+  }
+
+  function clearRequestSent(name) {
+    if (!name) return;
+    const clean = String(name).trim().toLowerCase();
+    const list = getSentFriendRequests().filter(r => String(r.to || r.name || r).trim().toLowerCase() !== clean);
+    try { localStorage.setItem(SENT_FRIEND_REQS_KEY, JSON.stringify(list)); } catch (e) {}
+  }
+
+  async function sendFriendRequest(targetPlayerName, targetPhoto) {
+    const me = getIdentity();
+    const requestId = 'freq_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+    const req = {
+      id: requestId,
+      from: me.name,
+      fromPhoto: me.photoURL || null,
+      to: targetPlayerName,
+      toPhoto: targetPhoto || null,
+      status: 'pending',
+      timestamp: Date.now()
+    };
+    markRequestSent(targetPlayerName, targetPhoto);
+
+    // Broadcast across tabs
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        const bc = new BroadcastChannel('elywolf_arcade_sync');
+        bc.postMessage({ type: 'FRIEND_REQUEST', payload: req });
+        bc.close();
+      } catch (e) {}
+    }
+    try {
+      localStorage.setItem('elywolf_friend_req_out', JSON.stringify(req));
+    } catch (e) {}
+
+    // Dispatch via presence API
+    try {
+      await apiFetch('/api/presence', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tabId: 'profile_' + Date.now(),
+          displayName: me.name,
+          photoURL: me.photoURL || null,
+          friendAction: { type: 'REQUEST', request: req }
+        })
+      });
+    } catch (e) {}
+    return req;
+  }
+
+  async function respondToFriendRequest(requestId, responseStatus, senderName, senderPhoto) {
+    const me = getIdentity();
+    const respData = {
+      id: requestId,
+      from: senderName,
+      fromPhoto: senderPhoto || null,
+      to: me.name,
+      toPhoto: me.photoURL || null,
+      response: responseStatus,
+      status: responseStatus,
+      timestamp: Date.now()
+    };
+
+    if (responseStatus === 'accepted') {
+      addFriend({ name: senderName, photoURL: senderPhoto || null });
+    } else {
+      clearRequestSent(senderName);
+    }
+
+    // Broadcast across tabs
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        const bc = new BroadcastChannel('elywolf_arcade_sync');
+        bc.postMessage({ type: 'FRIEND_RESPONSE', payload: respData });
+        bc.close();
+      } catch (e) {}
+    }
+    try {
+      localStorage.setItem('elywolf_friend_resp_out', JSON.stringify(respData));
+    } catch (e) {}
+
+    // Dispatch via presence API
+    try {
+      await apiFetch('/api/presence', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tabId: 'profile_' + Date.now(),
+          displayName: me.name,
+          photoURL: me.photoURL || null,
+          friendAction: { type: 'RESPONSE', request: respData }
+        })
+      });
+    } catch (e) {}
+    return respData;
+  }
+
   function addFriend(friendObj) {
     if (!friendObj) return;
     const name = typeof friendObj === 'string' ? friendObj : friendObj.name;
@@ -114,6 +232,7 @@
     const me = getIdentity();
     if (me.name && me.name.trim().toLowerCase() === clean) return; // Cannot friend self
 
+    clearRequestSent(name);
     const list = getFriends();
     if (list.some(f => String(f.name || f).trim().toLowerCase() === clean)) return;
 
@@ -130,6 +249,7 @@
   function removeFriend(name) {
     if (!name) return;
     const clean = String(name).trim().toLowerCase();
+    clearRequestSent(name);
     const list = getFriends().filter(f => String(f.name || f).trim().toLowerCase() !== clean);
     saveFriends(list);
   }
@@ -489,6 +609,12 @@
     getFriends,
     isFriend,
     addFriend,
-    removeFriend
+    removeFriend,
+    getSentFriendRequests,
+    hasPendingRequestTo,
+    markRequestSent,
+    clearRequestSent,
+    sendFriendRequest,
+    respondToFriendRequest
   };
 })();

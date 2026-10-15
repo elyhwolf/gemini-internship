@@ -7,9 +7,10 @@ import urllib.request
 ACTIVE_PRESENCE_ID = "ff808181a09d98f701a1284d689438fb"
 IN_MEMORY_PRESENCE = {}
 IN_MEMORY_CHALLENGES = {}
+IN_MEMORY_FRIEND_REQUESTS = {}
 
 def _fetch_from_cloud(retry=True):
-    global IN_MEMORY_PRESENCE, IN_MEMORY_CHALLENGES
+    global IN_MEMORY_PRESENCE, IN_MEMORY_CHALLENGES, IN_MEMORY_FRIEND_REQUESTS
     url = f"https://api.restful-api.dev/objects/{ACTIVE_PRESENCE_ID}"
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (ElyWolfArcade/1.0)'})
     try:
@@ -22,23 +23,28 @@ def _fetch_from_cloud(retry=True):
                 chals = data['data'].get('challenges', {})
                 if isinstance(chals, dict):
                     IN_MEMORY_CHALLENGES.update(chals)
-                return IN_MEMORY_PRESENCE, IN_MEMORY_CHALLENGES
+                freqs = data['data'].get('friendRequests', {})
+                if isinstance(freqs, dict):
+                    IN_MEMORY_FRIEND_REQUESTS.update(freqs)
+                return IN_MEMORY_PRESENCE, IN_MEMORY_CHALLENGES, IN_MEMORY_FRIEND_REQUESTS
     except Exception:
         if retry:
             time.sleep(0.3)
             return _fetch_from_cloud(retry=False)
-    return IN_MEMORY_PRESENCE, IN_MEMORY_CHALLENGES
+    return IN_MEMORY_PRESENCE, IN_MEMORY_CHALLENGES, IN_MEMORY_FRIEND_REQUESTS
 
-def _save_to_cloud(presence_map, challenges_map, retry=True):
-    global IN_MEMORY_PRESENCE, IN_MEMORY_CHALLENGES
+def _save_to_cloud(presence_map, challenges_map, friend_requests_map, retry=True):
+    global IN_MEMORY_PRESENCE, IN_MEMORY_CHALLENGES, IN_MEMORY_FRIEND_REQUESTS
     IN_MEMORY_PRESENCE = presence_map
     IN_MEMORY_CHALLENGES = challenges_map
+    IN_MEMORY_FRIEND_REQUESTS = friend_requests_map
     url = f"https://api.restful-api.dev/objects/{ACTIVE_PRESENCE_ID}"
     payload = {
         "name": "elywolf_presence_v3",
         "data": { 
             "presence": presence_map,
-            "challenges": challenges_map
+            "challenges": challenges_map,
+            "friendRequests": friend_requests_map
         }
     }
     req = urllib.request.Request(
@@ -53,10 +59,12 @@ def _save_to_cloud(presence_map, challenges_map, retry=True):
     except Exception:
         if retry:
             time.sleep(0.3)
-            return _save_to_cloud(presence_map, challenges_map, retry=False)
+            return _save_to_cloud(presence_map, challenges_map, friend_requests_map, retry=False)
     return False
 
-def _clean_expired(presence_map, challenges_map):
+def _clean_expired(presence_map, challenges_map, friend_requests_map=None):
+    if friend_requests_map is None:
+        friend_requests_map = {}
     now = time.time() * 1000
     clean_players = {}
     for tab_id, player in list(presence_map.items()):
@@ -69,7 +77,13 @@ def _clean_expired(presence_map, challenges_map):
         if now - chal.get('timestamp', 0) <= 45000:
             clean_challenges[cid] = chal
 
-    return clean_players, clean_challenges
+    clean_freqs = {}
+    for fid, req in list(friend_requests_map.items()):
+        # Friend requests expire after 10 minutes or if finished
+        if now - req.get('timestamp', 0) <= 600000:
+            clean_freqs[fid] = req
+
+    return clean_players, clean_challenges, clean_freqs
 
 class handler(BaseHTTPRequestHandler):
     def _send_json(self, data, code=200):
@@ -89,8 +103,8 @@ class handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        presence_map, challenges_map = _fetch_from_cloud()
-        clean_players, clean_challenges = _clean_expired(presence_map, challenges_map)
+        presence_map, challenges_map, friend_requests_map = _fetch_from_cloud()
+        clean_players, clean_challenges, clean_freqs = _clean_expired(presence_map, challenges_map, friend_requests_map)
 
         # Collect live maze runners
         maze_players = []
@@ -112,6 +126,7 @@ class handler(BaseHTTPRequestHandler):
             'players': list(clean_players.values()),
             'count': len(clean_players),
             'challenges': list(clean_challenges.values()),
+            'friendRequests': list(clean_freqs.values()),
             'mazePlayers': maze_players
         })
 
@@ -128,14 +143,15 @@ class handler(BaseHTTPRequestHandler):
             is_guest = payload.get('isGuest', True)
             maze_pos = payload.get('mazePos')
             challenge_action = payload.get('challengeAction')
+            friend_action = payload.get('friendAction')
 
             if not tab_id:
                 self._send_json({'error': 'Missing tabId'}, 400)
                 return
 
             now = time.time() * 1000
-            presence_map, challenges_map = _fetch_from_cloud()
-            clean_players, clean_challenges = _clean_expired(presence_map, challenges_map)
+            presence_map, challenges_map, friend_requests_map = _fetch_from_cloud()
+            clean_players, clean_challenges, clean_freqs = _clean_expired(presence_map, challenges_map, friend_requests_map)
 
             # Update this player's presence
             clean_players[tab_id] = {
@@ -184,7 +200,40 @@ class handler(BaseHTTPRequestHandler):
                                 'timestamp': now
                             }
 
-            _save_to_cloud(clean_players, clean_challenges)
+            # Handle friend request invite or response
+            if friend_action and isinstance(friend_action, dict):
+                f_type = friend_action.get('type')
+                f_req = friend_action.get('request') or {}
+                fid = f_req.get('id')
+                if fid:
+                    if f_type == 'REQUEST':
+                        clean_freqs[fid] = {
+                            'id': fid,
+                            'from': f_req.get('from', display_name),
+                            'fromPhoto': f_req.get('fromPhoto'),
+                            'to': f_req.get('to'),
+                            'toPhoto': f_req.get('toPhoto'),
+                            'status': 'pending',
+                            'timestamp': now
+                        }
+                    elif f_type == 'RESPONSE':
+                        f_resp = f_req.get('response') # 'accepted' or 'declined'
+                        if fid in clean_freqs:
+                            clean_freqs[fid]['status'] = f_resp
+                            if f_req.get('toPhoto'):
+                                clean_freqs[fid]['toPhoto'] = f_req.get('toPhoto')
+                        else:
+                            clean_freqs[fid] = {
+                                'id': fid,
+                                'from': f_req.get('from'),
+                                'fromPhoto': f_req.get('fromPhoto'),
+                                'to': f_req.get('to'),
+                                'toPhoto': f_req.get('toPhoto'),
+                                'status': f_resp,
+                                'timestamp': now
+                            }
+
+            _save_to_cloud(clean_players, clean_challenges, clean_freqs)
 
             # Collect live maze runners
             maze_players = []
@@ -207,6 +256,7 @@ class handler(BaseHTTPRequestHandler):
                 'players': list(clean_players.values()),
                 'count': len(clean_players),
                 'challenges': list(clean_challenges.values()),
+                'friendRequests': list(clean_freqs.values()),
                 'mazePlayers': maze_players
             })
         except Exception as e:

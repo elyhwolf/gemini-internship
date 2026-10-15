@@ -137,11 +137,15 @@ const localPresenceMap = new Map();
 // Challenge & Maze State Listeners
 const challengeOfferListeners = new Set();
 const challengeResponseListeners = new Set();
+const friendOfferListeners = new Set();
+const friendResponseListeners = new Set();
 const mazePlayersListeners = new Set();
 
 let pendingChallengeAction = null;
+let pendingFriendAction = null;
 let localMazePos = null;
 const processedChallengeIds = new Set();
+const processedFriendIds = new Set();
 
 let activeGameStatus = null;
 
@@ -199,6 +203,33 @@ function handleIncomingChallengeResponse(resp) {
   }
 }
 
+function handleIncomingFriendInvite(req) {
+  if (!req || !req.id || !req.to) return;
+  const user = getLocalSessionUser();
+  const myName = (user ? (user.displayName || user.email.split('@')[0]) : getOrCreateGuestId()).trim().toLowerCase();
+  if (req.to.trim().toLowerCase() === myName && req.status === 'pending') {
+    if (!processedFriendIds.has(req.id)) {
+      processedFriendIds.add(req.id);
+      friendOfferListeners.forEach(cb => { try { cb(req); } catch (e) {} });
+    }
+  }
+}
+
+function handleIncomingFriendResponse(resp) {
+  if (!resp || !resp.id) return;
+  const user = getLocalSessionUser();
+  const myName = (user ? (user.displayName || user.email.split('@')[0]) : getOrCreateGuestId()).trim().toLowerCase();
+  const isSender = resp.from && resp.from.trim().toLowerCase() === myName;
+  const isTarget = resp.to && resp.to.trim().toLowerCase() === myName;
+  if (isSender || isTarget) {
+    const key = `${resp.id}_${resp.status || resp.response}`;
+    if (!processedFriendIds.has(key)) {
+      processedFriendIds.add(key);
+      friendResponseListeners.forEach(cb => { try { cb(resp); } catch (e) {} });
+    }
+  }
+}
+
 // Listen to local BroadcastChannel updates from other tabs on same machine
 if (syncChannel) {
   syncChannel.onmessage = (event) => {
@@ -216,6 +247,10 @@ if (syncChannel) {
       handleIncomingChallengeInvite(payload);
     } else if (type === 'CHALLENGE_RESPONSE' && payload) {
       handleIncomingChallengeResponse(payload);
+    } else if (type === 'FRIEND_REQUEST' && payload) {
+      handleIncomingFriendInvite(payload);
+    } else if (type === 'FRIEND_RESPONSE' && payload) {
+      handleIncomingFriendResponse(payload);
     } else if (type === 'MAZE_POS' && payload) {
       mazePlayersListeners.forEach(cb => { try { cb([payload]); } catch (e) {} });
     }
@@ -284,9 +319,11 @@ async function sendPresenceHeartbeat() {
     isGuest: !user,
     lastSeen: Date.now(),
     challengeAction: pendingChallengeAction,
+    friendAction: pendingFriendAction,
     mazePos: localMazePos
   };
   pendingChallengeAction = null;
+  pendingFriendAction = null;
 
   // Broadcast to other tabs on same machine immediately
   localPresenceMap.set(TAB_SESSION_ID, payload);
@@ -303,6 +340,12 @@ async function sendPresenceHeartbeat() {
       data.challenges.forEach(c => {
         handleIncomingChallengeInvite(c);
         handleIncomingChallengeResponse(c);
+      });
+    }
+    if (Array.isArray(data.friendRequests)) {
+      data.friendRequests.forEach(f => {
+        handleIncomingFriendInvite(f);
+        handleIncomingFriendResponse(f);
       });
     }
     if (Array.isArray(data.mazePlayers)) {
@@ -586,6 +629,84 @@ export function onChallengeOffer(cb) {
 export function onChallengeResponse(cb) {
   challengeResponseListeners.add(cb);
   return () => challengeResponseListeners.delete(cb);
+}
+
+/**
+ * Send Friend Request
+ */
+export function sendFriendRequest(targetPlayerName, targetPhoto) {
+  const user = getLocalSessionUser();
+  const myName = user ? (user.displayName || user.email.split('@')[0]) : getOrCreateGuestId();
+  const myPhoto = user ? user.photoURL : null;
+  const requestId = 'freq_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+
+  const req = {
+    id: requestId,
+    from: myName,
+    fromPhoto: myPhoto,
+    to: targetPlayerName,
+    toPhoto: targetPhoto || null,
+    status: 'pending',
+    timestamp: Date.now()
+  };
+
+  pendingFriendAction = { type: 'REQUEST', request: req };
+
+  if (syncChannel) {
+    try { syncChannel.postMessage({ type: 'FRIEND_REQUEST', payload: req }); } catch (e) {}
+  }
+
+  // Also broadcast via window storage fallback
+  try {
+    localStorage.setItem('elywolf_friend_req_out', JSON.stringify(req));
+  } catch (e) {}
+
+  sendPresenceHeartbeat();
+  return req;
+}
+
+/**
+ * Respond to Friend Request ('accepted' or 'declined')
+ */
+export function respondToFriendRequest(requestId, responseStatus, senderName, senderPhoto) {
+  const user = getLocalSessionUser();
+  const myName = user ? (user.displayName || user.email.split('@')[0]) : getOrCreateGuestId();
+  const myPhoto = user ? user.photoURL : null;
+
+  const respData = {
+    id: requestId,
+    from: senderName,
+    fromPhoto: senderPhoto || null,
+    to: myName,
+    toPhoto: myPhoto || null,
+    response: responseStatus,
+    status: responseStatus,
+    timestamp: Date.now()
+  };
+
+  pendingFriendAction = { type: 'RESPONSE', request: respData };
+
+  if (syncChannel) {
+    try { syncChannel.postMessage({ type: 'FRIEND_RESPONSE', payload: respData }); } catch (e) {}
+  }
+
+  // Broadcast via window storage fallback
+  try {
+    localStorage.setItem('elywolf_friend_resp_out', JSON.stringify(respData));
+  } catch (e) {}
+
+  sendPresenceHeartbeat();
+  return respData;
+}
+
+export function onFriendOffer(cb) {
+  friendOfferListeners.add(cb);
+  return () => friendOfferListeners.delete(cb);
+}
+
+export function onFriendResponse(cb) {
+  friendResponseListeners.add(cb);
+  return () => friendResponseListeners.delete(cb);
 }
 
 /**

@@ -459,6 +459,50 @@
     </div>
   </div>
 
+  <!-- INCOMING FRIEND REQUEST MODAL -->
+  <div id="friendRequestModal" class="modal-backdrop hidden" aria-hidden="true">
+    <div class="challenge-offer-card friend-request-card">
+      <div class="challenge-offer-glow friend-request-glow"></div>
+      <div class="challenge-offer-badge friend-request-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="8.5" cy="7" r="4"></circle>
+          <line x1="20" y1="8" x2="20" y2="14"></line>
+          <line x1="23" y1="11" x2="17" y2="11"></line>
+        </svg>
+        <span>FRIEND REQUEST</span>
+      </div>
+
+      <div class="challenge-sender-profile">
+        <div id="friendRequestAvatar" class="challenge-sender-avatar friend-request-avatar">P</div>
+        <div class="challenge-sender-details">
+          <h3 id="friendRequestName" class="challenge-sender-name">Player</h3>
+          <span class="challenge-sender-subtitle">wants to add you as a friend!</span>
+        </div>
+      </div>
+
+      <div class="friend-request-info-card">
+        <p class="friend-request-note">Accepting will add them to your arcade Friends List so you can view their stats, see when they're online, and challenge them to 1v1 battles.</p>
+      </div>
+
+      <div class="challenge-modal-actions">
+        <button type="button" id="btnAcceptFriend" class="btn-challenge-accept btn-friend-accept">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>ACCEPT</span>
+        </button>
+        <button type="button" id="btnDeclineFriend" class="btn-challenge-decline btn-friend-decline">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+          <span>DECLINE</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- CHALLENGE GAME PICKER MODAL -->
   <div id="challengePickerModal" class="modal-backdrop hidden" aria-hidden="true">
     <div class="challenge-picker-card">

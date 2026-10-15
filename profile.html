@@ -716,6 +716,18 @@
       color: #ef4444;
     }
 
+    .btn-friend-action.is-pending {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.45);
+      color: #fbbf24;
+    }
+
+    .btn-friend-action.is-pending:hover {
+      background: rgba(245, 158, 11, 0.25);
+      border-color: rgba(245, 158, 11, 0.6);
+      color: #fde047;
+    }
+
     /* FRIENDS GRID */
     .friends-grid {
       display: grid;
@@ -1215,24 +1227,43 @@
         currentProfileData = { name, photoURL: photo };
 
         const already = store.isFriend && store.isFriend(name);
+        const pending = store.hasPendingRequestTo && store.hasPendingRequestTo(name);
         if (already) {
           btnToggleFriend.classList.add('is-friend');
+          btnToggleFriend.classList.remove('is-pending');
           friendBtnText.textContent = 'Friends ✓';
+          btnToggleFriend.title = 'Friends (click to remove)';
+        } else if (pending) {
+          btnToggleFriend.classList.remove('is-friend');
+          btnToggleFriend.classList.add('is-pending');
+          friendBtnText.textContent = 'Request Sent ⌛';
+          btnToggleFriend.title = 'Friend request sent! Waiting for them to accept.';
         } else {
           btnToggleFriend.classList.remove('is-friend');
+          btnToggleFriend.classList.remove('is-pending');
           friendBtnText.textContent = 'Add Friend';
+          btnToggleFriend.title = 'Send friend request';
         }
       }
 
       if (btnToggleFriend) {
-        btnToggleFriend.addEventListener('click', () => {
+        btnToggleFriend.addEventListener('click', async () => {
           if (!currentProfileData || !currentProfileData.name) return;
           const name = currentProfileData.name;
           const already = store.isFriend && store.isFriend(name);
+          const pending = store.hasPendingRequestTo && store.hasPendingRequestTo(name);
+
           if (already) {
             store.removeFriend(name);
+          } else if (pending) {
+            // Already pending
+            return;
           } else {
-            store.addFriend(currentProfileData);
+            if (store.sendFriendRequest) {
+              await store.sendFriendRequest(name, currentProfileData.photoURL);
+            } else if (store.markRequestSent) {
+              store.markRequestSent(name, currentProfileData.photoURL);
+            }
           }
           updateFriendBtn(name, currentProfileData.photoURL);
           renderFriendsList();
