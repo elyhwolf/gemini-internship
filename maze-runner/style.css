@@ -852,7 +852,17 @@ html, body {
 .lvl-star-svg {
   width: 10px;
   height: 10px;
+  color: rgba(255, 255, 255, 0.15);
+  transition: color 0.2s ease;
+}
+
+.lvl-star-svg.lit {
   color: #fbbf24;
+  filter: drop-shadow(0 0 3px rgba(251, 191, 36, 0.6));
+}
+
+.lvl-star-svg.empty {
+  color: rgba(255, 255, 255, 0.12);
 }
 
 .lvl-lock-svg {

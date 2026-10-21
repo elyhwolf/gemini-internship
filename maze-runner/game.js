@@ -1348,6 +1348,12 @@ class MazeGame {
     );
     if (this.maxUnlockedLevel > 100) this.maxUnlockedLevel = 100;
 
+    try {
+      this.clearedLevels = JSON.parse(localStorage.getItem('elywolf_maze_cleared_levels') || '{}');
+    } catch (e) {
+      this.clearedLevels = {};
+    }
+
     // YouTube Music Player initialized with active level so song never resets to mist
     this.music = new MazeMusicPlayer(this, this.currentLevel);
 
@@ -1885,13 +1891,22 @@ class MazeGame {
 
       const musicIconSvg = `<svg class="inline-music-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>`;
       const lockIconSvg = `<svg class="lvl-lock-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`;
-      const starIconSvg = `<svg class="lvl-star-svg" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
-      const starsGroupHtml = `<span class="lvl-stars-group">${starIconSvg}${starIconSvg}${starIconSvg}</span>`;
+      
+      const earnedStars = (this.clearedLevels && this.clearedLevels[l]) ? this.clearedLevels[l] : 0;
+      let starsGroupHtml = '';
+      if (isLocked) {
+        starsGroupHtml = lockIconSvg;
+      } else {
+        const s1 = `<svg class="lvl-star-svg ${earnedStars >= 1 ? 'lit' : 'empty'}" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
+        const s2 = `<svg class="lvl-star-svg ${earnedStars >= 2 ? 'lit' : 'empty'}" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
+        const s3 = `<svg class="lvl-star-svg ${earnedStars >= 3 ? 'lit' : 'empty'}" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
+        starsGroupHtml = `<span class="lvl-stars-group">${s1}${s2}${s3}</span>`;
+      }
 
       btn.innerHTML = `
         <span class="lvl-num">${l}</span>
         <span class="lvl-song-name">${musicIconSvg} <span>${song.title}</span></span>
-        <span class="lvl-stars">${isLocked ? lockIconSvg : starsGroupHtml}</span>
+        <span class="lvl-stars">${starsGroupHtml}</span>
       `;
 
       btn.onclick = () => {
@@ -2091,6 +2106,28 @@ class MazeGame {
       colors: ['#10b981', '#34d399', '#fbbf24', '#fff']
     });
 
+    // Determine stars earned (e.g. 3 stars for 0 deaths, 2 stars for <= 2 deaths, 1 star otherwise)
+    let starsEarned = 1;
+    if (this.deaths === 0) {
+      starsEarned = 3;
+    } else if (this.deaths <= 2) {
+      starsEarned = 2;
+    }
+
+    if (!this.clearedLevels) this.clearedLevels = {};
+    const prevStars = this.clearedLevels[this.currentLevel] || 0;
+    if (starsEarned > prevStars) {
+      this.clearedLevels[this.currentLevel] = starsEarned;
+      try {
+        localStorage.setItem('elywolf_maze_cleared_levels', JSON.stringify(this.clearedLevels));
+      } catch (e) {}
+    } else if (!this.clearedLevels[this.currentLevel]) {
+      this.clearedLevels[this.currentLevel] = starsEarned;
+      try {
+        localStorage.setItem('elywolf_maze_cleared_levels', JSON.stringify(this.clearedLevels));
+      } catch (e) {}
+    }
+
     // Save max unlocked level
     const nextLevel = this.currentLevel + 1;
     if (nextLevel > this.maxUnlockedLevel && nextLevel <= 100) {
@@ -2120,6 +2157,19 @@ class MazeGame {
       if (clearTimeVal) clearTimeVal.textContent = this.hudTimerVal ? this.hudTimerVal.textContent : '00:00.0';
       if (clearDeathsVal) clearDeathsVal.textContent = this.deaths;
       if (clearUnlockedVal) clearUnlockedVal.textContent = `${this.maxUnlockedLevel} / 100`;
+
+      // Update victory stars in modal
+      const victoryStarsEl = document.getElementById('victoryStars');
+      if (victoryStarsEl) {
+        const starSvgs = victoryStarsEl.querySelectorAll('.star-svg');
+        starSvgs.forEach((star, idx) => {
+          if (idx < starsEarned) {
+            star.classList.add('lit');
+          } else {
+            star.classList.remove('lit');
+          }
+        });
+      }
 
       // Update cleared puzzle song in victory modal
       const currentSong = this.music.getSong(this.currentLevel);
