@@ -1341,18 +1341,31 @@ class MazeGame {
       startLvl = 1;
     }
 
-    this.currentLevel = !isNaN(startLvl) && startLvl >= 1 && startLvl <= 100 ? startLvl : 1;
-    this.maxUnlockedLevel = Math.max(
-      this.currentLevel,
-      parseInt(localStorage.getItem('elywolf_maze_max_unlocked') || '100', 10)
-    );
-    if (this.maxUnlockedLevel > 100) this.maxUnlockedLevel = 100;
-
     try {
       this.clearedLevels = JSON.parse(localStorage.getItem('elywolf_maze_cleared_levels') || '{}');
     } catch (e) {
       this.clearedLevels = {};
     }
+
+    this.currentLevel = !isNaN(startLvl) && startLvl >= 1 && startLvl <= 100 ? startLvl : 1;
+
+    // Determine max unlocked level (default is 1 for new players, levels unlock one after the other as beaten)
+    let savedMaxUnlocked = parseInt(localStorage.getItem('elywolf_maze_max_unlocked') || '1', 10);
+    // Migration: If legacy storage saved '100' before beating levels, calculate actual max unlocked from cleared levels
+    const clearedLevelNumbers = Object.keys(this.clearedLevels).map(Number).filter(n => !isNaN(n) && n >= 1);
+    const highestCleared = clearedLevelNumbers.length > 0 ? Math.max(...clearedLevelNumbers) : 0;
+    
+    if (savedMaxUnlocked === 100 && highestCleared < 99 && clearedLevelNumbers.length < 50) {
+      // Legacy default bug gave everyone 100 even if they only beat level 1 or 0
+      savedMaxUnlocked = Math.max(1, highestCleared + 1);
+      localStorage.setItem('elywolf_maze_max_unlocked', savedMaxUnlocked);
+    }
+
+    this.maxUnlockedLevel = Math.max(
+      this.currentLevel,
+      Math.max(1, isNaN(savedMaxUnlocked) ? 1 : savedMaxUnlocked)
+    );
+    if (this.maxUnlockedLevel > 100) this.maxUnlockedLevel = 100;
 
     // YouTube Music Player initialized with active level so song never resets to mist
     this.music = new MazeMusicPlayer(this, this.currentLevel);
@@ -1910,6 +1923,7 @@ class MazeGame {
       `;
 
       btn.onclick = () => {
+        if (isLocked) return;
         this.loadLevel(l);
         if (this.levelSelectModal) this.levelSelectModal.classList.add('hidden');
       };
@@ -2106,27 +2120,14 @@ class MazeGame {
       colors: ['#10b981', '#34d399', '#fbbf24', '#fff']
     });
 
-    // Determine stars earned (e.g. 3 stars for 0 deaths, 2 stars for <= 2 deaths, 1 star otherwise)
-    let starsEarned = 1;
-    if (this.deaths === 0) {
-      starsEarned = 3;
-    } else if (this.deaths <= 2) {
-      starsEarned = 2;
-    }
+    // Beating a level grants 3 stars
+    const starsEarned = 3;
 
     if (!this.clearedLevels) this.clearedLevels = {};
-    const prevStars = this.clearedLevels[this.currentLevel] || 0;
-    if (starsEarned > prevStars) {
-      this.clearedLevels[this.currentLevel] = starsEarned;
-      try {
-        localStorage.setItem('elywolf_maze_cleared_levels', JSON.stringify(this.clearedLevels));
-      } catch (e) {}
-    } else if (!this.clearedLevels[this.currentLevel]) {
-      this.clearedLevels[this.currentLevel] = starsEarned;
-      try {
-        localStorage.setItem('elywolf_maze_cleared_levels', JSON.stringify(this.clearedLevels));
-      } catch (e) {}
-    }
+    this.clearedLevels[this.currentLevel] = 3;
+    try {
+      localStorage.setItem('elywolf_maze_cleared_levels', JSON.stringify(this.clearedLevels));
+    } catch (e) {}
 
     // Save max unlocked level
     const nextLevel = this.currentLevel + 1;
