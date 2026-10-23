@@ -169,8 +169,8 @@ body {
   color: var(--accent-cyan);
 }
 
-.xp-badge .badge-val {
-  color: #fbbf24;
+.accuracy-badge .badge-val {
+  color: #34d399;
 }
 
 /* PROGRESS BAR */
