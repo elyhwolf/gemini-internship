@@ -199,10 +199,9 @@
 
   const verdictBanner = document.getElementById('verdictBanner');
   const verdictBadge = document.getElementById('verdictBadge');
-  const verdictXp = document.getElementById('verdictXp');
+  const verdictStatus = document.getElementById('verdictStatus');
   const verdictTitle = document.getElementById('verdictTitle');
-  const verdictExplanation = document.getElementById('verdictExplanation');
-  const cluesList = document.getElementById('cluesList');
+  const postAnswerSource = document.getElementById('postAnswerSource');
   const nextBtnText = document.getElementById('nextBtnText');
 
   // Matrix background canvas
@@ -348,7 +347,6 @@
           <span>TEXT SPECIMEN EXCERPT</span>
         </div>
         <p class="evidence-text-body">"${q.textContent}"</p>
-        <div class="evidence-text-source">${q.textSource}</div>
       `;
       evidenceDisplay.appendChild(textWrap);
     }
@@ -411,18 +409,18 @@
     scoreVal.textContent = `${score} / ${QUESTIONS.length}`;
     if (accuracyLiveVal) accuracyLiveVal.textContent = `${currentAcc}%`;
 
-    // Populate forensic banner
-    verdictTitle.textContent = q.title;
-    verdictExplanation.textContent = q.explanation;
-    cluesList.innerHTML = '';
-    q.clues.forEach(clue => {
-      const li = document.createElement('li');
-      li.textContent = clue;
-      cluesList.appendChild(li);
-    });
+    // Reveal source only AFTER answering so it never spoils the question
+    if (postAnswerSource) {
+      if (q.textSource) {
+        postAnswerSource.innerHTML = `<span class="source-tag">ORIGIN:</span> <strong>${q.textSource}</strong>`;
+        postAnswerSource.style.display = 'block';
+      } else {
+        postAnswerSource.style.display = 'none';
+      }
+    }
 
     if (currentQIndex === QUESTIONS.length - 1) {
-      nextBtnText.textContent = 'VIEW FINAL FORENSIC DOSSIER';
+      nextBtnText.textContent = 'VIEW FINAL RESULTS';
     } else {
       nextBtnText.textContent = 'CONTINUE TO NEXT CASE';
     }
@@ -461,31 +459,35 @@
     document.getElementById('finalScoreVal').textContent = `${score} / ${QUESTIONS.length}`;
     document.getElementById('accuracyPercentVal').textContent = `${accuracyPct}%`;
     document.getElementById('avgTimeVal').textContent = `${avgTime}s`;
-    const rankEl = document.getElementById('detectionRankVal');
-    if (rankEl) rankEl.textContent = `SCORE ${score}/10`;
-
-    // Assign Forensic Rank & Grade
-    let grade = 'C';
-    let rankTitle = 'NOVICE OBSERVER';
-    let rankSub = 'You were fooled by several synthetic artifacts. Review the forensic cheat sheet below to sharpen your eyes!';
+    // Assign Standard Academic Letter Grade based on score
+    let grade = 'F';
+    let gradeDescription = 'Keep practicing to train your eye!';
 
     if (score === 10) {
       grade = 'A+';
-      rankTitle = 'MASTER FORENSIC DETECTOR';
-      rankSub = 'Flawless perception! Not a single hallucinated pixel or synthetic sentence slipped past your gaze.';
-    } else if (score >= 8) {
+      gradeDescription = 'Perfect 10/10! Flawless accuracy.';
+    } else if (score === 9) {
       grade = 'A';
-      rankTitle = 'SENIOR FORENSIC ANALYST';
-      rankSub = 'Outstanding accuracy! You have a keen eye for subtle generative artifacts and linguistic quirks.';
-    } else if (score >= 6) {
+      gradeDescription = 'Outstanding! 9 out of 10 correct.';
+    } else if (score === 8) {
+      grade = 'B+';
+      gradeDescription = 'Great job! 8 out of 10 correct.';
+    } else if (score === 7) {
       grade = 'B';
-      rankTitle = 'DIGITAL INVESIGATOR';
-      rankSub = 'Solid performance. You spotted the obvious giveaways but fell for a couple of deceptive high-fidelity edge cases.';
+      gradeDescription = 'Solid effort! 7 out of 10 correct.';
+    } else if (score === 6) {
+      grade = 'C';
+      gradeDescription = 'Passed! 6 out of 10 correct.';
+    } else if (score === 5) {
+      grade = 'D';
+      gradeDescription = '5 out of 10 correct.';
     }
 
     document.getElementById('gradeSymbol').textContent = grade;
-    document.getElementById('resultsTitle').textContent = rankTitle;
-    document.getElementById('resultsSub').textContent = rankSub;
+    document.getElementById('resultsTitle').textContent = `GRADE: ${grade}`;
+    document.getElementById('resultsSub').textContent = gradeDescription;
+    const finalGradeVal = document.getElementById('finalGradeVal');
+    if (finalGradeVal) finalGradeVal.textContent = grade;
 
     // Render Breakdown List
     const breakdownGrid = document.getElementById('breakdownGrid');
