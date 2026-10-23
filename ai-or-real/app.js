@@ -42,16 +42,16 @@
     {
       id: 3,
       type: 'image',
-      badge: 'IMAGE FORENSICS • STREET PHOTO',
-      prompt: 'Look at this Italian fruit vendor in an open-air market. Is this photo real or AI?',
+      badge: 'IMAGE FORENSICS • DENSE PRODUCE STALL',
+      prompt: 'Look at this colorful outdoor market stall with tiered fruits and berries. Is this a genuine photograph or AI generated?',
       mediaUrl: 'assets/q3_real_market.jpg',
       answer: 'real',
       title: 'AUTHENTIC (REAL PHOTOGRAPH)',
-      explanation: 'This is a genuine photograph of an Italian market vendor in Testaccio, Rome. Notice the authentic optical camera lens physics and real-world micro-imperfections.',
+      explanation: 'This is an authentic high-resolution stock photograph of an artisanal market stall. Notice the genuine optical physics, real plastic crate molding, and natural organic irregularities.',
       clues: [
-        'Accurate Italian handwritten signage: "CLEMENTINE NOSTRANE" and price tags "€2.50/kg" have genuine marker strokes and authentic Italian spelling.',
-        'Natural optical depth of field: Background crowd members have physically correct bokeh blur rather than morphed faces.',
-        'Realistic weathered textures: The vendor\'s wool sweater has real pilling and lint, and the clementines show natural organic blemishes.'
+        'Real handwritten label: The hand-written "CEREZA" (cherry) sign on the white styrofoam box has natural pen ink pressure and real handwriting.',
+        'Molded plastic crate details: The green and red crates have authentic injection-molding seams, scuffs, and stamped brand cutouts.',
+        'Individual fruit textures: Look at the dragon fruit (pitahaya) spines and kiwi fuzz—each has unique, non-repeating tactile geometry with no synthetic blurring.'
       ]
     },
     {
@@ -120,16 +120,16 @@
     {
       id: 8,
       type: 'image',
-      badge: 'IMAGE FORENSICS • ANIMAL COAT',
-      prompt: 'Look at this golden retriever puppy resting on a hardwood floor. Real photo or AI render?',
+      badge: 'IMAGE FORENSICS • ANIMAL PORTRAIT',
+      prompt: 'Look at this golden retriever sitting outside in a lush yard. Real photograph or AI render?',
       mediaUrl: 'assets/q8_real_dog.jpg',
       answer: 'real',
       title: 'AUTHENTIC (REAL PHOTOGRAPH)',
-      explanation: 'This is an authentic smartphone photograph taken on an iPhone. Look past the cuteness to examine the optical sensor characteristics.',
+      explanation: 'This is an authentic real-world DSLR stock photograph taken outdoors. Look closely at the optical sensor physics and natural biological features.',
       clues: [
-        'Authentic sensor noise & compression: Zooming in reveals natural ISO camera noise rather than smooth vector gradients.',
-        'Realistic floor scratches & dust: The wood floor shows real varnish wear, floorboard seams, and tiny authentic dust motes.',
-        'Worn tennis ball fuzz: The green felt fibers on the tennis ball are genuinely frayed, weathered, and covered in real dirt specs.'
+        'Natural tongue pigmentation: The dog\'s tongue has authentic natural dark spots/birthmarks and genuine salivary moisture.',
+        'Genuine lens depth-of-field: Background trees produce authentic circular optical bokeh (lens physics) rather than neural network smudging.',
+        'Individual guard hairs: Stray hairs on the chest and ears catch direct sunlight with realistic translucent optical refraction and no uniform airbrushing.'
       ]
     },
     {
