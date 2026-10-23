@@ -16,7 +16,7 @@
       mediaUrl: 'assets/q1_ai_coffee.jpg',
       answer: 'ai',
       title: 'SYNTHETIC (AI GENERATED)',
-      textSource: 'Source: Generative AI image synthesis'
+      textSource: ''
     },
     {
       id: 2,
@@ -66,7 +66,7 @@
       mediaUrl: 'assets/q6_ai_cyberpunk.jpg',
       answer: 'ai',
       title: 'SYNTHETIC (AI GENERATED)',
-      textSource: 'Source: Midjourney v6 render'
+      textSource: ''
     },
     {
       id: 7,
@@ -106,7 +106,7 @@
       mediaUrl: 'assets/q10_ai_crowd.jpg',
       answer: 'ai',
       title: 'SYNTHETIC (AI GENERATED)',
-      textSource: 'Source: Generative AI crowd diffusion model'
+      textSource: ''
     }
   ];
 
@@ -252,6 +252,8 @@
   function loadQuestion(index) {
     currentQIndex = index;
     const q = QUESTIONS[index];
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // Reset UI
     verdictBanner.classList.add('hidden');
@@ -501,47 +503,57 @@
     retryBtn.addEventListener('click', startQuiz);
   }
 
+  // Expose global handlers for redundant button click reliability
+  window.startQuiz = startQuiz;
+  window.handleChoice = handleChoice;
+  window.nextQuestion = nextQuestion;
+
   // Background Grid Canvas
   function initBackgroundCanvas() {
-    const canvas = document.getElementById('gridCanvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    try {
+      const canvas = document.getElementById('gridCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
 
-    function resize() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resize);
-    resize();
-
-    let offset = 0;
-    function render() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const grid = 40;
-      offset = (offset + 0.25) % grid;
-
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.05)';
-      ctx.lineWidth = 1;
-
-      // Vertical lines
-      for (let x = 0; x < canvas.width; x += grid) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, canvas.height);
-        ctx.stroke();
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
       }
+      window.addEventListener('resize', resize);
+      resize();
 
-      // Horizontal lines drifting downwards
-      for (let y = offset; y < canvas.height; y += grid) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(canvas.width, y);
-        ctx.stroke();
+      let offset = 0;
+      function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const grid = 40;
+        offset = (offset + 0.25) % grid;
+
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.05)';
+        ctx.lineWidth = 1;
+
+        // Vertical lines
+        for (let x = 0; x < canvas.width; x += grid) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, canvas.height);
+          ctx.stroke();
+        }
+
+        // Horizontal lines drifting downwards
+        for (let y = offset; y < canvas.height; y += grid) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(canvas.width, y);
+          ctx.stroke();
+        }
+
+        requestAnimationFrame(render);
       }
-
-      requestAnimationFrame(render);
+      render();
+    } catch (e) {
+      console.warn('Canvas background not supported:', e);
     }
-    render();
   }
 
 })();

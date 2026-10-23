@@ -17,6 +17,10 @@
     { "source": "/math/(.*)", "destination": "/math-gauntlet/index.html" },
     { "source": "/math-gauntlet", "destination": "/math-gauntlet/index.html" },
     { "source": "/math-gauntlet/(.*)", "destination": "/math-gauntlet/index.html" },
+    { "source": "/ai-or-real", "destination": "/ai-or-real/index.html" },
+    { "source": "/ai-or-real/(.*)", "destination": "/ai-or-real/index.html" },
+    { "source": "/presentation", "destination": "/ai-or-real/index.html" },
+    { "source": "/presentation/(.*)", "destination": "/ai-or-real/index.html" },
     { "source": "/", "destination": "/yt2mp3/index.html" }
   ]
 }
