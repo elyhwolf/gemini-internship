@@ -226,18 +226,23 @@
 
   // Start Quiz
   function startQuiz() {
-    soundFX.playClick();
+    try {
+      soundFX.playClick();
+    } catch (err) {
+      console.warn('Audio click error:', err);
+    }
+
     currentQIndex = 0;
     score = 0;
     totalTime = 0;
     userAnswers = [];
 
-    scoreVal.textContent = `0 / ${QUESTIONS.length}`;
+    if (scoreVal) scoreVal.textContent = `0 / ${QUESTIONS.length}`;
     if (accuracyLiveVal) accuracyLiveVal.textContent = `100%`;
 
-    startScreen.classList.remove('active');
-    resultsScreen.classList.remove('active');
-    questionScreen.classList.add('active');
+    if (startScreen) startScreen.classList.remove('active');
+    if (resultsScreen) resultsScreen.classList.remove('active');
+    if (questionScreen) questionScreen.classList.add('active');
 
     initStepNodes();
     loadQuestion(0);
@@ -480,11 +485,21 @@
   });
 
   // Event Listeners
-  startQuizBtn.addEventListener('click', startQuiz);
-  choiceAiBtn.addEventListener('click', () => handleChoice('ai'));
-  choiceRealBtn.addEventListener('click', () => handleChoice('real'));
-  nextQuestionBtn.addEventListener('click', nextQuestion);
-  retryBtn.addEventListener('click', startQuiz);
+  if (startQuizBtn) {
+    startQuizBtn.addEventListener('click', startQuiz);
+  }
+  if (choiceAiBtn) {
+    choiceAiBtn.addEventListener('click', () => handleChoice('ai'));
+  }
+  if (choiceRealBtn) {
+    choiceRealBtn.addEventListener('click', () => handleChoice('real'));
+  }
+  if (nextQuestionBtn) {
+    nextQuestionBtn.addEventListener('click', nextQuestion);
+  }
+  if (retryBtn) {
+    retryBtn.addEventListener('click', startQuiz);
+  }
 
   // Background Grid Canvas
   function initBackgroundCanvas() {
@@ -512,7 +527,7 @@
       for (let x = 0; x < canvas.width; x += grid) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
-        ctx.lineTo(canvas.height);
+        ctx.lineTo(x, canvas.height);
         ctx.stroke();
       }
 
