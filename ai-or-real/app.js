@@ -26,17 +26,17 @@
     {
       id: 2,
       type: 'text',
-      badge: 'TEXT ANALYSIS • CREATIVE PROSE',
-      prompt: 'Read this short passage. Was it written by a human or an AI language model?',
-      textContent: `The wind smelled like salt and wet asphalt, that specific chill that makes your teeth ache right before the November rain breaks. My grandfather used to keep three half-chewed cinnamon toothpicks in his glovebox next to an expired Pennsylvania inspection sticker from 1994. When you opened the latch, the hinge let out a high-pitched dry shriek that sounded exactly like a startled seagull.`,
-      textSource: 'Source: Memoir draft excerpt',
+      badge: 'TEXT ANALYSIS • PUBLISHED LITERATURE',
+      prompt: 'Read this famous opening passage. Is it genuine human literature or AI-generated prose?',
+      textContent: `It was a bright cold day in April, and the clocks were striking thirteen. Winston Smith, his chin nuzzled into his breast in an effort to escape the vile wind, slipped quickly through the glass doors of Victory Mansions, though not quickly enough to prevent a swirl of gritty dust from entering along with him.`,
+      textSource: 'Source: George Orwell, "1984" (Published 1949)',
       answer: 'real',
-      title: 'AUTHENTIC (HUMAN AUTHOR)',
-      explanation: 'This passage is genuinely human-authored. It features idiosyncratic sensory memory, specific quirky details (cinnamon toothpicks, an expired 1994 PA inspection sticker), and spontaneous voice.',
+      title: 'AUTHENTIC (HUMAN NOVEL)',
+      explanation: 'This is the genuine opening passage of George Orwell\'s classic novel "1984" (published in 1949, decades before generative AI). Notice Orwell\'s immediate disorienting punch line ("the clocks were striking thirteen") and gritty atmospheric realism.',
       clues: [
-        'Hyper-specific sensory grit: Cinnamon toothpicks + glovebox latch shriek are tactile memories AI rarely invents unprompted.',
-        'Organic sentence cadence: Shifts between sharp sensory beats and reflective memory without boilerplate filler.',
-        'Zero LLM boilerplate: Notice the total absence of introductory fluff or philosophical concluding summaries.'
+        'World-famous subversion: "Clocks were striking thirteen" is an iconic literary hook that immediately shocks the reader into an uncanny totalitarian reality.',
+        'Sensory tactility: "Chin nuzzled into his breast" and "swirl of gritty dust" ground the scene in physical human discomfort.',
+        'Zero LLM boilerplate: No polite introductions, formulaic summaries, or sycophantic transitional adverbs.'
       ]
     },
     {
@@ -73,17 +73,17 @@
     {
       id: 5,
       type: 'text',
-      badge: 'TEXT ANALYSIS • CASUAL MESSAGING',
-      prompt: 'Examine this chat message sent in a Discord group. Real human or AI generated?',
-      textContent: `yo my bad for dipping early yesterday my radiator started whistling like a tea kettle on the freeway lmaooo had to pull over at a mobil station and wait 40 mins for it to cool down so i didnt blow a gasket 💀 caught the replay this morning tho that 3rd round comeback was nutty`,
-      textSource: 'Source: Gaming Discord channel message',
+      badge: 'TEXT ANALYSIS • PUBLISHED MEMOIR',
+      prompt: 'Examine this literary passage about human grief. Was it written by a real published author or an AI model?',
+      textContent: `Life changes fast. Life changes in the instant. You sit down to dinner and life as you know it ends. The question of self-pity. Grief turns out to be a place none of us know until we reach it. We anticipate the nature of the grief, but not the unrelenting nature of the grief itself.`,
+      textSource: 'Source: Joan Didion, "The Year of Magical Thinking" (Published 2005)',
       answer: 'real',
-      title: 'AUTHENTIC (HUMAN MESSAGING)',
-      explanation: 'This message was written by an authentic human. It contains natural informal slang, situational humor ("💀", "lmaooo"), run-on punctuation, and real relatable car trouble.',
+      title: 'AUTHENTIC (HUMAN MEMOIR)',
+      explanation: 'This is an authentic excerpt from Joan Didion\'s National Book Award-winning memoir "The Year of Magical Thinking" (2005), written following the sudden death of her husband John Gregory Dunne.',
       clues: [
-        'Organic informal flow: Realistic lowercase typography, internet acronyms, and natural syntax without AI stiffness.',
-        'Grounded situational context: Radiator whistling on freeway + waiting at Mobil station feels completely true to everyday life.',
-        'No AI hedging: A language model prompted for casual text usually over-explains or sounds forced like "fellow kids".'
+        'Abrupt staccato rhythm: "Life changes fast. Life changes in the instant. You sit down to dinner and life as you know it ends." Human shock produces fragmented, breathless sentences.',
+        'Profound psychological precision: Distinguishing between expecting grief and experiencing its "unrelenting nature" comes from lived human experience.',
+        'Absence of AI emotional smoothing: AI writing about grief almost always defaults to comforting moralizing ("While grief is hard, healing takes time...").'
       ]
     },
     {
@@ -107,7 +107,7 @@
       badge: 'TEXT ANALYSIS • TECH EXPLANATION',
       prompt: 'Read this explanation of quantum computing. Is it genuine human writing or AI output?',
       textContent: `In the rapidly evolving landscape of modern technology, quantum computing represents a paradigm shift of monumental proportions. By leveraging the enigmatic principles of superposition and entanglement, qubits facilitate computational throughput that transcends classical limitations. However, it is paramount to underscore that substantial challenges—namely decoherence and error correction—remain on the horizon. Ultimately, this groundbreaking frontier holds profound implications for humanity's technological trajectory.`,
-      textSource: 'Source: Tech article overview',
+      textSource: 'Source: Synthetic prompt experiment',
       answer: 'ai',
       title: 'SYNTHETIC (AI GENERATED)',
       explanation: 'This is textbook AI prose. It features the ubiquitous "In the rapidly evolving landscape of..." opening and monotonous three-part rhythm.',
@@ -135,17 +135,17 @@
     {
       id: 9,
       type: 'text',
-      badge: 'TEXT ANALYSIS • CUSTOMER COMPLAINT',
-      prompt: 'Examine this customer review for an airline. Real angry customer or AI generated?',
-      textContent: `I have flown Delta for 12 years and have never been treated with such utter disregard. Flight 1482 out of Atlanta delayed 4 hours with ZERO gate updates, then they gave us a voucher for a bag of stale pretzels while the gate agent literally scrolled Instagram behind the podium. Missed my sister's rehearsal dinner. When I asked about rebooking, he told me to "call the 1-800 number if you don't like it." Absolutely infuriating.`,
-      textSource: 'Source: Airline customer feedback forum',
+      badge: 'TEXT ANALYSIS • PUBLISHED NOVEL',
+      prompt: 'Examine this excerpt describing an old man in a boat. Real published classic novel or AI generated?',
+      textContent: `He was an old man who fished alone in a skiff in the Gulf Stream and he had gone eighty-four days now without taking a fish. In the first forty days a boy had been with him. But after forty days without a fish the boy’s parents had told him that the old man was now definitely and finally salao, which is the worst form of unlucky.`,
+      textSource: 'Source: Ernest Hemingway, "The Old Man and the Sea" (Published 1952)',
       answer: 'real',
-      title: 'AUTHENTIC (HUMAN COMPLAINT)',
-      explanation: 'This is a genuine human customer complaint. It contains raw emotional friction, exact flight numbers, specific indignities (stale pretzels, gate agent scrolling Instagram), and genuine dialogue.',
+      title: 'AUTHENTIC (HUMAN NOVEL)',
+      explanation: 'This is the famous opening passage of Ernest Hemingway\'s Pulitzer and Nobel Prize-winning masterpiece "The Old Man and the Sea" (1952).',
       clues: [
-        'Authentic emotional resentment: Visceral, angry human voice ("Missed my sister\'s rehearsal dinner").',
-        'Direct quote with snark: "call the 1-800 number if you don\'t like it" reflects real-world customer service friction.',
-        'No AI diplomacy: A language model would balance this with boilerplate neutral statements like "while safety is always paramount...".'
+        'Hemingway\'s "Iceberg" simplicity: Short, direct Anglo-Saxon words joined simply with "and" — the polar opposite of AI\'s vocabulary inflation.',
+        'Authentic cultural slang: Incorporates the Cuban-Spanish vernacular term "salao" naturally without an explanatory footnote lecture.',
+        'Understated emotional weight: Conveys profound aging and bad luck in two clean, unadorned declarative sentences.'
       ]
     },
     {
