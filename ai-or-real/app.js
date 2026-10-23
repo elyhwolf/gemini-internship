@@ -168,7 +168,6 @@
   // Game State
   let currentQIndex = 0;
   let score = 0;
-  let earnedXp = 0;
   let qStartTime = 0;
   let totalTime = 0;
   let timerInterval = null;
@@ -187,7 +186,7 @@
   const stepNodesContainer = document.getElementById('stepNodes');
 
   const scoreVal = document.getElementById('scoreVal');
-  const userXpDisplay = document.getElementById('userXpDisplay');
+  const accuracyLiveVal = document.getElementById('accuracyLiveVal');
 
   const qTypeBadge = document.getElementById('qTypeBadge');
   const qIndexPill = document.getElementById('qIndexPill');
@@ -286,12 +285,11 @@
     soundFX.playClick();
     currentQIndex = 0;
     score = 0;
-    earnedXp = 0;
     totalTime = 0;
     userAnswers = [];
 
     scoreVal.textContent = `0 / ${QUESTIONS.length}`;
-    userXpDisplay.textContent = `+0 XP`;
+    if (accuracyLiveVal) accuracyLiveVal.textContent = `100%`;
 
     startScreen.classList.remove('active');
     resultsScreen.classList.remove('active');
@@ -396,21 +394,22 @@
 
     if (isCorrect) {
       score++;
-      earnedXp += 15;
       soundFX.playCorrect();
       verdictBanner.className = 'verdict-banner is-correct';
       verdictBadge.textContent = '✓ CORRECT VERDICT';
-      verdictXp.textContent = '+15 XP';
+      verdictXp.textContent = 'ANALYSIS CONFIRMED';
     } else {
       soundFX.playWrong();
       verdictBanner.className = 'verdict-banner is-wrong';
       verdictBadge.textContent = '✗ INCORRECT VERDICT';
-      verdictXp.textContent = '+0 XP';
+      verdictXp.textContent = 'DETECTION FAILED';
     }
 
     // Update scoreboard
+    const questionsAnswered = userAnswers.length + 1;
+    const currentAcc = Math.round((score / questionsAnswered) * 100);
     scoreVal.textContent = `${score} / ${QUESTIONS.length}`;
-    userXpDisplay.textContent = `+${earnedXp} XP`;
+    if (accuracyLiveVal) accuracyLiveVal.textContent = `${currentAcc}%`;
 
     // Populate forensic banner
     verdictTitle.textContent = q.title;
@@ -461,21 +460,9 @@
 
     document.getElementById('finalScoreVal').textContent = `${score} / ${QUESTIONS.length}`;
     document.getElementById('accuracyPercentVal').textContent = `${accuracyPct}%`;
-    document.getElementById('earnedXpVal').textContent = `+${earnedXp} XP`;
     document.getElementById('avgTimeVal').textContent = `${avgTime}s`;
-
-    // Award XP to ElyWolf Arcade Profile Store
-    if (window.ElyProfiles && earnedXp > 0) {
-      try {
-        window.ElyProfiles.addXp(earnedXp, {
-          game: 'AI or Real?',
-          score: `${score}/${QUESTIONS.length}`,
-          accuracy: `${accuracyPct}%`
-        });
-      } catch (e) {
-        console.warn('Profile XP grant error:', e);
-      }
-    }
+    const rankEl = document.getElementById('detectionRankVal');
+    if (rankEl) rankEl.textContent = `SCORE ${score}/10`;
 
     // Assign Forensic Rank & Grade
     let grade = 'C';
