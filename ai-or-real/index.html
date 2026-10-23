@@ -144,20 +144,17 @@
           </button>
         </div>
 
-        <!-- REVEAL / FORENSIC EXPLANATION BANNER (Hidden until choice) -->
+        <!-- REVEAL / VERDICT BANNER (Hidden until choice) -->
         <div class="verdict-banner hidden" id="verdictBanner">
           <div class="verdict-header">
             <div class="verdict-badge" id="verdictBadge">CORRECT VERDICT</div>
-            <div class="verdict-xp" id="verdictXp">ANALYSIS CONFIRMED</div>
+            <div class="verdict-xp" id="verdictStatus">VERIFIED</div>
           </div>
           
           <h4 class="verdict-title" id="verdictTitle">SPECIMEN IS AI GENERATED</h4>
-          <p class="verdict-explanation" id="verdictExplanation"></p>
-
-          <div class="forensic-clues-box">
-            <span class="clues-title">KEY FORENSIC TELLTALES:</span>
-            <ul class="clues-list" id="cluesList"></ul>
-          </div>
+          
+          <!-- Source reveals here AFTER answering so it never spoils the question -->
+          <div class="post-answer-source" id="postAnswerSource"></div>
 
           <div class="banner-actions">
             <button class="primary-btn next-btn" id="nextQuestionBtn">
@@ -177,8 +174,8 @@
           <span class="grade-symbol" id="gradeSymbol">A+</span>
         </div>
 
-        <h2 class="results-title" id="resultsTitle">MASTER DETECTOR</h2>
-        <p class="results-sub" id="resultsSub">You achieved near-perfect accuracy discerning synthetic media from authentic human reality.</p>
+        <h2 class="results-title" id="resultsTitle">GRADE: A+</h2>
+        <p class="results-sub" id="resultsSub">Here is your performance evaluation across all 10 specimen cases.</p>
 
         <div class="results-stats-row">
           <div class="r-stat-box">
@@ -194,8 +191,8 @@
             <span class="r-stat-label">AVG TIME / CASE</span>
           </div>
           <div class="r-stat-box">
-            <span class="r-stat-val" id="detectionRankVal">LEVEL 10</span>
-            <span class="r-stat-label">DETECTION RANK</span>
+            <span class="r-stat-val" id="finalGradeVal">A+</span>
+            <span class="r-stat-label">LETTER GRADE</span>
           </div>
         </div>
 
