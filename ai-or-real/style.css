@@ -726,45 +726,7 @@ body {
   margin-right: 6px;
 }
 
-.forensic-clues-box {
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: var(--radius-sm);
-  padding: 16px;
-  margin-bottom: 22px;
-}
 
-.clues-title {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--accent-cyan);
-  letter-spacing: 0.06em;
-  margin-bottom: 10px;
-}
-
-.clues-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.clues-list li {
-  font-size: 0.84rem;
-  color: #e2e8f0;
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  line-height: 1.45;
-}
-
-.clues-list li::before {
-  content: '▸';
-  color: var(--accent-cyan);
-  font-weight: 800;
-}
 
 .banner-actions {
   display: flex;
