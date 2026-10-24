@@ -224,8 +224,14 @@
     }
   };
 
+  let isNavigating = false;
+
   // Start Quiz
   function startQuiz() {
+    if (isNavigating) return;
+    isNavigating = true;
+    setTimeout(() => { isNavigating = false; }, 250);
+
     try {
       soundFX.playClick();
     } catch (err) {
@@ -395,6 +401,10 @@
 
   // Advance to Next Question or Results
   function nextQuestion() {
+    if (isNavigating) return;
+    isNavigating = true;
+    setTimeout(() => { isNavigating = false; }, 250);
+
     soundFX.playClick();
     if (currentQIndex < QUESTIONS.length - 1) {
       loadQuestion(currentQIndex + 1);
